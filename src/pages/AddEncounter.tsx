@@ -1,5 +1,5 @@
-import { useActiveFriends, useInteractionTypes, useSettings, encountersApi } from '../hooks/useDatabase';
-import { useState } from 'react';
+import { useActiveFriends, useInteractionTypes, useSettings, useEncounters, encountersApi } from '../hooks/useDatabase';
+import React, { useState } from 'react';
 
 interface AddEncounterProps {
   onNavigate: (page: string) => void;
@@ -9,6 +9,7 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
   const friends = useActiveFriends();
   const interactionTypes = useInteractionTypes();
   const settings = useSettings();
+  const allEncounters = useEncounters();
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().slice(0, 16), // YYYY-MM-DDTHH:mm format
@@ -39,6 +40,21 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
     suggestions: [] as Array<{name: string, lat?: number, lon?: number}>,
     showCurrentLocation: false
   });
+
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+
+  // Get all existing tags from encounters for suggestions
+  const existingTags = React.useMemo(() => {
+    if (!allEncounters) return [];
+    const tagSet = new Set<string>();
+    allEncounters.forEach(encounter => {
+      if (encounter.tags) {
+        encounter.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [allEncounters]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -459,16 +475,104 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
           <label className="block text-sm font-medium mb-1">
             Tags 
             <span className="text-xs text-gray-500 font-normal"> (for filtering & analytics)</span>
+            {existingTags.length > 0 && (
+              <span className="text-xs text-green-600 font-normal"> - {existingTags.length} existing tags available</span>
+            )}
           </label>
-          <input
-            type="text"
-            value={formData.tags}
-            onChange={(e) => setFormData(f => ({...f, tags: e.target.value}))}
-            className="w-full p-2 border rounded bg-white dark:bg-gray-700"
-            placeholder="e.g., vacation, drunk, kinky, spontaneous, planned, first-time, celebration"
-          />
+          
+          <div className="relative">
+            <input
+              type="text"
+              value={formData.tags}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData(f => ({...f, tags: value}));
+                
+                // Filter existing tags for suggestions
+                if (value.trim()) {
+                  const lastTag = value.split(',').pop()?.trim().toLowerCase() || '';
+                  const matchingTags = existingTags.filter(tag => 
+                    tag.toLowerCase().includes(lastTag) && tag.toLowerCase() !== lastTag
+                  );
+                  setTagSuggestions(matchingTags.slice(0, 8)); // Limit to 8 suggestions
+                } else {
+                  setTagSuggestions([]);
+                }
+              }}
+              onFocus={() => {
+                setShowTagSuggestions(true);
+                if (!formData.tags.trim() && existingTags.length > 0) {
+                  setTagSuggestions(existingTags.slice(0, 8)); // Show popular tags when focused
+                }
+              }}
+              onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+              className="w-full p-2 border rounded bg-white dark:bg-gray-700"
+              placeholder={existingTags.length > 0 
+                ? `e.g., ${existingTags.slice(0, 3).join(', ')}... (or create new ones)`
+                : "e.g., vacation, drunk, kinky, spontaneous, planned, first-time, celebration"
+              }
+            />
+            
+            {/* Tag Suggestions */}
+            {showTagSuggestions && tagSuggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border rounded shadow-lg max-h-48 overflow-y-auto">
+                {tagSuggestions.map((tag, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => {
+                      // Add tag to existing tags string
+                      const currentTags = formData.tags.split(',').map(t => t.trim()).filter(t => t);
+                      const lastTag = currentTags.pop() || '';
+                      
+                      // Replace partial last tag or add new tag
+                      const newTags = lastTag 
+                        ? [...currentTags, tag]
+                        : [...currentTags, tag];
+                      
+                      setFormData(f => ({...f, tags: newTags.join(', ') + ', '}));
+                      setTagSuggestions([]);
+                      setShowTagSuggestions(false);
+                    }}
+                    className="w-full p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b last:border-b-0 flex items-center justify-between"
+                  >
+                    <span className="text-sm">{tag}</span>
+                    <span className="text-xs text-gray-500">
+                      {allEncounters?.filter(e => e.tags?.includes(tag)).length || 0} uses
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Popular Tags (if no input) */}
+          {!formData.tags.trim() && existingTags.length > 0 && (
+            <div className="mt-2">
+              <div className="text-xs text-gray-500 mb-1">Popular existing tags:</div>
+              <div className="flex flex-wrap gap-1">
+                {existingTags.slice(0, 6).map((tag, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => {
+                      const currentTags = formData.tags ? formData.tags + ', ' + tag : tag;
+                      setFormData(f => ({...f, tags: currentTags + ', '}));
+                    }}
+                    className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {tag} ({allEncounters?.filter(e => e.tags?.includes(tag)).length || 0})
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <div className="text-xs text-gray-500 mt-1">
-            Add custom tags for filtering encounters later. Examples: "vacation", "drunk", "kinky", "romantic", "revenge", "hookup", "fwb", "first-time", "makeup-sex"
+            {existingTags.length > 0 
+              ? `💡 Start typing to see suggestions from your ${existingTags.length} existing tags, or create new ones. Separate with commas.`
+              : "Add custom tags for filtering encounters later. Examples: 'vacation', 'drunk', 'kinky', 'romantic', 'revenge', 'hookup', 'fwb', 'first-time', 'makeup-sex'"
+            }
           </div>
         </div>
 
