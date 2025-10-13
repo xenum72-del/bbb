@@ -287,7 +287,11 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onNavigate(`edit-encounter/${encounter.id}`);
+                                  if (encounter.id) {
+                                    onNavigate(`edit-encounter/${encounter.id}`);
+                                  } else {
+                                    alert('Cannot edit encounter: No ID found');
+                                  }
                                 }}
                                 className="text-blue-500 hover:text-blue-700 p-1 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
                                 title="Edit encounter"

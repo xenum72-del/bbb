@@ -32,7 +32,13 @@ function App() {
   const renderPage = () => {
     // Handle edit-encounter routes
     if (currentPage.startsWith('edit-encounter/')) {
-      const encounterId = parseInt(currentPage.split('/')[1]);
+      const encounterIdStr = currentPage.split('/')[1];
+      const encounterId = parseInt(encounterIdStr);
+      
+      if (isNaN(encounterId)) {
+        return <div className="p-4 text-red-500">Invalid encounter ID</div>;
+      }
+      
       return <EditEncounter onNavigate={navigate} encounterId={encounterId} />
     }
     
