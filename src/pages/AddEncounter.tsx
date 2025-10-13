@@ -34,6 +34,12 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
     participants: ''
   });
 
+  const [locationState, setLocationState] = useState({
+    isSearching: false,
+    suggestions: [] as Array<{name: string, lat?: number, lon?: number}>,
+    showCurrentLocation: false
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -315,21 +321,136 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
         <div>
           <label className="block text-sm font-medium mb-1">
             Location 
-            <span className="text-xs text-gray-500 font-normal"> (currently text-only, no online search yet)</span>
+            <span className="text-xs text-gray-500 font-normal"> (with live search)</span>
           </label>
-          <input
-            type="text"
-            value={formData.location.place}
-            onChange={(e) => setFormData(f => ({
-              ...f, 
-              location: {...f.location, place: e.target.value}
-            }))}
-            className="w-full p-2 border rounded bg-white dark:bg-gray-700"
-            placeholder="e.g., My place, His apartment, Hotel Marriott, Central Park, Gym locker room, Office, Car"
-          />
+          
+          <div className="relative">
+            <input
+              type="text"
+              value={formData.location.place}
+              onChange={async (e) => {
+                const value = e.target.value;
+                setFormData(f => ({
+                  ...f, 
+                  location: {...f.location, place: value}
+                }));
+                
+                // Simple location search using OpenStreetMap Nominatim (free)
+                if (value.length > 3) {
+                  setLocationState(ls => ({...ls, isSearching: true}));
+                  try {
+                    const response = await fetch(
+                      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&limit=5`
+                    );
+                    const results = await response.json();
+                    const suggestions = results.map((r: any) => ({
+                      name: r.display_name,
+                      lat: parseFloat(r.lat),
+                      lon: parseFloat(r.lon)
+                    }));
+                    setLocationState(ls => ({...ls, suggestions, isSearching: false}));
+                  } catch (error) {
+                    console.log('Location search failed:', error);
+                    setLocationState(ls => ({...ls, isSearching: false, suggestions: []}));
+                  }
+                } else {
+                  setLocationState(ls => ({...ls, suggestions: []}));
+                }
+              }}
+              onFocus={() => setLocationState(ls => ({...ls, showCurrentLocation: true}))}
+              onBlur={() => setTimeout(() => setLocationState(ls => ({...ls, suggestions: []})), 200)}
+              className="w-full p-2 border rounded bg-white dark:bg-gray-700"
+              placeholder="🔍 Search for places or enter manually..."
+            />
+            
+            {/* Get Current Location Button */}
+            {locationState.showCurrentLocation && (
+              <button
+                type="button"
+                onClick={() => {
+                  if ('geolocation' in navigator) {
+                    setLocationState(ls => ({...ls, isSearching: true}));
+                    navigator.geolocation.getCurrentPosition(
+                      async (position) => {
+                        const { latitude, longitude } = position.coords;
+                        try {
+                          // Reverse geocoding to get place name
+                          const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                          );
+                          const result = await response.json();
+                          setFormData(f => ({
+                            ...f,
+                            location: {
+                              place: result.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+                              lat: latitude.toString(),
+                              lon: longitude.toString()
+                            }
+                          }));
+                        } catch (error) {
+                          setFormData(f => ({
+                            ...f,
+                            location: {
+                              ...f.location,
+                              place: `Current location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+                              lat: latitude.toString(),
+                              lon: longitude.toString()
+                            }
+                          }));
+                        }
+                        setLocationState(ls => ({...ls, isSearching: false}));
+                      },
+                      (_error) => {
+                        alert('Could not get your location. Please enter manually.');
+                        setLocationState(ls => ({...ls, isSearching: false}));
+                      }
+                    );
+                  } else {
+                    alert('Geolocation is not supported by this browser.');
+                  }
+                }}
+                className="absolute right-2 top-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+              >
+                📍 Use Current
+              </button>
+            )}
+            
+            {/* Location Suggestions */}
+            {locationState.suggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border rounded shadow-lg max-h-48 overflow-y-auto">
+                {locationState.suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => {
+                      setFormData(f => ({
+                        ...f,
+                        location: {
+                          place: suggestion.name,
+                          lat: suggestion.lat?.toString() || '',
+                          lon: suggestion.lon?.toString() || ''
+                        }
+                      }));
+                      setLocationState(ls => ({...ls, suggestions: []}));
+                    }}
+                    className="w-full p-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b last:border-b-0"
+                  >
+                    <div className="font-medium text-sm truncate">{suggestion.name}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {locationState.isSearching && (
+              <div className="absolute right-8 top-2 text-gray-500">
+                🔄 Searching...
+              </div>
+            )}
+          </div>
+          
           <div className="text-xs text-gray-500 mt-1">
-            📍 <strong>Note:</strong> Location search integration (Google Places, etc.) is not implemented yet. 
-            For now, just type location names manually. Common examples: "My place", "His apartment", "Hotel [name]", "Sauna", "Park", "Car", "Office", etc.
+            🌍 <strong>Live Search:</strong> Type to search worldwide locations or click "📍 Use Current" for your location.
+            Common examples: "Hotel Marriott", "Central Park NYC", "Starbucks", "My place", etc.
           </div>
         </div>
 

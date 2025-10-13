@@ -11,14 +11,13 @@ export default function Timeline({ onNavigate }: TimelineProps) {
   const interactionTypes = useInteractionTypes();
   
   const [filters, setFilters] = useState({
-    rating: [1, 5],
+    rating: [1, 5] as [number, number],
     beneficiary: 'all',
     participant: 'all',
     typeId: 'all',
-    showAnonymous: true
-  });
-
-  const friendsMap = new Map(friends.map(f => [f.id!, f]));
+    showAnonymous: true,
+    tags: ''
+  });  const friendsMap = new Map(friends.map(f => [f.id!, f]));
   const typesMap = new Map(interactionTypes.map(t => [t.id!, t]));
 
   const filteredEncounters = allEncounters.filter(encounter => {
@@ -51,6 +50,17 @@ export default function Timeline({ onNavigate }: TimelineProps) {
 
     if (!filters.showAnonymous && encounter.isAnonymous) {
       return false;
+    }
+
+    if (filters.tags.trim()) {
+      const searchTags = filters.tags.toLowerCase().trim().split(/[,\s]+/).filter(tag => tag);
+      const encounterTags = encounter.tags || [];
+      const hasMatchingTag = searchTags.some(searchTag => 
+        encounterTags.some(encounterTag => 
+          encounterTag.toLowerCase().includes(searchTag)
+        )
+      );
+      if (!hasMatchingTag) return false;
     }
 
     return true;
@@ -152,6 +162,21 @@ export default function Timeline({ onNavigate }: TimelineProps) {
             </select>
           </div>
 
+          {/* Tags Filter */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Tags</label>
+            <input
+              type="text"
+              placeholder="🏷️ Search by tags..."
+              value={filters.tags}
+              onChange={(e) => setFilters(f => ({...f, tags: e.target.value}))}
+              className="w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+            />
+            <div className="text-xs text-gray-500 mt-1">
+              Search encounters by tags (e.g., "vacation", "kinky", "drunk")
+            </div>
+          </div>
+
           {/* Anonymous Toggle */}
           <label className="flex items-center space-x-2">
             <input
@@ -176,7 +201,8 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                 beneficiary: 'all',
                 participant: 'all',
                 typeId: 'all',
-                showAnonymous: true
+                showAnonymous: true,
+                tags: ''
               })}
               className="text-primary mt-2"
             >
