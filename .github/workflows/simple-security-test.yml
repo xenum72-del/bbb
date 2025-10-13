@@ -73,9 +73,9 @@ jobs:
         
         # Create the comprehensive behavioral security test
         cat > scripts/behavior-security-test.js << 'EOF'
-        const puppeteer = require('puppeteer');
-        const lighthouse = require('lighthouse');
-        const fs = require('fs');
+        import puppeteer from 'puppeteer';
+        import lighthouse from 'lighthouse';
+        import fs from 'fs';
 
         (async () => {
           console.log('🎭 Starting Comprehensive Behavioral Security Testing...');
@@ -95,13 +95,14 @@ jobs:
             },
             security: {},
             performance: {},
-            accessibility: {}
+            accessibility: {},
+            inclusivity: {}
           };
 
           try {
             console.log('📱 Testing PWA and security headers...');
             
-            // Navigate to the application
+            // Navigate to the application (server should already be running)
             const response = await page.goto('http://localhost:5173', { 
               waitUntil: 'networkidle0',
               timeout: 30000
@@ -291,7 +292,7 @@ jobs:
         
         # Create comprehensive audit summary
         cat > create-audit-summary.js << 'EOF'
-        const fs = require('fs');
+        import fs from 'fs';
         
         try {
           const rawAudit = JSON.parse(fs.readFileSync('npm-audit-raw.json', 'utf8'));
