@@ -5,7 +5,14 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  statuses: write
+  pages: write
+  id-token: write
+  actions: read
 jobs:
   security-test:
     runs-on: ubuntu-latest
@@ -16,7 +23,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'npm'
     
     - name: Install dependencies
@@ -68,13 +75,12 @@ jobs:
 
     - name: 🎭 Comprehensive Behavioral Security Testing
       run: |
-        # Install testing dependencies
-        npm install puppeteer lighthouse axe-core --no-save
+        # Install testing dependencies (skip lighthouse due to Node.js version requirement)
+        npm install puppeteer axe-core --no-save
         
         # Create the comprehensive behavioral security test
         cat > scripts/behavior-security-test.js << 'EOF'
         import puppeteer from 'puppeteer';
-        import lighthouse from 'lighthouse';
         import fs from 'fs';
 
         (async () => {
@@ -258,12 +264,12 @@ jobs:
     
     - name: 🔍 ESLint Security Analysis
       run: |
-        # Create security-focused ESLint config
-        cat > .eslintrc.security.json << 'EOF'
-        {
-          "extends": ["eslint:recommended", "@typescript-eslint/recommended"],
-          "plugins": ["security"],
-          "rules": {
+        # Create security-focused ESLint config as CommonJS file
+        cat > eslint.security.config.js << 'EOF'
+        module.exports = {
+          extends: ["eslint:recommended", "@typescript-eslint/recommended"],
+          plugins: ["security"],
+          rules: {
             "security/detect-object-injection": "error",
             "security/detect-non-literal-regexp": "error",
             "security/detect-unsafe-regex": "error",
@@ -277,14 +283,14 @@ jobs:
             "security/detect-possible-timing-attacks": "error",
             "security/detect-pseudoRandomBytes": "error"
           }
-        }
+        };
         EOF
         
         # Install security plugin
         npm install eslint-plugin-security --save-dev || echo "Security plugin install failed"
         
-        # Run security analysis 
-        npx eslint src/ --config .eslintrc.security.json --format json > eslint-security.json || echo "ESLint security scan completed"
+        # Run security analysis with CommonJS config
+        npx eslint src/ --config eslint.security.config.js --format json > eslint-security.json || echo "ESLint security scan completed"
 
     - name: 📦 NPM Security Audit
       run: |
