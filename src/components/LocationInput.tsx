@@ -10,6 +10,7 @@ interface LocationInputProps {
   location: LocationData;
   onLocationChange: (location: LocationData) => void;
   className?: string;
+  enableOnlineGeocoding?: boolean;
 }
 
 interface LocationSuggestion {
@@ -21,7 +22,8 @@ interface LocationSuggestion {
 export default function LocationInput({
   location,
   onLocationChange,
-  className = ''
+  className = '',
+  enableOnlineGeocoding = false
 }: LocationInputProps) {
   const [locationState, setLocationState] = useState({
     suggestions: [] as LocationSuggestion[],
@@ -32,8 +34,8 @@ export default function LocationInput({
   const handleLocationSearch = async (value: string) => {
     onLocationChange({ ...location, place: value });
 
-    if (value.length > 2) {
-      // Simple location search using OpenStreetMap Nominatim (free)
+    if (value.length > 2 && enableOnlineGeocoding) {
+      // Only use online geocoding if explicitly enabled for privacy
       try {
         setLocationState(ls => ({ ...ls, isSearching: true }));
         const response = await fetch(
@@ -75,20 +77,28 @@ export default function LocationInput({
       async (position) => {
         const { latitude, longitude } = position.coords;
         
-        // Reverse geocode to get place name
-        try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await response.json();
-          
-          onLocationChange({
-            lat: latitude.toString(),
-            lon: longitude.toString(),
-            place: data.display_name || `${latitude}, ${longitude}`
-          });
-        } catch (error) {
-          console.log('Reverse geocoding failed:', error);
+        // Only use reverse geocoding if online features enabled
+        if (enableOnlineGeocoding) {
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+            const data = await response.json();
+            
+            onLocationChange({
+              lat: latitude.toString(),
+              lon: longitude.toString(),
+              place: data.display_name || `${latitude}, ${longitude}`
+            });
+          } catch (error) {
+            console.log('Reverse geocoding failed:', error);
+            onLocationChange({
+              lat: latitude.toString(),
+              lon: longitude.toString(),
+              place: `${latitude}, ${longitude}`
+            });
+          }
+        } else {
           onLocationChange({
             lat: latitude.toString(),
             lon: longitude.toString(),

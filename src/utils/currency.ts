@@ -38,12 +38,46 @@ let ratesCache: ExchangeRates | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 
-export async function getExchangeRates(): Promise<ExchangeRates> {
+export async function getExchangeRates(enableOnlineRates: boolean = false): Promise<ExchangeRates> {
   const now = Date.now();
   
   // Return cached rates if still valid
   if (ratesCache && (now - cacheTimestamp) < CACHE_DURATION) {
     return ratesCache;
+  }
+
+  // Default to offline rates for privacy - no external API calls unless explicitly enabled
+  const fallbackRates: ExchangeRates = {
+    base: 'USD',
+    date: new Date().toISOString().split('T')[0],
+    rates: {
+      USD: 1.00,     // US Dollar
+      EUR: 0.85,     // Euro
+      GBP: 0.73,     // British Pound
+      JPY: 110.00,   // Japanese Yen
+      AUD: 1.35,     // Australian Dollar
+      CAD: 1.25,     // Canadian Dollar
+      CHF: 0.92,     // Swiss Franc
+      CNY: 6.45,     // Chinese Yuan
+      SEK: 8.75,     // Swedish Krona
+      NZD: 1.45,     // New Zealand Dollar
+      MXN: 18.50,    // Mexican Peso
+      SGD: 1.35,     // Singapore Dollar
+      HKD: 7.85,     // Hong Kong Dollar
+      NOK: 8.90,     // Norwegian Krone
+      KRW: 1180.00,  // South Korean Won
+      TRY: 8.75,     // Turkish Lira
+      RUB: 65.00,    // Russian Ruble
+      INR: 75.00,    // Indian Rupee
+      BRL: 5.25,     // Brazilian Real
+      ZAR: 15.50     // South African Rand
+    }
+  };
+
+  if (!enableOnlineRates) {
+    ratesCache = fallbackRates;
+    cacheTimestamp = now;
+    return fallbackRates;
   }
 
   try {
@@ -58,35 +92,6 @@ export async function getExchangeRates(): Promise<ExchangeRates> {
     return rates;
   } catch (error) {
     console.error('Failed to fetch exchange rates:', error);
-    
-    // Fallback to hardcoded approximate rates if API fails
-    const fallbackRates: ExchangeRates = {
-      base: 'USD',
-      date: new Date().toISOString().split('T')[0],
-      rates: {
-        USD: 1.00,     // US Dollar
-        EUR: 0.85,     // Euro
-        GBP: 0.73,     // British Pound
-        JPY: 110.00,   // Japanese Yen
-        AUD: 1.35,     // Australian Dollar
-        CAD: 1.25,     // Canadian Dollar
-        CHF: 0.92,     // Swiss Franc
-        CNY: 6.45,     // Chinese Yuan
-        SEK: 8.75,     // Swedish Krona
-        NZD: 1.45,     // New Zealand Dollar
-        MXN: 18.50,    // Mexican Peso
-        SGD: 1.35,     // Singapore Dollar
-        HKD: 7.85,     // Hong Kong Dollar
-        NOK: 8.90,     // Norwegian Krone
-        KRW: 1180.00,  // South Korean Won
-        TRY: 8.75,     // Turkish Lira
-        RUB: 65.00,    // Russian Ruble
-        INR: 75.00,    // Indian Rupee
-        BRL: 5.25,     // Brazilian Real
-        ZAR: 15.50     // South African Rand
-      }
-    };
-    
     ratesCache = fallbackRates;
     cacheTimestamp = now;
     return fallbackRates;
