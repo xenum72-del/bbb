@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: white;
+  color: #1f2937;
+}
+
+.dark body {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+/* Custom iOS-style range slider */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-track {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  height: 8px;
+  border-radius: 4px;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: white;
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  position: relative;
+  top: -8px;
+}
+
+.slider::-moz-range-track {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  height: 8px;
+  border-radius: 4px;
+  border: none;
+}
+
+.slider::-moz-range-thumb {
+  background: white;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.dark .slider::-webkit-slider-thumb {
+  border-color: #8b5cf6;
+}
+
+.dark .slider::-moz-range-thumb {
+  border-color: #8b5cf6;
+}

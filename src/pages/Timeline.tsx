@@ -1,0 +1,271 @@
+import { useEncounters, useActiveFriends, useInteractionTypes } from '../hooks/useDatabase';
+import { useState } from 'react';
+
+interface TimelineProps {
+  onNavigate: (page: string) => void;
+}
+
+export default function Timeline({ onNavigate }: TimelineProps) {
+  const allEncounters = useEncounters();
+  const friends = useActiveFriends();
+  const interactionTypes = useInteractionTypes();
+  
+  const [filters, setFilters] = useState({
+    rating: [1, 5],
+    beneficiary: 'all',
+    participant: 'all',
+    typeId: 'all',
+    showAnonymous: true
+  });
+
+  const friendsMap = new Map(friends.map(f => [f.id!, f]));
+  const typesMap = new Map(interactionTypes.map(t => [t.id!, t]));
+
+  const filteredEncounters = allEncounters.filter(encounter => {
+    if (encounter.rating < filters.rating[0] || encounter.rating > filters.rating[1]) {
+      return false;
+    }
+    
+    if (filters.beneficiary !== 'all' && encounter.beneficiary !== filters.beneficiary) {
+      return false;
+    }
+
+    if (filters.participant !== 'all') {
+      if (!encounter.participants.includes(Number(filters.participant))) {
+        return false;
+      }
+    }
+
+    if (filters.typeId !== 'all' && encounter.typeId !== Number(filters.typeId)) {
+      return false;
+    }
+
+    if (!filters.showAnonymous && encounter.isAnonymous) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const groupedByDate = filteredEncounters.reduce((acc, encounter) => {
+    const date = new Date(encounter.date).toDateString();
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(encounter);
+    return acc;
+  }, {} as Record<string, typeof filteredEncounters>);
+
+  return (
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Timeline</h2>
+        <button
+          onClick={() => onNavigate('add')}
+          className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm"
+        >
+          + Add
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
+        <h3 className="font-medium mb-3">Filters</h3>
+        
+        <div className="space-y-3">
+          {/* Rating Filter */}
+          <div>
+            <label className="text-sm font-medium">Rating: {filters.rating[0]}-{filters.rating[1]} stars</label>
+            <div className="flex space-x-2 mt-1">
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={filters.rating[0]}
+                onChange={(e) => setFilters(f => ({...f, rating: [Number(e.target.value), f.rating[1]]}))}
+                className="flex-1"
+              />
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={filters.rating[1]}
+                onChange={(e) => setFilters(f => ({...f, rating: [f.rating[0], Number(e.target.value)]}))}
+                className="flex-1"
+              />
+            </div>
+          </div>
+
+          {/* Beneficiary Filter */}
+          <div>
+            <label className="text-sm font-medium">Beneficiary:</label>
+            <select
+              value={filters.beneficiary}
+              onChange={(e) => setFilters(f => ({...f, beneficiary: e.target.value}))}
+              className="w-full mt-1 p-2 border rounded bg-white dark:bg-gray-700"
+            >
+              <option value="all">All</option>
+              <option value="me">Me</option>
+              <option value="friend">Friend</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+
+          {/* Participant Filter */}
+          <div>
+            <label className="text-sm font-medium">Friend:</label>
+            <select
+              value={filters.participant}
+              onChange={(e) => setFilters(f => ({...f, participant: e.target.value}))}
+              className="w-full mt-1 p-2 border rounded bg-white dark:bg-gray-700"
+            >
+              <option value="all">All Friends</option>
+              {friends.map(friend => (
+                <option key={friend.id} value={friend.id}>
+                  {friend.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Type Filter */}
+          <div>
+            <label className="text-sm font-medium">Type:</label>
+            <select
+              value={filters.typeId}
+              onChange={(e) => setFilters(f => ({...f, typeId: e.target.value}))}
+              className="w-full mt-1 p-2 border rounded bg-white dark:bg-gray-700"
+            >
+              <option value="all">All Types</option>
+              {interactionTypes.map(type => (
+                <option key={type.id} value={type.id}>
+                  {type.icon} {type.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Anonymous Toggle */}
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={filters.showAnonymous}
+              onChange={(e) => setFilters(f => ({...f, showAnonymous: e.target.checked}))}
+              className="rounded"
+            />
+            <span className="text-sm">Show anonymous encounters</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Results */}
+      <div className="space-y-4">
+        {Object.keys(groupedByDate).length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p>No encounters match your filters</p>
+            <button
+              onClick={() => setFilters({
+                rating: [1, 5],
+                beneficiary: 'all',
+                participant: 'all',
+                typeId: 'all',
+                showAnonymous: true
+              })}
+              className="text-primary mt-2"
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          Object.entries(groupedByDate)
+            .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+            .map(([date, encounters]) => (
+              <div key={date}>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  {new Date(date).toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </h3>
+                <div className="space-y-2">
+                  {encounters.map(encounter => {
+                    const type = typesMap.get(encounter.typeId);
+                    return (
+                      <div
+                        key={encounter.id}
+                        className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-lg">{type?.icon || '💭'}</span>
+                            <span className="font-medium">{type?.name || 'Unknown'}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg">{'⭐'.repeat(encounter.rating)}</div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(encounter.date).toLocaleTimeString('en-US', {
+                                hour: 'numeric',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                          <div>
+                            <span className="font-medium">Participants: </span>
+                            {encounter.isAnonymous ? (
+                              <span className="italic">Anonymous</span>
+                            ) : encounter.participants.length === 0 ? (
+                              <span className="italic">Solo</span>
+                            ) : (
+                              encounter.participants
+                                .map(id => friendsMap.get(id)?.name || 'Unknown')
+                                .join(', ')
+                            )}
+                          </div>
+                          <div>
+                            <span className="font-medium">Beneficiary: </span>
+                            <span className="capitalize">{encounter.beneficiary}</span>
+                          </div>
+                          {encounter.durationMinutes && (
+                            <div>
+                              <span className="font-medium">Duration: </span>
+                              {encounter.durationMinutes} minutes
+                            </div>
+                          )}
+                          {encounter.location && (
+                            <div>
+                              <span className="font-medium">Location: </span>
+                              {encounter.location.place || `${encounter.location.lat}, ${encounter.location.lon}`}
+                            </div>
+                          )}
+                          {encounter.tags && encounter.tags.length > 0 && (
+                            <div className="mt-2">
+                              {encounter.tags.map(tag => (
+                                <span
+                                  key={tag}
+                                  className="inline-block bg-gray-100 dark:bg-gray-700 text-xs px-2 py-1 rounded mr-1"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {encounter.notes && (
+                            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded text-sm">
+                              {encounter.notes}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+        )}
+      </div>
+    </div>
+  );
+}
