@@ -492,23 +492,24 @@ jobs:
         echo "  Overall Score: $OVERALL_SCORE/100"
         
         # Generate SIMPLE HTML dashboard - no bullshit
-        cat > public/index.html << EOF
-<!DOCTYPE html>
-<html>
-<head>
-  <title>ALL TEST RESULTS - RAW DUMP</title>
-  <style>
-    body { font-family: monospace; margin: 20px; background: #000; color: #0f0; }
-    .section { margin: 20px 0; padding: 20px; border: 1px solid #333; background: #111; }
-    h1 { color: #fff; text-align: center; }
-    h2 { color: #ff0; }
-    pre { background: #222; padding: 10px; overflow: auto; white-space: pre-wrap; }
-  </style>
-</head>
-<body>
-  <h1>🔥 ALL TEST RESULTS - RAW DUMP 🔥</h1>
-  <p>Generated: $(date)</p>
-EOF
+        cat > public/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>ALL TEST RESULTS - RAW DUMP</title>
+          <style>
+            body { font-family: monospace; margin: 20px; background: #000; color: #0f0; }
+            .section { margin: 20px 0; padding: 20px; border: 1px solid #333; background: #111; }
+            h1 { color: #fff; text-align: center; }
+            h2 { color: #ff0; }
+            pre { background: #222; padding: 10px; overflow: auto; white-space: pre-wrap; }
+          </style>
+        </head>
+        <body>
+          <h1>🔥 ALL TEST RESULTS - RAW DUMP 🔥</h1>
+        EOF
+        
+        echo "<p>Generated: $(date)</p>" >> public/index.html
 
         # Dump ALL test results directly
         echo '<div class="section"><h2>📋 BEHAVIORAL SECURITY REPORT</h2><pre>' >> public/index.html
