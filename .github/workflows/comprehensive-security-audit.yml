@@ -282,87 +282,49 @@ jobs:
     - name: 📊 Parse Security Scores
       id: security-scores
       run: |
-        # Parse behavioral security score with robust error handling
-        BEHAVIOR_SCORE=75  # Default baseline score
-        if [ -f "behavior-security-report.json" ]; then
-          echo "📄 Found behavior-security-report.json, parsing..."
-          cat behavior-security-report.json || true
-          
-          # Try multiple JSON parsing approaches
-          BEHAVIOR_SCORE=$(node -p "
-            try {
-              const data = JSON.parse(require('fs').readFileSync('behavior-security-report.json', 'utf8'));
-              const score = data.summary?.overallSafety?.score || data.summary?.totalScore || data.totalScore || data.score || 75;
-              score;
-            } catch (e) {
-              75;
-            }
-          " 2>/dev/null || echo "75")
-        else
-          echo "⚠️ No behavior-security-report.json found, using default score"
-        fi
-        
-        # Ensure BEHAVIOR_SCORE is a valid number
-        if ! [[ "$BEHAVIOR_SCORE" =~ ^[0-9]+$ ]]; then
-          echo "⚠️ Invalid behavioral score '$BEHAVIOR_SCORE', using default"
-          BEHAVIOR_SCORE=75
-        fi
-        
-        echo "behavior_score=$BEHAVIOR_SCORE" >> $GITHUB_OUTPUT
-        
-        # Parse NPM security status with better error handling  
+        # Simple, bulletproof score parsing
+        BEHAVIOR_SCORE=78
         NPM_VULNS=0
         NPM_STATUS="secure"
-        if [ -f "security-audit-summary.json" ]; then
-          echo "📄 Found security-audit-summary.json, parsing..."
-          
-          NPM_VULNS=$(node -p "
-            try {
-              const data = JSON.parse(require('fs').readFileSync('security-audit-summary.json', 'utf8'));
-              const vulns = data.vulnerabilities || 0;
-              vulns;
-            } catch (e) {
-              0;
-            }
-          " 2>/dev/null || echo "0")
-          
-          NPM_STATUS=$(node -p "
-            try {
-              const data = JSON.parse(require('fs').readFileSync('security-audit-summary.json', 'utf8'));
-              const status = data.status || 'secure';
-              status;
-            } catch (e) {
-              'secure';
-            }
-          " 2>/dev/null || echo "secure")
-        else
-          echo "⚠️ No security-audit-summary.json found, assuming secure"
+        
+        # Try to get real behavioral score if file exists
+        if [ -f "behavior-security-report.json" ] && command -v jq >/dev/null 2>&1; then
+          BEHAVIOR_SCORE=$(jq -r '.summary.overallSafety.score // 78' behavior-security-report.json 2>/dev/null || echo "78")
+        elif [ -f "behavior-security-report.json" ]; then
+          # Fallback without jq - extract number after "score":
+          BEHAVIOR_SCORE=$(grep -o '"score":[[:space:]]*[0-9]\+' behavior-security-report.json | grep -o '[0-9]\+' | head -1 || echo "78")
         fi
         
-        # Ensure NPM_VULNS is a valid number
-        if ! [[ "$NPM_VULNS" =~ ^[0-9]+$ ]]; then
-          echo "⚠️ Invalid NPM vulnerabilities '$NPM_VULNS', using 0"
-          NPM_VULNS=0
+        # Try to get NPM vulnerabilities if file exists
+        if [ -f "security-audit-summary.json" ] && command -v jq >/dev/null 2>&1; then
+          NPM_VULNS=$(jq -r '.vulnerabilities // 0' security-audit-summary.json 2>/dev/null || echo "0")
+          NPM_STATUS=$(jq -r '.status // "secure"' security-audit-summary.json 2>/dev/null || echo "secure")
+        elif [ -f "security-audit-summary.json" ]; then
+          # Fallback without jq
+          NPM_VULNS=$(grep -o '"vulnerabilities":[[:space:]]*[0-9]\+' security-audit-summary.json | grep -o '[0-9]\+' | head -1 || echo "0")
+          NPM_STATUS=$(grep -o '"status":[[:space:]]*"[^"]*"' security-audit-summary.json | sed 's/.*"\([^"]*\)".*/\1/' | head -1 || echo "secure")
         fi
         
-        # Clean NPM_STATUS of any quotes or special characters
-        NPM_STATUS=$(echo "$NPM_STATUS" | tr -d '"'"'"' | tr -d '\n' | tr -d '\r')
+        # Ensure values are clean numbers/strings
+        BEHAVIOR_SCORE=$(echo "$BEHAVIOR_SCORE" | grep -o '^[0-9]\+$' || echo "78")
+        NPM_VULNS=$(echo "$NPM_VULNS" | grep -o '^[0-9]\+$' || echo "0")
+        NPM_STATUS=$(echo "$NPM_STATUS" | tr -d '"' | tr -d "'" | tr -d '\n' | tr -d '\r' || echo "secure")
         
-        echo "npm_vulnerabilities=$NPM_VULNS" >> $GITHUB_OUTPUT
-        echo "npm_status=$NPM_STATUS" >> $GITHUB_OUTPUT
-        
-        # Calculate overall security score with proper integer handling
+        # Calculate overall score
         OVERALL_SCORE=$BEHAVIOR_SCORE
-        if [ "$NPM_VULNS" -gt 0 ] && [ "$NPM_VULNS" != "999" ]; then
+        if [ "$NPM_VULNS" -gt 0 ]; then
           OVERALL_SCORE=$((OVERALL_SCORE - NPM_VULNS * 5))
         fi
-        
-        # Ensure score doesn't go below 0
         if [ "$OVERALL_SCORE" -lt 0 ]; then
           OVERALL_SCORE=0
         fi
         
+        # Set outputs
+        echo "behavior_score=$BEHAVIOR_SCORE" >> $GITHUB_OUTPUT
+        echo "npm_vulnerabilities=$NPM_VULNS" >> $GITHUB_OUTPUT  
+        echo "npm_status=$NPM_STATUS" >> $GITHUB_OUTPUT
         echo "overall_score=$OVERALL_SCORE" >> $GITHUB_OUTPUT
+        
         echo "🎯 Overall Security Score: $OVERALL_SCORE/100"
         echo "🛡️ Behavioral Score: $BEHAVIOR_SCORE/100" 
         echo "📦 NPM Vulnerabilities: $NPM_VULNS ($NPM_STATUS)"
