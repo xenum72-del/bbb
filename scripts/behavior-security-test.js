@@ -1,5 +1,5 @@
 /**
- * 🎭 Comprehensive Behavioral Security Testing for Encounter Ledger PWA
+ * 🎭 Comprehensive Behavioral Security Testing for The Load Down PWA
  * 
  * Tests runtime behavior, privacy compliance, and security posture
  * of the actual running application in a real browser environment.
@@ -492,7 +492,7 @@ class BehaviorSecurityTester {
     
     const report = {
       timestamp,
-      testSuite: 'Encounter Ledger Behavioral Security Audit',
+      testSuite: 'The Load Down Behavioral Security Audit',
       version: '1.0.0',
       results: this.results,
       summary: {
@@ -616,7 +616,7 @@ ${safety.issues.length > 0 ? safety.issues.map(issue => `- ⚠️ ${issue}`).joi
     const port = portArg ? portArg.split('=')[1] : '5173';
     const appUrl = `http://localhost:${port}`;
     
-    console.log(`🎯 Testing Encounter Ledger PWA at: ${appUrl}`);
+    console.log(`🎯 Testing The Load Down PWA at: ${appUrl}`);
     
     await tester.testAppLoading(appUrl);
     await tester.testOfflineCapability();

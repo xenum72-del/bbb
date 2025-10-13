@@ -75,7 +75,7 @@ export async function downloadBackup(includePhotos: boolean = true): Promise<voi
     const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
     const sizeIndicator = includePhotos ? 'full' : 'no-photos';
     a.href = url;
-    a.download = `encounter-ledger-backup-${timestamp}-${sizeIndicator}.json`;
+    a.download = `the-load-down-backup-${timestamp}-${sizeIndicator}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

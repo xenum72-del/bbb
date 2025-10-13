@@ -1,4 +1,4 @@
-# Netlify Configuration for Encounter Ledger PWA
+# Netlify Configuration for The Load Down PWA
 # Optimized for PWA deployment with security headers and redirects
 
 [build]
@@ -99,8 +99,8 @@
 
 # Security redirects
 [[redirects]]
-  from = "http://encounter-ledger.netlify.app/*"
-  to = "https://encounter-ledger.netlify.app/:splat"
+  from = "http://the-load-down.netlify.app/*"
+  to = "https://the-load-down.netlify.app/:splat"
   status = 301
   force = true
 

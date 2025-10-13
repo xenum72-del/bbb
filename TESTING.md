@@ -1,8 +1,8 @@
-# Encounter Ledger - Data Integrity Test Suite
+# The Load Down - Data Integrity Test Suite
 
 ## Overview
 
-This comprehensive test suite validates all core functionalities of the Encounter Ledger PWA to ensure data integrity, proper CRUD operations, and backup/restore functionality.
+This comprehensive test suite validates all core functionalities of The Load Down PWA to ensure data integrity, proper CRUD operations, and backup/restore functionality.
 
 ## Test Coverage
 
@@ -44,7 +44,7 @@ This comprehensive test suite validates all core functionalities of the Encounte
 ## Running the Tests
 
 ### Method 1: Via Settings Page (Recommended)
-1. Open the Encounter Ledger PWA
+1. Open The Load Down PWA
 2. Navigate to ⚙️ **Settings**
 3. Scroll to **Data Management** section
 4. Click **🧪 Run Data Tests**
@@ -216,4 +216,4 @@ Original data restored after testing
 ⏱️ Tests completed in 8.42 seconds
 ```
 
-This comprehensive test suite ensures your Encounter Ledger data is rock-solid! 🎯
+This comprehensive test suite ensures your The Load Down data is rock-solid! 🎯
