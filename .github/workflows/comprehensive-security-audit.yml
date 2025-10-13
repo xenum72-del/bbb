@@ -458,81 +458,98 @@ jobs:
         name: comprehensive-security-report-${{ github.sha }}
         path: reports/
         
-    - name: Generate Security Dashboard
+    - name: 🚀 Deploy Security Dashboard  
       run: |
         mkdir -p public
         
-        # Use scores from previous step or defaults
-        BEHAVIOR_SCORE="${{ steps.security-scores.outputs.behavior_score }}"
-        NPM_VULNS="${{ steps.security-scores.outputs.npm_vulnerabilities }}"
-        NPM_STATUS="${{ steps.security-scores.outputs.npm_status }}"
-        OVERALL_SCORE="${{ steps.security-scores.outputs.overall_score }}"
+        # SIMPLE: Parse scores RIGHT HERE, no fancy step passing
+        BEHAVIOR_SCORE=50
+        NPM_VULNS=0
+        NPM_STATUS="secure"
         
-        # Fallback to actual parsed defaults if empty (not hardcoded 75!)
-        BEHAVIOR_SCORE=${BEHAVIOR_SCORE:-50}
-        NPM_VULNS=${NPM_VULNS:-0}  
-        NPM_STATUS=${NPM_STATUS:-"secure"}
-        OVERALL_SCORE=${OVERALL_SCORE:-50}
+        # Get the real behavioral score - SIMPLE parsing
+        if [ -f "behavior-security-report.json" ]; then
+          # Extract the number after "score": with grep - no jq bullshit
+          TEMP_SCORE=$(grep -o '"score":[[:space:]]*[0-9]\+' behavior-security-report.json | grep -o '[0-9]\+' | head -1)
+          if [ ! -z "$TEMP_SCORE" ] && [ "$TEMP_SCORE" -gt 0 ]; then
+            BEHAVIOR_SCORE=$TEMP_SCORE
+          fi
+        fi
         
-        echo "🎯 Generating dashboard with:"
+        # Get NPM vulnerabilities - SIMPLE parsing  
+        if [ -f "security-audit-summary.json" ]; then
+          TEMP_VULNS=$(grep -o '"vulnerabilities":[[:space:]]*[0-9]\+' security-audit-summary.json | grep -o '[0-9]\+' | head -1)
+          if [ ! -z "$TEMP_VULNS" ]; then
+            NPM_VULNS=$TEMP_VULNS
+          fi
+        fi
+        
+        OVERALL_SCORE=$BEHAVIOR_SCORE
+        
+        echo "🎯 SIMPLE dashboard generation:"
         echo "  Behavioral Score: $BEHAVIOR_SCORE/100"
-        echo "  NPM Vulnerabilities: $NPM_VULNS ($NPM_STATUS)"
+        echo "  NPM Vulnerabilities: $NPM_VULNS"
         echo "  Overall Score: $OVERALL_SCORE/100"
         
-        # Generate comprehensive HTML dashboard
-        cat > public/index.html << 'EOF'
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>🛡️ Encounter Ledger - Security Dashboard</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              min-height: 100vh;
-              color: #333;
-            }
-            .container { 
-              max-width: 1400px; margin: 0 auto; padding: 20px;
-              background: rgba(255,255,255,0.95); 
-              min-height: 100vh;
-            }
-            .header {
-              text-align: center; margin-bottom: 30px; padding: 30px;
-              background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-              color: white; border-radius: 15px;
-              box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            }
-            .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-            .header p { font-size: 1.1rem; opacity: 0.9; }
-            
-            .score-grid { 
-              display: grid; 
-              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-              gap: 25px; 
-              margin-bottom: 30px; 
-            }
-            .score-card { 
-              background: white; 
-              padding: 25px; 
-              border-radius: 15px; 
-              box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-              text-align: center;
-              border: 2px solid #f0f0f0;
-              transition: transform 0.3s ease;
-            }
-            .score-card:hover { transform: translateY(-5px); }
-            
-            .score-value { 
-              font-size: 3rem; 
-              font-weight: bold; 
-              margin: 15px 0;
-              text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-            }
-            .score-excellent { color: #22c55e; }
+        # Generate SIMPLE HTML dashboard - no bullshit
+        cat > public/index.html << EOF
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ALL TEST RESULTS - RAW DUMP</title>
+  <style>
+    body { font-family: monospace; margin: 20px; background: #000; color: #0f0; }
+    .section { margin: 20px 0; padding: 20px; border: 1px solid #333; background: #111; }
+    h1 { color: #fff; text-align: center; }
+    h2 { color: #ff0; }
+    pre { background: #222; padding: 10px; overflow: auto; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>🔥 ALL TEST RESULTS - RAW DUMP 🔥</h1>
+  <p>Generated: $(date)</p>
+EOF
+
+        # Dump ALL test results directly
+        echo '<div class="section"><h2>📋 BEHAVIORAL SECURITY REPORT</h2><pre>' >> public/index.html
+        if [ -f "behavior-security-report.json" ]; then
+          cat behavior-security-report.json >> public/index.html
+        else
+          echo "NO BEHAVIORAL REPORT FOUND" >> public/index.html
+        fi
+        echo '</pre></div>' >> public/index.html
+
+        echo '<div class="section"><h2>📦 NPM AUDIT RESULTS</h2><pre>' >> public/index.html
+        if [ -f "security-audit-summary.json" ]; then
+          cat security-audit-summary.json >> public/index.html
+        else
+          echo "NO NPM AUDIT FOUND" >> public/index.html
+        fi
+        echo '</pre></div>' >> public/index.html
+
+        echo '<div class="section"><h2>🔒 ESLINT SECURITY RESULTS</h2><pre>' >> public/index.html
+        if [ -f "eslint-security.json" ]; then
+          cat eslint-security.json >> public/index.html
+        else
+          echo "NO ESLINT SECURITY FOUND" >> public/index.html
+        fi
+        echo '</pre></div>' >> public/index.html
+
+        echo '<div class="section"><h2>� SECURITY REPORT MARKDOWN</h2><pre>' >> public/index.html
+        if [ -f "security-report.md" ]; then
+          cat security-report.md >> public/index.html
+        else
+          echo "NO SECURITY REPORT FOUND" >> public/index.html
+        fi
+        echo '</pre></div>' >> public/index.html
+
+        echo '<div class="section"><h2>📁 ALL FILES IN DIRECTORY</h2><pre>' >> public/index.html
+        ls -la >> public/index.html
+        echo '</pre></div>' >> public/index.html
+
+        echo '</body></html>' >> public/index.html
+
+    - name: Copy Security Reports
             .score-good { color: #f59e0b; }
             .score-poor { color: #ef4444; }
             
