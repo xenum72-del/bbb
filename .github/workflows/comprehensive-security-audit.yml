@@ -317,16 +317,13 @@ jobs:
         NPM_STATUS="secure"
         if [ -f "security-audit-summary.json" ]; then
           echo "📄 Found security-audit-summary.json, parsing..."
-          cat security-audit-summary.json || true
           
           NPM_VULNS=$(node -p "
             try {
               const data = JSON.parse(require('fs').readFileSync('security-audit-summary.json', 'utf8'));
               const vulns = data.vulnerabilities || 0;
-              console.log('Parsed NPM vulnerabilities:', vulns);
               vulns;
             } catch (e) {
-              console.log('Error parsing NPM vulnerabilities:', e.message);
               0;
             }
           " 2>/dev/null || echo "0")
@@ -335,10 +332,8 @@ jobs:
             try {
               const data = JSON.parse(require('fs').readFileSync('security-audit-summary.json', 'utf8'));
               const status = data.status || 'secure';
-              console.log('Parsed NPM status:', status);
               status;
             } catch (e) {
-              console.log('Error parsing NPM status:', e.message);
               'secure';
             }
           " 2>/dev/null || echo "secure")
@@ -351,6 +346,9 @@ jobs:
           echo "⚠️ Invalid NPM vulnerabilities '$NPM_VULNS', using 0"
           NPM_VULNS=0
         fi
+        
+        # Clean NPM_STATUS of any quotes or special characters
+        NPM_STATUS=$(echo "$NPM_STATUS" | tr -d '"'"'"' | tr -d '\n' | tr -d '\r')
         
         echo "npm_vulnerabilities=$NPM_VULNS" >> $GITHUB_OUTPUT
         echo "npm_status=$NPM_STATUS" >> $GITHUB_OUTPUT
