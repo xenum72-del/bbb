@@ -23,9 +23,13 @@ const getInitialFormData = () => ({
     grindr: '',
     scruff: '',
     instagram: '',
+    twitter: '',
+    telegram: '',
     snapchat: '',
-    whatsapp: ''
+    whatsapp: '',
+    phone: ''
   },
+  pictures: [] as string[], // Array of image URLs or base64
   healthStatus: {
     hivStatus: '',
     lastTested: '',
@@ -35,7 +39,6 @@ const getInitialFormData = () => ({
   kinks: '',
   boundaries: '',
   meetupPreference: '',
-  photoAlbumUrls: [] as string[],
   isVerified: false
 });
 
@@ -68,13 +71,16 @@ export default function Friends({ onNavigate }: FriendsProps) {
         socialProfiles: {
           grindr: formData.socialMedia.grindr.trim() || undefined,
           instagram: formData.socialMedia.instagram.trim() || undefined,
-          whatsapp: formData.socialMedia.whatsapp.trim() || undefined
+          twitter: formData.socialMedia.twitter.trim() || undefined,
+          telegram: formData.socialMedia.telegram.trim() || undefined,
+          whatsapp: formData.socialMedia.whatsapp.trim() || undefined,
+          phone: formData.socialMedia.phone.trim() || undefined
         },
+        photos: formData.pictures.length > 0 ? formData.pictures : undefined,
         hivStatus: formData.healthStatus.hivStatus as any || undefined,
         lastTested: formData.healthStatus.lastTested ? new Date(formData.healthStatus.lastTested) : undefined,
         onPrep: formData.healthStatus.onPrep,
-        limits: formData.boundaries ? formData.boundaries.split(',').map(b => b.trim()) : undefined,
-        photos: formData.photoAlbumUrls.length > 0 ? formData.photoAlbumUrls : undefined
+        limits: formData.boundaries ? formData.boundaries.split(',').map(b => b.trim()) : undefined
       });
       
       setFormData(getInitialFormData());
@@ -440,6 +446,55 @@ export default function Friends({ onNavigate }: FriendsProps) {
                     placeholder="Phone number"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">X (Twitter)</label>
+                  <input
+                    type="text"
+                    value={formData.socialMedia.twitter}
+                    onChange={(e) => setFormData(f => ({...f, socialMedia: {...f.socialMedia, twitter: e.target.value}}))}
+                    className="w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="@username"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Telegram</label>
+                  <input
+                    type="text"
+                    value={formData.socialMedia.telegram}
+                    onChange={(e) => setFormData(f => ({...f, socialMedia: {...f.socialMedia, telegram: e.target.value}}))}
+                    className="w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="@username"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Phone</label>
+                  <input
+                    type="tel"
+                    value={formData.socialMedia.phone}
+                    onChange={(e) => setFormData(f => ({...f, socialMedia: {...f.socialMedia, phone: e.target.value}}))}
+                    className="w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="+1 (555) 123-4567"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Pictures */}
+            <div className="space-y-3 pb-3 border-b border-gray-200 dark:border-gray-600">
+              <h4 className="font-semibold text-sm text-gray-600 dark:text-gray-400">Pictures</h4>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Picture URLs</label>
+                <textarea
+                  value={formData.pictures.join('\n')}
+                  onChange={(e) => setFormData(f => ({...f, pictures: e.target.value.split('\n').filter(url => url.trim())}))}
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600"
+                  rows={3}
+                  placeholder="https://example.com/photo1.jpg&#10;https://example.com/photo2.jpg&#10;(one URL per line)"
+                />
               </div>
             </div>
 
