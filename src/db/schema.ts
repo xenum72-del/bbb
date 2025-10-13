@@ -136,6 +136,56 @@ export interface Settings {
   reminderFrequency: 'daily' | 'weekly' | 'none';
 }
 
+// Explicit Gay Sex Activities - Comprehensive list for reset functionality
+export const GAY_ACTIVITIES = [
+  { name: 'Oral (Giving)', color: '#FF6B6B', icon: '👄' },
+  { name: 'Oral (Receiving)', color: '#4ECDC4', icon: '😋' },
+  { name: 'Anal (Topping)', color: '#45B7D1', icon: '🍆' },
+  { name: 'Anal (Bottoming)', color: '#96CEB4', icon: '🍑' },
+  { name: 'Rimming (Giving)', color: '#FFEAA7', icon: '👅' },
+  { name: 'Rimming (Receiving)', color: '#DDA0DD', icon: '🌟' },
+  { name: 'Handjob (Giving)', color: '#98D8C8', icon: '✋' },
+  { name: 'Handjob (Receiving)', color: '#F7DC6F', icon: '👏' },
+  { name: 'Mutual Masturbation', color: '#BB8FCE', icon: '🤝' },
+  { name: 'Frotting/Grinding', color: '#85C1E9', icon: '🔥' },
+  { name: 'Body Contact/Massage', color: '#F8C471', icon: '💆' },
+  { name: 'Kissing/Making Out', color: '#F1948A', icon: '💋' },
+  { name: 'Nipple Play', color: '#AED6F1', icon: '🎯' },
+  { name: 'BDSM Dom', color: '#2C3E50', icon: '⛓️' },
+  { name: 'BDSM Sub', color: '#8E44AD', icon: '🔒' },
+  { name: 'Spanking (Giving)', color: '#E74C3C', icon: '✋' },
+  { name: 'Spanking (Receiving)', color: '#C0392B', icon: '🍑' },
+  { name: 'Role Play', color: '#9B59B6', icon: '🎭' },
+  { name: 'Daddy/Son Play', color: '#34495E', icon: '👨‍👦' },
+  { name: 'Public/Semi-Public', color: '#16A085', icon: '🏞️' },
+  { name: 'Car Play', color: '#2980B9', icon: '🚗' },
+  { name: 'Shower/Bath', color: '#3498DB', icon: '🚿' },
+  { name: 'Toy Play', color: '#E67E22', icon: '🧸' },
+  { name: 'Dildo/Vibrator', color: '#D35400', icon: '🍆' },
+  { name: 'Cock Ring', color: '#8E44AD', icon: '⭕' },
+  { name: 'Poppers', color: '#F39C12', icon: '💨' },
+  { name: 'Threesome (MMM)', color: '#27AE60', icon: '👥' },
+  { name: 'Group (4+)', color: '#229954', icon: '👨‍👨‍👦‍👦' },
+  { name: 'Orgy', color: '#196F3D', icon: '🎉' },
+  { name: 'Cruising', color: '#5DADE2', icon: '🚶' },
+  { name: 'Glory Hole', color: '#AF7AC5', icon: '🕳️' },
+  { name: 'Sauna/Spa', color: '#F7DC6F', icon: '🧖' },
+  { name: 'Leather/Fetish', color: '#1C2833', icon: '🖤' },
+  { name: 'Watersports', color: '#F4D03F', icon: '💦' },
+  { name: 'Spit Play', color: '#85C1E9', icon: '💧' },
+  { name: 'Feet/Foot Worship', color: '#D7BDE2', icon: '🦶' },
+  { name: 'Armpit Worship', color: '#AED6F1', icon: '💪' },
+  { name: 'Scent/Musk Play', color: '#A9DFBF', icon: '👃' },
+  { name: 'Rough Play', color: '#EC7063', icon: '💥' },
+  { name: 'Gentle/Romantic', color: '#F8BBD9', icon: '💕' },
+  { name: 'Marathon Session', color: '#85929E', icon: '⏰' },
+  { name: 'Quick/Lunch Break', color: '#F0B27A', icon: '⚡' },
+  { name: 'Overnight', color: '#5499C7', icon: '🌙' },
+  { name: 'Breeding/Cum Play', color: '#CD6155', icon: '🥛' },
+  { name: 'Bareback', color: '#DC7633', icon: '🚫' },
+  { name: 'Safe/Condom', color: '#58D68D', icon: '✅' }
+];
+
 // Database class
 class EncounterLedgerDB extends Dexie {
   friends!: EntityTable<Friend, 'id'>;
