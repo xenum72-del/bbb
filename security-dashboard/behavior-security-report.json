@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-10-13T11:05:36.914Z",
+  "timestamp": "2025-10-13T11:31:55.287Z",
   "testSuite": "Encounter Ledger Behavioral Security Audit",
   "version": "1.0.0",
   "results": {
     "loading": {
       "success": true,
       "statusCode": 200,
-      "loadTime": 1760353528082,
+      "loadTime": 1760355106119,
       "url": "http://localhost:5173/",
       "hasContent": true,
       "title": "Encounter Ledger",
@@ -17,7 +17,7 @@
     "offline": {
       "hasServiceWorker": false,
       "reloadWorks": true,
-      "reloadTime": 68,
+      "reloadTime": 66,
       "contentPresent": true,
       "navigationWorks": true,
       "interactive": true,
@@ -80,7 +80,7 @@
     },
     "performance": {
       "loadTime": 0,
-      "domContentLoaded": 0.10000000000582077,
+      "domContentLoaded": 0,
       "firstPaint": 0,
       "firstContentfulPaint": 0,
       "resourceCount": 1
