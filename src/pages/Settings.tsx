@@ -629,6 +629,21 @@ export default function Settings({ onNavigate }: SettingsProps) {
           
           <div className="space-y-3">
             <button
+              onClick={() => onNavigate('help')}
+              className="w-full p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm">📖</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-800 dark:text-white">Help & Guide</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Complete user manual and app documentation</div>
+                </div>
+              </div>
+            </button>
+
+            <button
               onClick={async () => {
                 if (isiOS() || isiOSPWA()) {
                   await showiOSBackupModal();
