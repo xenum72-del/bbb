@@ -1,0 +1,150 @@
+# Netlify Configuration for Encounter Ledger PWA
+# Optimized for PWA deployment with security headers and redirects
+
+[build]
+  # Build command
+  command = "npm run build"
+  
+  # Directory to publish (Vite outputs to 'dist')
+  publish = "dist"
+  
+  # Node.js version for build
+  environment = { NODE_VERSION = "22" }
+
+[build.processing]
+  # Skip processing, we handle optimization in Vite
+  skip_processing = false
+  
+[build.processing.css]
+  # Enable CSS minification
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  # Enable JS minification  
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  # Enable HTML optimization
+  pretty_urls = true
+
+# PWA Service Worker and Manifest Handling
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Security Headers for all pages
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Content Security Policy - matches our Vite config
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https:; media-src 'self' https:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
+    
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=()"
+    
+    # HSTS for HTTPS
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    
+    # CORS for API calls
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# Cache optimization for assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# PWA Icons caching
+[[headers]]
+  for = "/pwa-*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "image/svg+xml"
+
+# SPA Redirect Rules - Handle client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin", "editor"], Country = ["US"]}
+
+# API redirects (if using external APIs)
+[[redirects]]
+  from = "/api/*"
+  to = "https://api.example.com/:splat"
+  status = 200
+  force = false
+
+# Legacy redirects
+[[redirects]]
+  from = "/old-path/*"
+  to = "/new-path/:splat"
+  status = 301
+
+# Security redirects
+[[redirects]]
+  from = "http://encounter-ledger.netlify.app/*"
+  to = "https://encounter-ledger.netlify.app/:splat"
+  status = 301
+  force = true
+
+# Environment Variables (for runtime config)
+[context.production.environment]
+  NODE_ENV = "production"
+  VITE_APP_ENV = "production"
+
+[context.branch-deploy.environment]
+  NODE_ENV = "development"
+  VITE_APP_ENV = "staging"
+
+[context.deploy-preview.environment] 
+  NODE_ENV = "development"
+  VITE_APP_ENV = "preview"
+
+# Functions (if using Netlify Functions in future)
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Forms (if using Netlify Forms in future)
+[forms]
+  settings = true
+
+# Edge handlers (if needed)
+[edge_handlers]
+  directory = "netlify/edge-handlers"
+
+# Plugin configuration
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+  
+  [plugins.inputs.audits]
+    performance = true
+    accessibility = true
+    best_practices = true
+    seo = true
+    pwa = true
+
+# Optional: Custom domain configuration (uncomment when you have a domain)
+# [context.production]
+#   environment = { NODE_ENV = "production", CUSTOM_DOMAIN = "your-domain.com" }
+
+# Build hooks for external triggers
+# [build]
+#   ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- src/ public/ package.json vite.config.ts"

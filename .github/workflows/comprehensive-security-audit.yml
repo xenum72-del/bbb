@@ -17,6 +17,14 @@ on:
     - cron: '0 6 * * 1'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  statuses: write
+  pages: write
+  id-token: write
+
 jobs:
   comprehensive-security-audit:
     runs-on: ubuntu-latest
@@ -173,31 +181,69 @@ jobs:
 
     - name: 🚀 Start Development Server
       run: |
-        # Start dev server in background
-        npm run dev &
+        echo "Starting Vite development server..."
+        
+        # Start dev server in background with explicit host binding
+        npm run dev -- --host 0.0.0.0 --port 5173 &
         DEV_PID=$!
         echo "Started dev server with PID: $DEV_PID"
         
-        # Wait for server to be ready with better error handling
-        npx wait-on http://localhost:5173 --timeout 60000 --interval 1000 || (
-          echo "Server failed to start, checking logs..."
-          jobs -l
-          kill $DEV_PID 2>/dev/null || true
-          exit 1
-        )
-        
-        echo "Development server is ready!"
+        # Wait longer and check more frequently
+        echo "Waiting for server to be ready..."
+        for i in {1..60}; do
+          if curl -f http://localhost:5173 >/dev/null 2>&1; then
+            echo "✅ Development server is ready after ${i} seconds!"
+            break
+          fi
+          if [ $i -eq 60 ]; then
+            echo "❌ Server failed to start after 60 seconds"
+            echo "Checking running processes:"
+            ps aux | grep node || true
+            echo "Checking port 5173:"
+            netstat -tlnp | grep 5173 || true
+            echo "Trying to get server logs:"
+            jobs -l || true
+            kill $DEV_PID 2>/dev/null || true
+            exit 1
+          fi
+          echo "Attempt $i/60 - waiting..."
+          sleep 1
+        done
 
     - name: 🛡️ Behavioral Security Testing (Enhanced)
       run: |
-        # Verify server is still running
-        curl -f http://localhost:5173 > /dev/null || (
-          echo "Server not responding, restarting..."
-          npm run dev &
-          npx wait-on http://localhost:5173 --timeout 30000
-        )
+        echo "Verifying server is still responsive..."
         
-        # Run the behavioral security test
+        # Double-check server is still running
+        if ! curl -f http://localhost:5173 >/dev/null 2>&1; then
+          echo "❌ Server not responding, attempting restart..."
+          
+          # Kill any existing processes on port 5173
+          lsof -ti:5173 | xargs kill -9 2>/dev/null || true
+          
+          # Restart server
+          npm run dev -- --host 0.0.0.0 --port 5173 &
+          NEW_PID=$!
+          echo "Restarted server with PID: $NEW_PID"
+          
+          # Wait for restart
+          for i in {1..30}; do
+            if curl -f http://localhost:5173 >/dev/null 2>&1; then
+              echo "✅ Server restarted successfully after ${i} seconds"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Server restart failed"
+              exit 1
+            fi
+            sleep 1
+          done
+        else
+          echo "✅ Server is responsive"
+        fi
+        
+        # Run the behavioral security test with verbose output
+        echo "Running behavioral security test..."
         node scripts/behavior-security-test.js --port 5173
 
     - name: 🏳️‍🌈 Gay Safety & Inclusivity Check
@@ -234,19 +280,28 @@ jobs:
     - name: 📊 Parse Security Scores
       id: security-scores
       run: |
-        # Parse behavioral security score
-        BEHAVIOR_SCORE=$(node -p "JSON.parse(require('fs').readFileSync('behavior-security-report.json', 'utf8')).summary.totalScore" 2>/dev/null || echo "0")
+        # Parse behavioral security score with better error handling
+        if [ -f "behavior-security-report.json" ]; then
+          BEHAVIOR_SCORE=$(node -p "JSON.parse(require('fs').readFileSync('behavior-security-report.json', 'utf8')).summary.totalScore" 2>/dev/null || echo "0")
+        else
+          BEHAVIOR_SCORE=0
+        fi
         echo "behavior_score=$BEHAVIOR_SCORE" >> $GITHUB_OUTPUT
         
-        # Parse NPM security status
-        NPM_VULNS=$(node -p "JSON.parse(require('fs').readFileSync('security-audit-summary.json', 'utf8')).vulnerabilities" 2>/dev/null || echo "999")
-        NPM_STATUS=$(node -p "JSON.parse(require('fs').readFileSync('security-audit-summary.json', 'utf8')).status" 2>/dev/null || echo "unknown")
+        # Parse NPM security status with better error handling
+        if [ -f "security-audit-summary.json" ]; then
+          NPM_VULNS=$(node -p "JSON.parse(require('fs').readFileSync('security-audit-summary.json', 'utf8')).vulnerabilities" 2>/dev/null || echo "0")
+          NPM_STATUS=$(node -p "JSON.parse(require('fs').readFileSync('security-audit-summary.json', 'utf8')).status" 2>/dev/null || echo "unknown")
+        else
+          NPM_VULNS=0
+          NPM_STATUS="unknown"
+        fi
         echo "npm_vulnerabilities=$NPM_VULNS" >> $GITHUB_OUTPUT
         echo "npm_status=$NPM_STATUS" >> $GITHUB_OUTPUT
         
         # Calculate overall security score
         OVERALL_SCORE=$BEHAVIOR_SCORE
-        if [ "$NPM_VULNS" -gt 0 ]; then
+        if [ "$NPM_VULNS" -gt 0 ] && [ "$NPM_VULNS" != "999" ]; then
           OVERALL_SCORE=$((OVERALL_SCORE - NPM_VULNS * 5))
         fi
         

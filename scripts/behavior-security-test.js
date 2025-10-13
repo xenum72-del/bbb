@@ -79,11 +79,16 @@ class BehaviorSecurityTester {
     );
   }
 
-  async testAppLoading(url = 'http://localhost:5174') {
+  async testAppLoading(url = null) {
+    // Parse port from command line arguments
+    const portArg = process.argv.find(arg => arg.startsWith('--port='));
+    const port = portArg ? portArg.split('=')[1] : '5173';
+    const testUrl = url || `http://localhost:${port}`;
+    console.log(`🌐 Testing app loading at: ${testUrl}`);
     console.log('📱 Testing app loading behavior...');
     
     try {
-      const response = await this.page.goto(url, {
+      const response = await this.page.goto(testUrl, {
         waitUntil: 'networkidle2',
         timeout: 30000
       });
@@ -310,7 +315,10 @@ class BehaviorSecurityTester {
         response = await this.page.goto(this.page.url());
       } catch (error) {
         // If navigation fails, try the original URL
-        response = await this.page.goto('http://localhost:5174');
+        // Get the port from command line arguments
+        const portArg = process.argv.find(arg => arg.startsWith('--port='));
+        const port = portArg ? portArg.split('=')[1] : '5173';
+        response = await this.page.goto(`http://localhost:${port}`);
       }
 
       const headers = response.headers();
@@ -602,7 +610,15 @@ ${safety.issues.length > 0 ? safety.issues.map(issue => `- ⚠️ ${issue}`).joi
   
   try {
     await tester.initialize();
-    await tester.testAppLoading();
+    
+    // Parse port from command line arguments
+    const portArg = process.argv.find(arg => arg.startsWith('--port='));
+    const port = portArg ? portArg.split('=')[1] : '5173';
+    const appUrl = `http://localhost:${port}`;
+    
+    console.log(`🎯 Testing Encounter Ledger PWA at: ${appUrl}`);
+    
+    await tester.testAppLoading(appUrl);
     await tester.testOfflineCapability();
     await tester.testPrivacyCompliance();
     await tester.testSecurityHeaders();
