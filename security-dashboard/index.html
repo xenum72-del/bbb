@@ -1,221 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🛡️ Encounter Ledger - Security Dashboard</title>
+  <title>Security Test Results</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      color: #333;
-    }
-    .container { 
-      max-width: 1400px; margin: 0 auto; padding: 20px;
-      background: rgba(255,255,255,0.95); 
-      min-height: 100vh;
-    }
-    .header {
-      text-align: center; margin-bottom: 30px; padding: 30px;
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-      color: white; border-radius: 15px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-    .header p { font-size: 1.1rem; opacity: 0.9; }
-    
-    .score-grid { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-      gap: 25px; 
-      margin-bottom: 30px; 
-    }
-    .score-card { 
-      background: white; 
-      padding: 25px; 
-      border-radius: 15px; 
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-      text-align: center;
-      border: 2px solid #f0f0f0;
-      transition: transform 0.3s ease;
-    }
-    .score-card:hover { transform: translateY(-5px); }
-    
-    .score-value { 
-      font-size: 3rem; 
-      font-weight: bold; 
-      margin: 15px 0;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-    .score-excellent { color: #22c55e; }
-    .score-good { color: #f59e0b; }
-    .score-poor { color: #ef4444; }
-    
-    .metric-grid { 
-      display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
-      gap: 20px; 
-      margin: 25px 0; 
-    }
-    .metric-card { 
-      background: #f8f9fa; 
-      padding: 20px; 
-      border-radius: 10px; 
-      border-left: 4px solid #3b82f6; 
-    }
-    .metric-card.success { border-left-color: #22c55e; background: #f0fdf4; }
-    .metric-card.warning { border-left-color: #f59e0b; background: #fffbeb; }
-    .metric-card.error { border-left-color: #ef4444; background: #fef2f2; }
-    
-    .timestamp { 
-      text-align: center; 
-      color: #666; 
-      margin: 20px 0;
-      font-size: 0.9rem;
-    }
-    .footer {
-      text-align: center; 
-      margin-top: 40px; 
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      color: #666;
-    }
-    .report-link {
-      display: inline-block;
-      margin: 10px;
-      padding: 10px 20px;
-      background: #3b82f6;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      transition: background 0.3s;
-    }
-    .report-link:hover { background: #2563eb; }
+    body { font-family: Arial; margin: 40px; background: #f5f5f5; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+    .score { font-size: 48px; font-weight: bold; text-align: center; margin: 20px 0; color: green; }
+    .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+    h1 { text-align: center; color: #333; }
+    h2 { color: #666; }
+    pre { background: #f0f0f0; padding: 10px; overflow: auto; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>🛡️ Encounter Ledger Security Dashboard</h1>
-      <p>Comprehensive security analysis and behavioral testing results</p>
-      <div class="timestamp">Last updated: 2025-10-13 11:54:18 UTC</div>
+    <h1>🔒 Security Test Results</h1>
+    <p>Generated: Mon Oct 13 12:29:04 UTC 2025</p>
+    
+    <div class="section">
+      <h2>🎯 Behavioral Security Score</h2>
+      <div class="score">100/100</div>
     </div>
     
-    <div class="score-grid">
-      <div class="score-card">
-        <h3>🎯 Behavioral Security</h3>
-        <div class="score-value score-poor">50/100</div>
-        <p>App behavior, PWA compliance, privacy protection</p>
-      </div>
-      
-      <div class="score-card">
-        <h3>📦 NPM Dependencies</h3>
-        <div class="score-value score-excellent">0</div>
-        <p>Vulnerabilities found (secure)</p>
-      </div>
-      
-      <div class="score-card">
-        <h3>🔒 Overall Status</h3>
-        <div class="score-value score-poor">REVIEW</div>
-        <p>Combined security assessment</p>
-      </div>
+    <div class="section">  
+      <h2>📦 NPM Vulnerabilities</h2>
+      <div class="score">0</div>
     </div>
     
-    <div id="detailed-reports">Loading detailed reports...</div>
+    <div class="section">
+      <h2>📋 Raw Behavioral Report</h2>
+      <pre>{
+  "timestamp": "2025-10-13T12:29:00.209Z",
+  "summary": {
+    "testsCompleted": 5,
+    "overallSafety": {
+      "score": 100
+    },
+    "keyFindings": [
+      "✅ PWA manifest detected",
+      "✅ Basic accessibility checks passed"
+    ]
+  },
+  "security": {
+    "hasCSP": true,
+    "hasHSTS": true,
+    "hasXFrameOptions": true,
+    "hasXContentTypeOptions": true,
+    "headersCount": 18,
+    "securityHeadersPresent": 4,
+    "hasPWAManifest": true
+  },
+  "performance": {
+    "loadTime": 0,
+    "domContentLoaded": 0.10000000000582077,
+    "firstPaint": 404
+  },
+  "accessibility": {
+    "imagesWithoutAlt": 0,
+    "buttonsWithoutAriaLabel": 0,
+    "totalImages": 0,
+    "totalButtons": 12
+  },
+  "inclusivity": {
+    "foundGayPositiveWords": 0,
+    "wordsFound": []
+  }
+}</pre>
+    </div>
     
-    <div class="footer">
-      <p>🤖 Generated automatically by GitHub Actions</p>
-      <a href="./behavior-security-report.json" class="report-link">📋 Behavioral Report (JSON)</a>
-      <a href="./security-audit-summary.json" class="report-link">📦 NPM Audit (JSON)</a>
-      <p style="margin-top: 15px;">
-        <a href="https://github.com/csbogdan/bbb" class="report-link">📚 View Source Code</a>
-        <a href="https://github.com/csbogdan/bbb/actions" class="report-link">🔍 CI/CD Logs</a>
-      </p>
+    <div class="section">
+      <h2>📦 Raw NPM Audit</h2>
+      <pre>{
+  "nodeVersion": "v22.20.0",
+  "npmVersion": "unknown",
+  "vulnerabilities": 0,
+  "status": "secure",
+  "auditReportVersion": 2,
+  "timestamp": "2025-10-13T12:29:04.638Z"
+}</pre>
+    </div>
+    
+    <div class="section">
+      <h2>🏳️‍🌈 Gay Safety & Inclusivity Report</h2>
+      <pre>### 🏳️‍🌈 Gay Safety & Inclusivity Analysis
+
+🌈 **LGBTQ+ Representation**: Positive inclusivity language found
+♿ **Accessibility**: Accessibility attributes found
+🎨 **Visual Inclusivity**: Color accessibility considerations found
+⚠️ **Language Review**: Potentially non-inclusive language detected
+✅ **Overall Inclusivity**: Good (30 points) - Room for more fabulousness</pre>
     </div>
   </div>
-  
-  <script>
-    // Load and display detailed reports
-    Promise.all([
-      fetch('./behavior-security-report.json').then(r => r.json()).catch(() => ({})),
-      fetch('./security-audit-summary.json').then(r => r.json()).catch(() => ({}))
-    ]).then(([behaviorData, npmData]) => {
-      const container = document.getElementById('detailed-reports');
-      
-      let html = '<h2>📊 Detailed Analysis</h2><div class="metric-grid">';
-      
-      // Behavioral security details
-      if (behaviorData.summary) {
-        html += `
-          <div class="metric-card ${behaviorData.summary.issuesCount > 0 ? 'warning' : 'success'}">
-            <h3>🎯 Behavioral Security Analysis</h3>
-            <p><strong>Tests Run:</strong> ${behaviorData.summary.testsCount || 'N/A'}</p>
-            <p><strong>Issues Found:</strong> ${behaviorData.summary.issuesCount || 0}</p>
-            <p><strong>PWA Ready:</strong> ${behaviorData.pwa?.isInstallable ? '✅ Yes' : '❌ No'}</p>
-            <p><strong>Privacy Score:</strong> ${behaviorData.privacy?.score || 'N/A'}/100</p>
-          </div>
-        `;
-      }
-      
-      // NPM audit details  
-      if (npmData.timestamp || npmData.vulnerabilities !== undefined) {
-        html += `
-          <div class="metric-card ${npmData.vulnerabilities > 0 ? 'error' : 'success'}">
-            <h3>📦 NPM Dependencies Status</h3>
-            <p><strong>Node Version:</strong> ${npmData.nodeVersion || 'Unknown'}</p>
-            <p><strong>NPM Version:</strong> ${npmData.npmVersion || 'Unknown'}</p>
-            <p><strong>Vulnerabilities:</strong> ${npmData.vulnerabilities || 0}</p>
-            <p><strong>Status:</strong> ${npmData.status || 'Unknown'}</p>
-          </div>
-        `;
-      }
-      
-      // Performance metrics
-      if (behaviorData.performance) {
-        html += `
-          <div class="metric-card">
-            <h3>⚡ Performance Metrics</h3>
-            <p><strong>Load Time:</strong> ${behaviorData.performance.loadTime || 'N/A'}ms</p>
-            <p><strong>Lighthouse Score:</strong> ${behaviorData.performance.lighthouseScore || 'N/A'}/100</p>
-          </div>
-        `;
-      }
-      
-      // Security headers
-      if (behaviorData.security) {
-        html += `
-          <div class="metric-card">
-            <h3>🔒 Security Headers</h3>
-            <p><strong>CSP:</strong> ${behaviorData.security.hasCSP ? '✅ Present' : '❌ Missing'}</p>
-            <p><strong>HSTS:</strong> ${behaviorData.security.hasHSTS ? '✅ Present' : '❌ Missing'}</p>
-            <p><strong>Headers Count:</strong> ${behaviorData.security.headersCount || 0}</p>
-          </div>
-        `;
-      }
-      
-      html += '</div>';
-      
-      // Key findings
-      if (behaviorData.summary?.keyFindings?.length > 0) {
-        html += '<h3>🔍 Key Security Findings</h3><div class="metric-grid">';
-        behaviorData.summary.keyFindings.forEach(finding => {
-          const cardClass = finding.includes('❌') ? 'error' : finding.includes('⚠️') ? 'warning' : 'success';
-          html += `<div class="metric-card ${cardClass}">${finding}</div>`;
-        });
-        html += '</div>';
-      }
-      
-      container.innerHTML = html;
-    }).catch(err => {
-      document.getElementById('detailed-reports').innerHTML = `<div class="metric-card error">
-        <h3>❌ Error Loading Reports</h3>
-        <p>Could not load security reports: ${err.message}</p>
-        <p>Check the CI/CD logs for detailed information.</p>
-      </div>`;
-    });
-  </script>
 </body>
 </html>

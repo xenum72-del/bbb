@@ -1,7 +1,8 @@
 {
-  "timestamp": "2025-10-13T11:53:34Z",
+  "nodeVersion": "v22.20.0",
+  "npmVersion": "unknown",
   "vulnerabilities": 0,
   "status": "secure",
-  "nodeVersion": "v22.20.0",
-  "npmVersion": "10.9.3"
+  "auditReportVersion": 2,
+  "timestamp": "2025-10-13T12:29:04.638Z"
 }
