@@ -4,6 +4,7 @@ import Timeline from './pages/Timeline'
 import Friends from './pages/Friends'
 import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
+import Help from './pages/Help'
 import AddEncounter from './pages/AddEncounter'
 import EditEncounter from './pages/EditEncounter'
 import TestRunner from './components/TestRunner'
@@ -11,7 +12,7 @@ import UnlockScreen from './components/UnlockScreen'
 import { requiresUnlock, updateLastActivity, shouldAutoLock, lockSession } from './utils/security'
 import { useAnalytics } from './utils/analytics'
 
-type Page = 'dashboard' | 'timeline' | 'friends' | 'analytics' | 'settings' | 'add' | 'tests' | string
+type Page = 'dashboard' | 'timeline' | 'friends' | 'analytics' | 'settings' | 'help' | 'add' | 'tests' | string
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
@@ -120,6 +121,8 @@ function App() {
         return <Analytics onNavigate={navigate} />
       case 'settings':
         return <Settings onNavigate={navigate} />
+      case 'help':
+        return <Help onNavigate={navigate} />
       case 'add':
         return <AddEncounter onNavigate={navigate} />
       case 'tests':
