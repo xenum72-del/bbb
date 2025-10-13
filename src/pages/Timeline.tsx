@@ -26,8 +26,13 @@ export default function Timeline({ onNavigate }: TimelineProps) {
       return false;
     }
     
-    if (filters.beneficiary !== 'all' && encounter.beneficiary !== filters.beneficiary) {
-      return false;
+    if (filters.beneficiary !== 'all') {
+      // "both" should match any filter since it includes everyone
+      // "me" filter should show "me" and "both"
+      // "friend" filter should show "friend" and "both"
+      if (encounter.beneficiary !== filters.beneficiary && encounter.beneficiary !== 'both') {
+        return false;
+      }
     }
 
     if (filters.participant !== 'all') {
