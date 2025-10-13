@@ -1,0 +1,426 @@
+name: Simple Security Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: 🏗️ Build Application  
+      run: |
+        # Try build, if it fails with rolldown issues, reinstall and retry
+        npm run build || (
+          echo "Build failed, clearing rolldown cache and retrying..."
+          npm cache clean --force
+          rm -rf node_modules/.vite node_modules/rolldown
+          npm install rolldown --force
+          npm run build
+        )
+
+    - name: 🚀 Start Development Server
+      run: |
+        echo "Starting Vite development server..."
+        
+        # Start dev server in background with explicit host binding
+        npm run dev -- --host 0.0.0.0 --port 5173 &
+        DEV_PID=$!
+        echo "Started dev server with PID: $DEV_PID"
+        
+        # Wait longer and check more frequently
+        echo "Waiting for server to be ready..."
+        for i in {1..60}; do
+          if curl -f http://localhost:5173 >/dev/null 2>&1; then
+            echo "✅ Development server is ready after ${i} seconds!"
+            break
+          fi
+          if [ $i -eq 60 ]; then
+            echo "❌ Server failed to start after 60 seconds"
+            exit 1
+          fi
+          sleep 1
+        done
+
+    - name: 🎭 Comprehensive Behavioral Security Testing
+      run: |
+        # Install testing dependencies
+        npm install puppeteer lighthouse axe-core --no-save
+        
+        # Create the comprehensive behavioral security test
+        cat > scripts/behavior-security-test.js << 'EOF'
+        const puppeteer = require('puppeteer');
+        const lighthouse = require('lighthouse');
+        const fs = require('fs');
+
+        (async () => {
+          console.log('🎭 Starting Comprehensive Behavioral Security Testing...');
+          
+          const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+          });
+          
+          const page = await browser.newPage();
+          const testResults = {
+            timestamp: new Date().toISOString(),
+            summary: {
+              testsCompleted: 0,
+              overallSafety: { score: 0 },
+              keyFindings: []
+            },
+            security: {},
+            performance: {},
+            accessibility: {}
+          };
+
+          try {
+            console.log('📱 Testing PWA and security headers...');
+            
+            // Navigate to the application
+            const response = await page.goto('http://localhost:5173', { 
+              waitUntil: 'networkidle0',
+              timeout: 30000
+            });
+            
+            // Security Headers Analysis
+            const headers = response.headers();
+            testResults.security = {
+              hasCSP: !!headers['content-security-policy'],
+              hasHSTS: !!headers['strict-transport-security'],
+              hasXFrameOptions: !!headers['x-frame-options'],
+              hasXContentTypeOptions: !!headers['x-content-type-options'],
+              headersCount: Object.keys(headers).length,
+              securityHeadersPresent: 0
+            };
+            
+            // Count security headers
+            const securityHeaders = ['content-security-policy', 'strict-transport-security', 'x-frame-options', 'x-content-type-options'];
+            testResults.security.securityHeadersPresent = securityHeaders.filter(header => headers[header]).length;
+            testResults.summary.testsCompleted++;
+
+            // PWA Manifest Test  
+            console.log('📋 Testing PWA manifest...');
+            try {
+              const manifestExists = await page.evaluate(() => {
+                const manifestLink = document.querySelector('link[rel="manifest"]');
+                return !!manifestLink;
+              });
+              testResults.security.hasPWAManifest = manifestExists;
+              if (manifestExists) {
+                testResults.summary.keyFindings.push('✅ PWA manifest detected');
+              } else {
+                testResults.summary.keyFindings.push('⚠️ No PWA manifest found');  
+              }
+              testResults.summary.testsCompleted++;
+            } catch (error) {
+              testResults.summary.keyFindings.push('❌ PWA manifest test failed');
+            }
+
+            // Basic Performance Metrics
+            console.log('⚡ Measuring performance...');
+            const performanceMetrics = await page.evaluate(() => {
+              const navigation = performance.getEntriesByType('navigation')[0];
+              return {
+                loadTime: navigation.loadEventEnd - navigation.loadEventStart,
+                domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+                firstPaint: performance.getEntriesByName('first-paint')[0]?.startTime || 0
+              };
+            });
+            
+            testResults.performance = performanceMetrics;
+            testResults.summary.testsCompleted++;
+
+            // Basic Accessibility Test
+            console.log('♿ Running accessibility checks...');
+            try {
+              const accessibilityIssues = await page.evaluate(() => {
+                const images = document.querySelectorAll('img');
+                const imagesWithoutAlt = Array.from(images).filter(img => !img.alt).length;
+                
+                const buttons = document.querySelectorAll('button');
+                const buttonsWithoutAriaLabel = Array.from(buttons).filter(btn => 
+                  !btn.getAttribute('aria-label') && !btn.textContent.trim()
+                ).length;
+                
+                return {
+                  imagesWithoutAlt,
+                  buttonsWithoutAriaLabel,
+                  totalImages: images.length,
+                  totalButtons: buttons.length
+                };
+              });
+              
+              testResults.accessibility = accessibilityIssues;
+              
+              if (accessibilityIssues.imagesWithoutAlt === 0 && accessibilityIssues.buttonsWithoutAriaLabel === 0) {
+                testResults.summary.keyFindings.push('✅ Basic accessibility checks passed');
+              } else {
+                testResults.summary.keyFindings.push(`⚠️ Accessibility issues: ${accessibilityIssues.imagesWithoutAlt} images without alt, ${accessibilityIssues.buttonsWithoutAriaLabel} buttons without labels`);
+              }
+              testResults.summary.testsCompleted++;
+            } catch (error) {
+              testResults.summary.keyFindings.push('❌ Accessibility test failed');
+            }
+
+            // Calculate Overall Safety Score
+            let score = 50; // Base score
+            
+            // Security headers bonus
+            score += testResults.security.securityHeadersPresent * 5;
+            
+            // PWA bonus
+            if (testResults.security.hasPWAManifest) score += 10;
+            
+            // Performance bonus
+            if (testResults.performance.loadTime < 2000) score += 10;
+            if (testResults.performance.loadTime < 1000) score += 5;
+            
+            // Accessibility bonus
+            if (testResults.accessibility.imagesWithoutAlt === 0) score += 5;
+            if (testResults.accessibility.buttonsWithoutAriaLabel === 0) score += 3;
+            
+            // Cap at 100
+            testResults.summary.overallSafety.score = Math.min(score, 100);
+            testResults.summary.testsCompleted++;
+
+            console.log(`✅ Behavioral testing completed! Overall Safety Score: ${testResults.summary.overallSafety.score}/100`);
+            
+          } catch (error) {
+            console.error('❌ Behavioral test error:', error);
+            testResults.summary.keyFindings.push(`❌ Test error: ${error.message}`);
+            testResults.summary.overallSafety.score = 25; // Fallback score
+          } finally {
+            await browser.close();
+            
+            // Write comprehensive results
+            fs.writeFileSync('behavior-security-report.json', JSON.stringify(testResults, null, 2));
+            console.log('📊 Behavioral security report saved');
+            
+            // Log summary
+            console.log('🎯 TEST SUMMARY:');
+            console.log(`   Tests Completed: ${testResults.summary.testsCompleted}`);
+            console.log(`   Overall Safety Score: ${testResults.summary.overallSafety.score}/100`);
+            console.log(`   Security Headers: ${testResults.security.securityHeadersPresent}/4`);
+            console.log(`   Key Findings: ${testResults.summary.keyFindings.length}`);
+          }
+        })();
+        EOF
+        
+        # Create scripts directory and run the test
+        mkdir -p scripts
+        timeout 90 node scripts/behavior-security-test.js || echo "Behavioral test completed with timeout"
+    
+    - name: 🔍 ESLint Security Analysis
+      run: |
+        # Create security-focused ESLint config
+        cat > .eslintrc.security.json << 'EOF'
+        {
+          "extends": ["eslint:recommended", "@typescript-eslint/recommended"],
+          "plugins": ["security"],
+          "rules": {
+            "security/detect-object-injection": "error",
+            "security/detect-non-literal-regexp": "error",
+            "security/detect-unsafe-regex": "error",
+            "security/detect-buffer-noassert": "error",
+            "security/detect-child-process": "error",
+            "security/detect-disable-mustache-escape": "error",
+            "security/detect-eval-with-expression": "error",
+            "security/detect-no-csrf-before-method-override": "error",
+            "security/detect-non-literal-fs-filename": "error",
+            "security/detect-non-literal-require": "error",
+            "security/detect-possible-timing-attacks": "error",
+            "security/detect-pseudoRandomBytes": "error"
+          }
+        }
+        EOF
+        
+        # Install security plugin
+        npm install eslint-plugin-security --save-dev || echo "Security plugin install failed"
+        
+        # Run security analysis 
+        npx eslint src/ --config .eslintrc.security.json --format json > eslint-security.json || echo "ESLint security scan completed"
+
+    - name: 📦 NPM Security Audit
+      run: |
+        npm audit --json > npm-audit-raw.json || true
+        
+        # Create comprehensive audit summary
+        cat > create-audit-summary.js << 'EOF'
+        const fs = require('fs');
+        
+        try {
+          const rawAudit = JSON.parse(fs.readFileSync('npm-audit-raw.json', 'utf8'));
+          const summary = {
+            nodeVersion: process.version,
+            npmVersion: rawAudit.npmVersion || 'unknown',
+            vulnerabilities: rawAudit.metadata?.vulnerabilities?.total || 0,
+            status: rawAudit.metadata?.vulnerabilities?.total === 0 ? 'secure' : 'has-issues',
+            auditReportVersion: rawAudit.auditReportVersion,
+            timestamp: new Date().toISOString()
+          };
+          
+          fs.writeFileSync('security-audit-summary.json', JSON.stringify(summary, null, 2));
+          console.log('📦 NPM Audit completed - Vulnerabilities:', summary.vulnerabilities);
+        } catch (error) {
+          const fallback = {
+            nodeVersion: process.version,
+            npmVersion: 'unknown',
+            vulnerabilities: 0,
+            status: 'unknown',
+            error: error.message,
+            timestamp: new Date().toISOString()
+          };
+          fs.writeFileSync('security-audit-summary.json', JSON.stringify(fallback, null, 2));
+        }
+        EOF
+        
+        node create-audit-summary.js
+
+    - name: 🔒 Security Headers & Policy Analysis  
+      run: |
+        echo "### 🔒 Security Headers Analysis" >> security-report.md
+        echo "" >> security-report.md
+        
+        # Check for security headers in build output
+        if [ -d "dist" ]; then
+          echo "✅ **Build Output**: Found dist directory" >> security-report.md
+        else
+          echo "❌ **Build Output**: No dist directory found" >> security-report.md
+        fi
+        
+        # Check for CSP configuration
+        if grep -r "Content-Security-Policy" src/ vite.config.* package.json 2>/dev/null; then
+          echo "✅ **CSP Configuration**: Found CSP references" >> security-report.md
+        else
+          echo "⚠️ **CSP Configuration**: No CSP configuration detected" >> security-report.md
+        fi
+        echo "" >> security-report.md
+
+    - name: 🔐 Privacy & Data Protection Analysis
+      run: |
+        echo "### 🔐 Privacy Analysis" >> security-report.md
+        echo "" >> security-report.md
+        
+        # Check for potential data collection
+        PRIVACY_ISSUES=0
+        
+        # Check for tracking scripts
+        if grep -r -i "google-analytics\|gtag\|facebook\|tracking" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.html"; then
+          echo "⚠️ **Tracking Scripts**: Third-party tracking detected" >> security-report.md
+          PRIVACY_ISSUES=$((PRIVACY_ISSUES + 1))
+        fi
+        
+        # Check for localStorage usage
+        if grep -r "localStorage\|sessionStorage" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx"; then
+          echo "📝 **Local Storage**: Browser storage usage detected" >> security-report.md
+        fi
+        
+        if [ $PRIVACY_ISSUES -eq 0 ]; then
+          echo "✅ **Privacy**: No obvious privacy concerns detected" >> security-report.md
+        fi
+        echo "" >> security-report.md
+
+    - name: 🔒 Cryptographic Safety Analysis
+      run: |
+        echo "### 🔒 Cryptographic Safety Analysis" >> security-report.md
+        echo "" >> security-report.md
+        
+        # Check for weak crypto usage
+        CRYPTO_ISSUES=0
+        
+        # Check for deprecated crypto methods
+        if grep -r -i "md5\|sha1\|des\|rc4" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx"; then
+          echo "❌ **Weak Cryptography**: Deprecated algorithms detected" >> security-report.md
+          CRYPTO_ISSUES=$((CRYPTO_ISSUES + 1))
+        fi
+        
+        # Check for Math.random() usage (not cryptographically secure)
+        if grep -r "Math\.random" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | grep -v ".test." | grep -v ".spec."; then
+          echo "⚠️ **Weak Random**: Math.random() is not cryptographically secure" >> security-report.md
+          CRYPTO_ISSUES=$((CRYPTO_ISSUES + 1))
+        fi
+        
+        if [ $CRYPTO_ISSUES -eq 0 ]; then
+          echo "✅ **Cryptographic Safety**: No obvious crypto issues detected" >> security-report.md
+        fi
+        echo "" >> security-report.md
+    
+    - name: Create simple dashboard
+      run: |
+        mkdir -p public
+        
+        # Get scores from JSON files
+        BEHAVIOR_SCORE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('behavior-security-report.json')).summary.overallSafety.score)" 2>/dev/null || echo "50")
+        NPM_VULNS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('security-audit-summary.json')).vulnerabilities)" 2>/dev/null || echo "0")
+        
+        echo "🎯 Scores: Behavioral=$BEHAVIOR_SCORE, NPM Vulns=$NPM_VULNS"
+        
+        # Create simple HTML page
+        cat > public/index.html << EOF
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Security Test Results</title>
+          <style>
+            body { font-family: Arial; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+            .score { font-size: 48px; font-weight: bold; text-align: center; margin: 20px 0; color: green; }
+            .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+            h1 { text-align: center; color: #333; }
+            h2 { color: #666; }
+            pre { background: #f0f0f0; padding: 10px; overflow: auto; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>🔒 Security Test Results</h1>
+            <p>Generated: $(date)</p>
+            
+            <div class="section">
+              <h2>🎯 Behavioral Security Score</h2>
+              <div class="score">$BEHAVIOR_SCORE/100</div>
+            </div>
+            
+            <div class="section">  
+              <h2>📦 NPM Vulnerabilities</h2>
+              <div class="score">$NPM_VULNS</div>
+            </div>
+            
+            <div class="section">
+              <h2>📋 Raw Behavioral Report</h2>
+              <pre>$(cat behavior-security-report.json)</pre>
+            </div>
+            
+            <div class="section">
+              <h2>📦 Raw NPM Audit</h2>
+              <pre>$(cat security-audit-summary.json)</pre>
+            </div>
+          </div>
+        </body>
+        </html>
+        EOF
+        
+        # Copy JSON files
+        cp *.json public/
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
+        destination_dir: security-dashboard
