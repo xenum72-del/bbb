@@ -51,14 +51,14 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
     count: encounters.filter(e => e.rating === rating).length
   }));
 
-  // Payment Analytics
+  // Payment Analytics (all in USD)
   const paidEncounters = encounters.filter(e => e.isPaid);
   const totalSpent = paidEncounters
     .filter(e => e.paymentType === 'given')
-    .reduce((sum, e) => sum + (parseFloat(String(e.amountGiven || '0')) || 0), 0);
+    .reduce((sum, e) => sum + (e.amountGivenUSD || parseFloat(String(e.amountGiven || '0')) || 0), 0);
   const totalEarned = paidEncounters
     .filter(e => e.paymentType === 'received')
-    .reduce((sum, e) => sum + (parseFloat(String(e.amountGiven || '0')) || 0), 0);
+    .reduce((sum, e) => sum + (e.amountGivenUSD || parseFloat(String(e.amountGiven || '0')) || 0), 0);
   const netAmount = totalEarned - totalSpent;
   
   const paymentMethodStats = paidEncounters.reduce((acc, e) => {

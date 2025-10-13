@@ -126,6 +126,9 @@ export interface Encounter {
   amountAsked?: number; // What was initially requested
   amountGiven?: number; // What was actually paid
   currency?: string; // e.g., 'USD', 'EUR', 'GBP'
+  amountAskedUSD?: number; // USD conversion at time of entry
+  amountGivenUSD?: number; // USD conversion at time of entry
+  exchangeRate?: number; // Rate used for conversion (for reference)
   paymentMethod?: 'cash' | 'venmo' | 'cashapp' | 'paypal' | 'zelle' | 'crypto' | 'gift' | 'other';
   paymentNotes?: string; // Additional context about payment
 }

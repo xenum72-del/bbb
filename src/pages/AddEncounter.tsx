@@ -1,5 +1,6 @@
 import { useActiveFriends, useInteractionTypes, useSettings, useEncounters, encountersApi } from '../hooks/useDatabase';
 import React, { useState } from 'react';
+import { convertToUSD } from '../utils/currency';
 
 interface AddEncounterProps {
   onNavigate: (page: string) => void;
@@ -117,6 +118,29 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
     }
 
     try {
+      // Convert currency to USD if payment is involved
+      let amountAskedUSD, amountGivenUSD, exchangeRate;
+      
+      if (formData.isPaid && formData.currency !== 'USD') {
+        if (formData.amountAsked) {
+          const askedConversion = await convertToUSD(parseFloat(formData.amountAsked), formData.currency);
+          amountAskedUSD = askedConversion.amountUSD;
+          exchangeRate = askedConversion.exchangeRate;
+        }
+        
+        if (formData.amountGiven) {
+          const givenConversion = await convertToUSD(parseFloat(formData.amountGiven), formData.currency);
+          amountGivenUSD = givenConversion.amountUSD;
+          // Use the same exchange rate for consistency
+          exchangeRate = givenConversion.exchangeRate;
+        }
+      } else if (formData.isPaid && formData.currency === 'USD') {
+        // If already in USD, no conversion needed
+        amountAskedUSD = formData.amountAsked ? parseFloat(formData.amountAsked) : undefined;
+        amountGivenUSD = formData.amountGiven ? parseFloat(formData.amountGiven) : undefined;
+        exchangeRate = 1;
+      }
+
       const encounter = {
         date: new Date(formData.date),
         rating: formData.rating,
@@ -135,15 +159,20 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
         } : undefined,
         pictures: formData.pictures.length > 0 ? formData.pictures : undefined,
         createdAt: new Date(),
-        // Payment fields
+        // Payment fields with USD conversion
         isPaid: formData.isPaid,
         paymentType: formData.isPaid ? formData.paymentType : undefined,
         amountAsked: formData.isPaid && formData.amountAsked ? parseFloat(formData.amountAsked) : undefined,
         amountGiven: formData.isPaid && formData.amountGiven ? parseFloat(formData.amountGiven) : undefined,
         currency: formData.isPaid ? formData.currency : undefined,
+        amountAskedUSD,
+        amountGivenUSD,
+        exchangeRate,
         paymentMethod: formData.isPaid ? formData.paymentMethod : undefined,
         paymentNotes: formData.isPaid && formData.paymentNotes.trim() ? formData.paymentNotes.trim() : undefined
-      };      await encountersApi.create(encounter);
+      };
+      
+      await encountersApi.create(encounter);
       onNavigate('dashboard');
     } catch (error) {
       console.error('Error creating encounter:', error);

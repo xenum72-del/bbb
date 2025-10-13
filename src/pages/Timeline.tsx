@@ -1,4 +1,4 @@
-import { useEncounters, useActiveFriends, useInteractionTypes } from '../hooks/useDatabase';
+import { useEncounters, useActiveFriends, useInteractionTypes, encountersApi } from '../hooks/useDatabase';
 import { useState } from 'react';
 
 interface TimelineProps {
@@ -9,6 +9,23 @@ export default function Timeline({ onNavigate }: TimelineProps) {
   const allEncounters = useEncounters();
   const friends = useActiveFriends();
   const interactionTypes = useInteractionTypes();
+
+  const handleDeleteEncounter = async (encounterId: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this encounter? This action cannot be undone.'
+    );
+    
+    if (confirmed) {
+      try {
+        await encountersApi.delete(encounterId);
+      } catch (error) {
+        console.error('Failed to delete encounter:', error);
+        alert('Failed to delete encounter. Please try again.');
+      }
+    }
+  };
   
   const [filters, setFilters] = useState({
     rating: [1, 5] as [number, number],
@@ -265,13 +282,24 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                               </div>
                             )}
                           </div>
-                          <div className="text-right">
-                            <div className="text-lg">{'⭐'.repeat(encounter.rating)}</div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(encounter.date).toLocaleTimeString('en-US', {
-                                hour: 'numeric',
-                                minute: '2-digit'
-                              })}
+                          <div className="flex flex-col items-end gap-2">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={(e) => handleDeleteEncounter(encounter.id!, e)}
+                                className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                title="Delete encounter"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg">{'⭐'.repeat(encounter.rating)}</div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(encounter.date).toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit'
+                                })}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -327,7 +355,19 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                               <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
                                 <span>💰</span>
                                 <span className="font-medium">
-                                  {encounter.paymentType === 'given' ? 'Paid' : 'Received'} ${parseFloat(String(encounter.amountGiven || '0')).toFixed(2)}
+                                  {encounter.paymentType === 'given' ? 'Paid' : 'Received'} 
+                                  {encounter.currency !== 'USD' && encounter.currency ? (
+                                    <>
+                                      {encounter.currency} {parseFloat(String(encounter.amountGiven || '0')).toFixed(2)}
+                                      {encounter.amountGivenUSD && (
+                                        <span className="text-xs ml-1">
+                                          (${encounter.amountGivenUSD.toFixed(2)} USD)
+                                        </span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    `$${parseFloat(String(encounter.amountGiven || '0')).toFixed(2)}`
+                                  )}
                                 </span>
                                 {encounter.paymentMethod && (
                                   <span className="text-xs bg-green-100 dark:bg-green-800 px-2 py-1 rounded capitalize">
@@ -337,7 +377,24 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                               </div>
                               {encounter.amountAsked && parseFloat(String(encounter.amountAsked)) !== parseFloat(String(encounter.amountGiven || '0')) && (
                                 <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                                  Originally asked: ${parseFloat(String(encounter.amountAsked)).toFixed(2)}
+                                  Originally asked: 
+                                  {encounter.currency !== 'USD' && encounter.currency ? (
+                                    <>
+                                      {encounter.currency} {parseFloat(String(encounter.amountAsked)).toFixed(2)}
+                                      {encounter.amountAskedUSD && (
+                                        <span className="ml-1">
+                                          (${encounter.amountAskedUSD.toFixed(2)} USD)
+                                        </span>
+                                      )}
+                                    </>
+                                  ) : (
+                                    ` $${parseFloat(String(encounter.amountAsked)).toFixed(2)}`
+                                  )}
+                                </div>
+                              )}
+                              {encounter.exchangeRate && encounter.exchangeRate !== 1 && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  Exchange rate: 1 {encounter.currency} = ${(1 / encounter.exchangeRate).toFixed(4)} USD
                                 </div>
                               )}
                             </div>
