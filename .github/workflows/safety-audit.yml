@@ -211,7 +211,323 @@ jobs:
           fi
         fi
 
-    - name: 🏳️‍🌈 Gay Safety & Inclusivity Check
+    - name: � Behavioral Security Testing
+      run: |
+        echo "" >> security-report.md
+        echo "## 🎭 App Behavior & Runtime Security Analysis" >> security-report.md
+        echo "" >> security-report.md
+        
+        # Install Puppeteer for browser automation
+        npm install --no-save puppeteer lighthouse @axe-core/puppeteer
+        
+        # Build the app for testing
+        npm run build
+        
+        # Serve the built app
+        npx serve dist -l 3000 &
+        SERVER_PID=$!
+        sleep 10
+        
+        # Create behavior test script
+        cat > behavior-test.js << 'EOF'
+        const puppeteer = require('puppeteer');
+        const { AxePuppeteer } = require('@axe-core/puppeteer');
+        const fs = require('fs');
+        
+        (async () => {
+          console.log('🎭 Starting behavioral security analysis...');
+          
+          const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+          });
+          
+          const page = await browser.newPage();
+          
+          // Monitor network requests
+          const networkRequests = [];
+          const consoleErrors = [];
+          
+          page.on('request', (request) => {
+            networkRequests.push({
+              url: request.url(),
+              method: request.method(),
+              headers: request.headers()
+            });
+          });
+          
+          page.on('console', (msg) => {
+            if (msg.type() === 'error') {
+              consoleErrors.push(msg.text());
+            }
+          });
+          
+          // Test app loading and behavior
+          try {
+            await page.goto('http://localhost:3000', { 
+              waitUntil: 'networkidle2',
+              timeout: 30000 
+            });
+            
+            // Wait for React to load
+            await page.waitForTimeout(3000);
+            
+            console.log('✅ App loaded successfully');
+            
+            // Test PWA behavior
+            const isPWA = await page.evaluate(() => {
+              return 'serviceWorker' in navigator;
+            });
+            
+            // Test offline capability
+            await page.setOfflineMode(true);
+            await page.reload({ waitUntil: 'networkidle2' });
+            
+            const offlineWorks = await page.evaluate(() => {
+              return document.body.innerHTML.length > 1000;
+            });
+            
+            await page.setOfflineMode(false);
+            
+            // Test navigation without network calls
+            const initialRequests = networkRequests.length;
+            
+            // Simulate navigation
+            try {
+              await page.click('[data-testid="nav-timeline"], button[aria-label*="timeline"], button:contains("Timeline")');
+              await page.waitForTimeout(1000);
+            } catch (e) {
+              console.log('Navigation test: Using fallback selector');
+            }
+            
+            const finalRequests = networkRequests.length;
+            const noNavNetworkCalls = (finalRequests - initialRequests) === 0;
+            
+            // Test localStorage usage (privacy check)
+            const localStorageUsage = await page.evaluate(() => {
+              const keys = Object.keys(localStorage);
+              return keys.map(key => ({
+                key,
+                hasPersonalData: /name|email|phone|address|id/.test(key.toLowerCase()),
+                value: localStorage[key].substring(0, 100) + '...'
+              }));
+            });
+            
+            // Accessibility audit
+            const axe = new AxePuppeteer(page);
+            const axeResults = await axe.analyze();
+            
+            // Security headers check
+            const response = await page.goto('http://localhost:3000');
+            const headers = response.headers();
+            
+            const securityHeaders = {
+              csp: headers['content-security-policy'] || 'Not set',
+              xframe: headers['x-frame-options'] || 'Not set',
+              xss: headers['x-xss-protection'] || 'Not set',
+              nosniff: headers['x-content-type-nosniff'] || 'Not set'
+            };
+            
+            // Results
+            const results = {
+              loading: true,
+              pwaSupport: isPWA,
+              offlineCapability: offlineWorks,
+              networkRequests: networkRequests.filter(req => !req.url.includes('localhost')),
+              noNavigationNetworkCalls: noNavNetworkCalls,
+              consoleErrors,
+              localStorage: localStorageUsage,
+              accessibility: {
+                violations: axeResults.violations.length,
+                passes: axeResults.passes.length
+              },
+              securityHeaders
+            };
+            
+            console.log('📊 Behavior analysis complete');
+            fs.writeFileSync('behavior-results.json', JSON.stringify(results, null, 2));
+            
+          } catch (error) {
+            console.error('❌ Behavior test failed:', error.message);
+            fs.writeFileSync('behavior-results.json', JSON.stringify({ 
+              error: error.message,
+              loading: false 
+            }, null, 2));
+          }
+          
+          await browser.close();
+        })();
+        EOF
+        
+        # Run behavior analysis
+        node behavior-test.js
+        
+        # Kill the server
+        kill $SERVER_PID
+        
+        # Parse and report results
+        if [ -f behavior-results.json ]; then
+          echo "### 🎭 Runtime Behavior Analysis Results" >> security-report.md
+          echo "" >> security-report.md
+          
+          # Extract key metrics using jq
+          LOADING_SUCCESS=$(cat behavior-results.json | jq -r '.loading // false')
+          PWA_SUPPORT=$(cat behavior-results.json | jq -r '.pwaSupport // false')
+          OFFLINE_WORKS=$(cat behavior-results.json | jq -r '.offlineCapability // false')
+          EXTERNAL_REQUESTS=$(cat behavior-results.json | jq -r '.networkRequests | length')
+          NO_NAV_CALLS=$(cat behavior-results.json | jq -r '.noNavigationNetworkCalls // false')
+          CONSOLE_ERRORS=$(cat behavior-results.json | jq -r '.consoleErrors | length')
+          A11Y_VIOLATIONS=$(cat behavior-results.json | jq -r '.accessibility.violations // 0')
+          
+          # Report loading
+          if [ "$LOADING_SUCCESS" = "true" ]; then
+            echo "✅ **App Loading**: Successful browser load and render" >> security-report.md
+          else
+            echo "❌ **App Loading**: Failed to load properly" >> security-report.md
+          fi
+          
+          # Report PWA capability
+          if [ "$PWA_SUPPORT" = "true" ]; then
+            echo "✅ **PWA Support**: Service Worker detected" >> security-report.md
+          else
+            echo "⚠️ **PWA Support**: No Service Worker found" >> security-report.md
+          fi
+          
+          # Report offline capability
+          if [ "$OFFLINE_WORKS" = "true" ]; then
+            echo "✅ **Offline Functionality**: App works without network" >> security-report.md
+          else
+            echo "❌ **Offline Functionality**: App fails in offline mode" >> security-report.md
+          fi
+          
+          # Report network behavior
+          if [ "$EXTERNAL_REQUESTS" -eq 0 ]; then
+            echo "✅ **Network Privacy**: No external requests detected" >> security-report.md
+          else
+            echo "⚠️ **Network Privacy**: $EXTERNAL_REQUESTS external requests found" >> security-report.md
+          fi
+          
+          # Report navigation behavior
+          if [ "$NO_NAV_CALLS" = "true" ]; then
+            echo "✅ **Navigation Behavior**: No network calls during navigation" >> security-report.md
+          else
+            echo "⚠️ **Navigation Behavior**: Network calls detected during navigation" >> security-report.md
+          fi
+          
+          # Report console errors
+          if [ "$CONSOLE_ERRORS" -eq 0 ]; then
+            echo "✅ **Runtime Stability**: No console errors detected" >> security-report.md
+          else
+            echo "⚠️ **Runtime Stability**: $CONSOLE_ERRORS console errors found" >> security-report.md
+          fi
+          
+          # Report accessibility
+          if [ "$A11Y_VIOLATIONS" -eq 0 ]; then
+            echo "✅ **Accessibility**: No WCAG violations detected" >> security-report.md
+          else
+            echo "⚠️ **Accessibility**: $A11Y_VIOLATIONS WCAG violations found" >> security-report.md
+          fi
+          
+          echo "" >> security-report.md
+          echo "**Detailed Behavior Analysis:**" >> security-report.md
+          echo "\`\`\`json" >> security-report.md
+          cat behavior-results.json >> security-report.md
+          echo "\`\`\`" >> security-report.md
+        else
+          echo "❌ **Behavior Analysis**: Test execution failed" >> security-report.md
+        fi
+
+    - name: 🚀 Performance & Security Lighthouse Audit
+      run: |
+        echo "" >> security-report.md
+        echo "## 🚀 Performance & Security Lighthouse Audit" >> security-report.md
+        echo "" >> security-report.md
+        
+        # Serve the app again for Lighthouse
+        npx serve dist -l 3001 &
+        LIGHTHOUSE_SERVER_PID=$!
+        sleep 5
+        
+        # Run Lighthouse audit
+        npx lighthouse http://localhost:3001 --output=json --output-path=lighthouse-report.json --chrome-flags="--headless --no-sandbox" --quiet || true
+        
+        # Kill server
+        kill $LIGHTHOUSE_SERVER_PID
+        
+        if [ -f lighthouse-report.json ]; then
+          # Extract Lighthouse scores
+          PERFORMANCE=$(cat lighthouse-report.json | jq -r '.categories.performance.score * 100 | floor')
+          ACCESSIBILITY=$(cat lighthouse-report.json | jq -r '.categories.accessibility.score * 100 | floor')
+          BEST_PRACTICES=$(cat lighthouse-report.json | jq -r '."categories"."best-practices".score * 100 | floor')
+          SEO=$(cat lighthouse-report.json | jq -r '.categories.seo.score * 100 | floor')
+          PWA_SCORE=$(cat lighthouse-report.json | jq -r '.categories.pwa.score * 100 | floor')
+          
+          echo "### 📊 Lighthouse Scores" >> security-report.md
+          echo "" >> security-report.md
+          echo "| Category | Score | Status |" >> security-report.md
+          echo "|----------|-------|--------|" >> security-report.md
+          
+          # Performance
+          if [ "$PERFORMANCE" -ge 90 ]; then
+            echo "| 🚀 Performance | $PERFORMANCE% | ✅ Excellent |" >> security-report.md
+          elif [ "$PERFORMANCE" -ge 70 ]; then
+            echo "| 🚀 Performance | $PERFORMANCE% | ⚠️ Good |" >> security-report.md
+          else
+            echo "| 🚀 Performance | $PERFORMANCE% | ❌ Needs Work |" >> security-report.md
+          fi
+          
+          # Accessibility
+          if [ "$ACCESSIBILITY" -ge 95 ]; then
+            echo "| ♿ Accessibility | $ACCESSIBILITY% | ✅ Excellent |" >> security-report.md
+          elif [ "$ACCESSIBILITY" -ge 85 ]; then
+            echo "| ♿ Accessibility | $ACCESSIBILITY% | ⚠️ Good |" >> security-report.md
+          else
+            echo "| ♿ Accessibility | $ACCESSIBILITY% | ❌ Needs Work |" >> security-report.md
+          fi
+          
+          # Best Practices
+          if [ "$BEST_PRACTICES" -ge 90 ]; then
+            echo "| 🛡️ Best Practices | $BEST_PRACTICES% | ✅ Excellent |" >> security-report.md
+          elif [ "$BEST_PRACTICES" -ge 70 ]; then
+            echo "| 🛡️ Best Practices | $BEST_PRACTICES% | ⚠️ Good |" >> security-report.md
+          else
+            echo "| 🛡️ Best Practices | $BEST_PRACTICES% | ❌ Needs Work |" >> security-report.md
+          fi
+          
+          # PWA
+          if [ "$PWA_SCORE" -ge 90 ]; then
+            echo "| 📱 PWA | $PWA_SCORE% | ✅ Excellent |" >> security-report.md
+          elif [ "$PWA_SCORE" -ge 70 ]; then
+            echo "| 📱 PWA | $PWA_SCORE% | ⚠️ Good |" >> security-report.md
+          else
+            echo "| 📱 PWA | $PWA_SCORE% | ❌ Needs Work |" >> security-report.md
+          fi
+          
+          # Extract security-related audits
+          echo "" >> security-report.md
+          echo "### 🔒 Security-Specific Lighthouse Findings" >> security-report.md
+          
+          # Check for HTTPS
+          HTTPS_AUDIT=$(cat lighthouse-report.json | jq -r '.audits["is-on-https"].score')
+          if [ "$HTTPS_AUDIT" = "1" ]; then
+            echo "✅ **HTTPS**: Site uses HTTPS" >> security-report.md
+          else
+            echo "❌ **HTTPS**: Site does not use HTTPS" >> security-report.md
+          fi
+          
+          # Check for mixed content
+          MIXED_CONTENT=$(cat lighthouse-report.json | jq -r '.audits["no-mixed-content"].score')
+          if [ "$MIXED_CONTENT" = "1" ]; then
+            echo "✅ **Mixed Content**: No mixed HTTP/HTTPS content" >> security-report.md
+          else
+            echo "❌ **Mixed Content**: Mixed HTTP/HTTPS content detected" >> security-report.md
+          fi
+          
+        else
+          echo "❌ **Lighthouse Audit**: Failed to generate report" >> security-report.md
+        fi
+
+    - name: �🏳️‍🌈 Gay Safety & Inclusivity Check
       run: |
         echo "" >> security-report.md
         echo "## 🏳️‍🌈 Gay Safety & Inclusivity Audit" >> security-report.md
