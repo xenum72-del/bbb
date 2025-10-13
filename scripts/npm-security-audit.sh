@@ -12,7 +12,7 @@ cat > security-report.md << EOF
 # 📊 NPM Security Audit Report
 
 **Scan Date:** $(date)
-**Project:** Encounter Ledger PWA
+**Project:** The Load Down PWA
 **Node Version:** $(node --version)
 **NPM Version:** $(npm --version)
 

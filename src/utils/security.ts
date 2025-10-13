@@ -152,7 +152,7 @@ export async function setupBiometrics(): Promise<boolean> {
       publicKey: {
         challenge: crypto.getRandomValues(new Uint8Array(32)),
         rp: {
-          name: "Encounter Ledger",
+          name: "The Load Down",
           id: window.location.hostname
         },
         user: {

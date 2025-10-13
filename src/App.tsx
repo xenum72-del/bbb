@@ -143,7 +143,7 @@ function App() {
         {/* Header */}
         <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 pt-12 sticky top-0 z-10 shadow-lg rounded-b-3xl">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Encounter Ledger</h1>
+            <h1 className="text-2xl font-bold">The Load Down</h1>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}

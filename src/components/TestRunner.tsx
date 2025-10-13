@@ -118,7 +118,7 @@ const TestRunner: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            🧪 Encounter Ledger Data Integrity Tests
+            🧪 The Load Down Data Integrity Tests
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
             Comprehensive automated testing suite for validating CRUD operations, data persistence, backup/restore functionality.

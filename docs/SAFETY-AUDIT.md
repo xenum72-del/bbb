@@ -96,8 +96,8 @@ Beyond technical security, we audit for:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/encounter-ledger
-cd encounter-ledger
+git clone https://github.com/yourusername/the-load-down
+cd the-load-down
 
 # Install dependencies
 npm install

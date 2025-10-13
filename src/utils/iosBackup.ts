@@ -31,7 +31,7 @@ export async function createSummaryForSharing(): Promise<string> {
   const lastEncounter = backup.encounters
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
   
-  const summary = `📊 Encounter Ledger Summary
+  const summary = `📊 The Load Down Summary
 
 👥 Friends: ${friendCount}
 🔥 Encounters: ${encounterCount}
@@ -79,7 +79,7 @@ export async function createCSVBackup(includePhotos: boolean = false): Promise<s
 export async function createMarkdownBackup(): Promise<string> {
   const backup = await createBackup(false);
   
-  let md = `# 🏳️‍🌈 Encounter Ledger Backup
+  let md = `# 🏳️‍🌈 The Load Down Backup
 
 **Generated:** ${new Date().toLocaleDateString()}  
 **Friends:** ${backup.friends.length}  
@@ -174,7 +174,7 @@ export async function createiOSBackup(options: iOSBackupOptions): Promise<File> 
       break;
   }
 
-  const fileName = `encounter-ledger-${timestamp}-${sizeIndicator}.${extension}`;
+  const fileName = `the-load-down-${timestamp}-${sizeIndicator}.${extension}`;
   return new File([content], fileName, { type: mimeType });
 }
 
@@ -288,7 +288,7 @@ export async function showiOSBackupModal(): Promise<void> {
       try {
         const summary = await createSummaryForSharing();
         const shared = await shareiOS({
-          title: 'Encounter Ledger Summary',
+          title: 'The Load Down Summary',
           text: summary
         });
         
@@ -310,7 +310,7 @@ export async function showiOSBackupModal(): Promise<void> {
         
         if (canShare) {
           const shared = await shareiOS({
-            title: `Encounter Ledger Backup (${format.toUpperCase()})`,
+            title: `The Load Down Backup (${format.toUpperCase()})`,
             files: [file]
           });
           

@@ -24,7 +24,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'Encounter Ledger',
+        name: 'The Load Down',
         short_name: 'EncounterLedger', 
         description: 'Privacy-first social interaction tracker',
         theme_color: '#3b82f6',
@@ -33,7 +33,7 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: '/',
         scope: '/',
-        id: 'encounter-ledger',
+        id: 'the-load-down',
         categories: ['lifestyle', 'social'],
         lang: 'en',
         dir: 'ltr',

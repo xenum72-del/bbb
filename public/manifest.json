@@ -1,6 +1,6 @@
 {
-  "name": "Encounter Ledger",
-  "short_name": "EncounterLedger",
+  "name": "The Load Down",
+  "short_name": "LoadDown",
   "description": "Privacy-first social interaction tracker",
   "start_url": "/",
   "display": "standalone",
