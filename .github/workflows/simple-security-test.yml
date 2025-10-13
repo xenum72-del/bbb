@@ -194,21 +194,52 @@ jobs:
               testResults.summary.keyFindings.push('❌ Accessibility test failed');
             }
 
-            // Gay-friendly content bonus check
-            console.log('🏳️‍🌈 Checking for gay-friendly content...');
+            // COMPREHENSIVE Gay-friendly content detection
+            console.log('🏳️‍🌈 Running comprehensive fabulousness scan...');
             const gayFriendlyContent = await page.evaluate(() => {
               const bodyText = document.body.textContent.toLowerCase();
-              const gayPositiveWords = ['fabulous', 'fierce', 'slay', 'queen', 'rainbow', 'pride', 'inclusive', 'diversity'];
-              const foundWords = gayPositiveWords.filter(word => bodyText.includes(word));
+              const htmlContent = document.documentElement.innerHTML.toLowerCase();
+              
+              // Multiple tiers of gay content detection
+              const basicGayWords = ['fabulous', 'fierce', 'slay', 'queen', 'rainbow', 'pride', 'inclusive', 'diversity', 'lgbtq', 'queer'];
+              const dragWords = ['yasss', 'werk', 'serving', 'iconic', 'legendary', 'tea', 'shade', 'hunty', 'periodt'];
+              const popCultureWords = ['taylor swift', 'beyonce', 'lady gaga', 'drag race', 'rupaul'];
+              const funnyGayWords = ['disaster gay', 'gay panic', 'useless lesbian', 'plant parent', 'theater kid'];
+              
+              const foundBasic = basicGayWords.filter(word => bodyText.includes(word) || htmlContent.includes(word));
+              const foundDrag = dragWords.filter(word => bodyText.includes(word) || htmlContent.includes(word));
+              const foundPopCulture = popCultureWords.filter(word => bodyText.includes(word) || htmlContent.includes(word));
+              const foundFunny = funnyGayWords.filter(word => bodyText.includes(word) || htmlContent.includes(word));
+              
+              // Check for rainbow CSS/styling
+              const hasRainbowStyling = htmlContent.includes('rainbow') || htmlContent.includes('gradient') || htmlContent.includes('pride');
+              
               return {
-                foundGayPositiveWords: foundWords.length,
-                wordsFound: foundWords
+                foundGayPositiveWords: foundBasic.length + foundDrag.length + foundPopCulture.length + foundFunny.length,
+                basicWords: foundBasic,
+                dragWords: foundDrag,
+                popCultureWords: foundPopCulture,
+                funnyWords: foundFunny,
+                hasRainbowStyling: hasRainbowStyling,
+                fabulousnessLevel: foundBasic.length * 2 + foundDrag.length * 3 + foundPopCulture.length * 4 + foundFunny.length * 5
               };
             });
             
             testResults.inclusivity = gayFriendlyContent;
-            if (gayFriendlyContent.foundGayPositiveWords > 0) {
-              testResults.summary.keyFindings.push(`🌈 Gay-friendly content detected: ${gayFriendlyContent.wordsFound.join(', ')} - YASSS!`);
+            
+            // Generate fabulous findings
+            if (gayFriendlyContent.fabulousnessLevel >= 20) {
+              testResults.summary.keyFindings.push(`💎 LEGENDARY FABULOUSNESS: This app is serving main character energy!`);
+            } else if (gayFriendlyContent.fabulousnessLevel >= 10) {
+              testResults.summary.keyFindings.push(`👑 QUEEN BEHAVIOR: Gay-friendly content detected - We stan!`);
+            } else if (gayFriendlyContent.foundGayPositiveWords > 0) {
+              testResults.summary.keyFindings.push(`🌈 Gay-friendly vibes: ${[...gayFriendlyContent.basicWords, ...gayFriendlyContent.dragWords].join(', ')} - YASSS!`);
+            } else {
+              testResults.summary.keyFindings.push(`😐 Straight™ energy detected - needs more sparkle`);
+            }
+            
+            if (gayFriendlyContent.hasRainbowStyling) {
+              testResults.summary.keyFindings.push(`🌈 Visual gay rights detected in styling - CSS said pride!`);
             }
 
             // Calculate Overall Safety Score
@@ -397,59 +428,141 @@ jobs:
         fi
         echo "" >> security-report.md
 
-    - name: 🏳️‍🌈 Gay Safety & Inclusivity Analysis
+    - name: 🏳️‍🌈 Gay Safety & Inclusivity Analysis (COMPREHENSIVE EDITION)
       run: |
-        echo "### 🏳️‍🌈 Gay Safety & Inclusivity Analysis" >> security-report.md
+        echo "### 🏳️‍🌈 Gay Safety & Inclusivity Analysis - The Fabulous Edition™" >> security-report.md
+        echo "*Serving looks, serving code, serving inclusivity realness*" >> security-report.md
         echo "" >> security-report.md
         
-        # Check for inclusive language
+        # Initialize fabulousness score
         INCLUSIVITY_SCORE=0
+        DRAG_BONUS=0
         
-        # Check for positive LGBTQ+ representation
-        if grep -r -i "pride\|rainbow\|inclusive\|diversity\|lgbtq\|queer" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
-          echo "🌈 **LGBTQ+ Representation**: Positive inclusivity language found" >> security-report.md
+        # 🌈 TIER 1: Basic LGBTQ+ Representation (THE FOUNDATION)
+        echo "#### 🌈 LGBTQ+ Representation Check" >> security-report.md
+        if grep -r -i "pride\|rainbow\|inclusive\|diversity\|lgbtq\|queer\|gay\|lesbian\|bisexual\|transgender\|pansexual\|asexual" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          echo "✨ **Basic Representation**: LGBTQ+ positive language detected - We see you!" >> security-report.md
           INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + 20))
+        else
+          echo "👻 **Basic Representation**: No obvious LGBTQ+ representation - Time to add some sparkle!" >> security-report.md
         fi
         
-        # Check for accessibility (important for inclusive design)
-        if grep -r -i "aria-\|alt=\|role=\|accessibility" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null; then
-          echo "♿ **Accessibility**: Accessibility attributes found" >> security-report.md
-          INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + 15))
+        # 💅 TIER 2: Drag Culture & Slang Detection (THE SPICE)
+        echo "#### 💅 Drag Culture & Gay Slang Analysis" >> security-report.md
+        DRAG_WORDS=0
+        
+        # Check for iconic drag/gay slang
+        if grep -r -i "slay\|queen\|yasss\|werk\|fierce\|iconic\|legendary\|serve\|serving\|look\|looks\|tea\|spill\|shade\|throwing shade" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          DRAG_WORDS=$((DRAG_WORDS + 1))
+          echo "👑 **Drag Vocabulary**: Drag slang detected - This app knows the assignment!" >> security-report.md
         fi
         
-        # Check for inclusive color schemes (not just assuming everyone sees the same)
-        if grep -r -i "color-blind\|contrast\|high-contrast\|dark-mode\|theme" src/ --include="*.css" --include="*.scss" --include="*.ts" --include="*.tsx" 2>/dev/null; then
-          echo "🎨 **Visual Inclusivity**: Color accessibility considerations found" >> security-report.md
-          INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + 10))
+        if grep -r -i "hunty\|mawma\|periodt\|no cap\|its giving\|main character\|that's on periodt\|we been knew" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          DRAG_WORDS=$((DRAG_WORDS + 1))
+          echo "🗣️ **Modern Slang**: Current gay vernacular detected - This app is chronically online (affectionate)" >> security-report.md
         fi
         
-        # Check for non-binary friendly forms (not just male/female)
-        if grep -r -i "gender.*other\|pronouns\|they/them\|non-binary" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null; then
-          echo "⚧️ **Gender Inclusivity**: Non-binary friendly options detected" >> security-report.md
+        if grep -r -i "camp\|kitsch\|over.the.top\|dramatic\|extra\|doing.the.most" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          DRAG_WORDS=$((DRAG_WORDS + 1))
+          echo "🎭 **Camp Aesthetic**: Camp/dramatic language detected - Susan Sontag is proud!" >> security-report.md
+        fi
+        
+        DRAG_BONUS=$((DRAG_WORDS * 15))
+        INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + DRAG_BONUS))
+        
+        # 🏳️‍⚧️ TIER 3: Trans & Non-Binary Inclusivity (THE MUST-HAVE)
+        echo "#### 🏳️‍⚧️ Trans & Non-Binary Inclusivity Check" >> security-report.md
+        if grep -r -i "pronouns\|they/them\|she/her\|he/him\|ze/zir\|non-binary\|enby\|genderqueer\|genderfluid" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null; then
+          echo "⚧️ **Pronoun Respect**: Inclusive pronoun options detected - Trans rights are human rights!" >> security-report.md
           INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + 25))
         fi
         
-        # Check for harmful language patterns
-        HARMFUL_PATTERNS=0
-        if grep -r -i "guys\|dude\|bro\|man up\|crazy\|insane\|retarded\|gay.*bad\|homo.*negative" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
-          echo "⚠️ **Language Review**: Potentially non-inclusive language detected" >> security-report.md
-          HARMFUL_PATTERNS=$((HARMFUL_PATTERNS + 1))
-          INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE - 15))
+        if grep -r -i "gender.*other\|gender.*custom\|prefer.not.to.say\|non.binary" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null; then
+          echo "🌟 **Gender Options**: Non-binary gender options detected - Breaking the binary!" >> security-report.md
+          INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + 20))
         fi
         
-        # Bonus points for being explicitly gay-friendly
-        if grep -r -i "gay.*positive\|fabulous\|fierce\|slay\|queen\|werk\|rainbow" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
-          echo "💅 **Gay Positivity**: Explicitly gay-friendly language detected - YASSS!" >> security-report.md
-          INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + 30))
+        # 🎨 TIER 4: Visual Fabulousness & Accessibility
+        echo "#### 🎨 Visual Inclusivity & Fabulousness Analysis" >> security-report.md
+        if grep -r -i "rainbow\|gradient\|pride.flag\|colorful\|vibrant\|neon\|glitter\|sparkle" src/ --include="*.css" --include="*.scss" --include="*.ts" --include="*.tsx" 2>/dev/null; then
+          echo "� **Visual Gay**: Rainbow/colorful theming detected - This app said gay rights with CSS!" >> security-report.md
+          INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + 15))
         fi
         
-        # Final score
-        if [ $INCLUSIVITY_SCORE -ge 50 ]; then
-          echo "🏆 **Overall Inclusivity**: FABULOUS ($INCLUSIVITY_SCORE points) - This app is gay-friendly!" >> security-report.md
-        elif [ $INCLUSIVITY_SCORE -ge 25 ]; then
-          echo "✅ **Overall Inclusivity**: Good ($INCLUSIVITY_SCORE points) - Room for more fabulousness" >> security-report.md
+        if grep -r -i "dark.mode\|high.contrast\|color.blind\|accessibility\|a11y" src/ --include="*.css" --include="*.scss" --include="*.ts" --include="*.tsx" 2>/dev/null; then
+          echo "♿ **Accessible Fabulousness**: Accessibility considerations found - Inclusive AND fabulous!" >> security-report.md
+          INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + 20))
+        fi
+        
+        # 😂 TIER 5: FUNNY GAY TESTS (THE COMEDY GOLD)
+        echo "#### 😂 Humor & Cultural References Analysis" >> security-report.md
+        COMEDY_BONUS=0
+        
+        # Check for gay pop culture references
+        if grep -r -i "taylor.swift\|beyonce\|lady.gaga\|madonna\|cher\|barbra.streisand\|judy.garland\|liza.minnelli" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          echo "🎵 **Gay Icons**: Pop diva references detected - The taste is immaculate!" >> security-report.md
+          COMEDY_BONUS=$((COMEDY_BONUS + 10))
+        fi
+        
+        # Check for RuPaul's Drag Race references
+        if grep -r -i "rupaul\|drag.race\|charisma.uniqueness.nerve.talent\|can.i.get.an.amen\|gentlemen.start.your.engines" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          echo "👑 **Drag Race References**: RuPaul references detected - Start your engines!" >> security-report.md
+          COMEDY_BONUS=$((COMEDY_BONUS + 15))
+        fi
+        
+        # Check for gay panic/disaster gay energy
+        if grep -r -i "gay.panic\|disaster.gay\|useless.lesbian\|bisexual.disaster\|cant.sit.straight" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          echo "🤡 **Gay Disaster Energy**: Self-aware gay chaos detected - We love a self-deprecating queen!" >> security-report.md
+          COMEDY_BONUS=$((COMEDY_BONUS + 20))
+        fi
+        
+        # Check for theater kid energy
+        if grep -r -i "hamilton\|rent\|wicked\|phantom.of.the.opera\|les.mis\|broadway\|musical.theater" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          echo "🎭 **Theater Kid Energy**: Musical theater references detected - The drama! The passion!" >> security-report.md
+          COMEDY_BONUS=$((COMEDY_BONUS + 12))
+        fi
+        
+        # Check for houseplant parent energy (very gay millennial)
+        if grep -r -i "plant.parent\|succulent\|fiddle.leaf.fig\|monstera\|pothos\|plant.killer" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          echo "🪴 **Plant Parent Energy**: Houseplant references detected - Very gay millennial of you!" >> security-report.md
+          COMEDY_BONUS=$((COMEDY_BONUS + 8))
+        fi
+        
+        INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE + COMEDY_BONUS))
+        
+        # 🚨 TIER 6: Anti-Pattern Detection (THE REALITY CHECK)
+        echo "#### 🚨 Problematic Pattern Detection" >> security-report.md
+        DEDUCTIONS=0
+        
+        if grep -r -i "no.homo\|thats.gay\|gay.*insult\|homosexual.*negative" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          echo "❌ **Homophobic Language**: Problematic gay-related language detected - Not the serve we wanted" >> security-report.md
+          DEDUCTIONS=$((DEDUCTIONS + 30))
+        fi
+        
+        if grep -r -i "guys\|dude\|bro\|man up\|crazy\|insane" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.md" 2>/dev/null; then
+          echo "⚠️ **Gendered/Ableist Language**: Non-inclusive language patterns detected - Time for some vocabulary updates" >> security-report.md
+          DEDUCTIONS=$((DEDUCTIONS + 10))
+        fi
+        
+        INCLUSIVITY_SCORE=$((INCLUSIVITY_SCORE - DEDUCTIONS))
+        
+        # 🏆 FINAL FABULOUSNESS RATING
+        echo "#### 🏆 Final Fabulousness Rating" >> security-report.md
+        echo "**Total Score: $INCLUSIVITY_SCORE points**" >> security-report.md
+        echo "" >> security-report.md
+        
+        if [ $INCLUSIVITY_SCORE -ge 100 ]; then
+          echo "💎 **LEGENDARY STATUS**: This app is SERVING main character energy! Absolutely iconic, no notes. 10s across the board!" >> security-report.md
+        elif [ $INCLUSIVITY_SCORE -ge 80 ]; then
+          echo "👑 **QUEEN BEHAVIOR**: This app said gay rights and meant it! We stan a culturally aware icon!" >> security-report.md
+        elif [ $INCLUSIVITY_SCORE -ge 60 ]; then
+          echo "✨ **SOLID ALLY**: Good foundation but could use more sparkle. Add some rainbow gradients, bestie!" >> security-report.md
+        elif [ $INCLUSIVITY_SCORE -ge 40 ]; then
+          echo "🌱 **BABY GAY ENERGY**: You're trying and we appreciate that! Time to embrace the chaos!" >> security-report.md
+        elif [ $INCLUSIVITY_SCORE -ge 20 ]; then
+          echo "😐 **STRAIGHT™ ENERGY**: This app is giving 'I have a gay friend' vibes. Time for some education!" >> security-report.md
         else
-          echo "⚠️ **Overall Inclusivity**: Needs work ($INCLUSIVITY_SCORE points) - Consider adding more inclusive design" >> security-report.md
+          echo "💀 **HETERONORMATIVE NIGHTMARE**: This app needs immediate intervention. Call the gay agenda hotline!" >> security-report.md
         fi
         echo "" >> security-report.md
     
