@@ -163,29 +163,42 @@ class PrivacyFirstAnalytics {
     this.trackEvent('error', error);
   }
 
-  // Send events to your analytics endpoint
+  // Send events to Supabase (completely free!)
   private async sendEvents(): Promise<void> {
     if (this.events.length === 0 || !this.isEnabled()) return;
 
     try {
-      const payload = {
-        anonymousId: this.settings.anonymousId,
-        events: this.events,
-        meta: {
-          userAgent: navigator.userAgent.substring(0, 100), // Limited UA string
-          language: navigator.language,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          viewport: `${window.innerWidth}x${window.innerHeight}`
-        }
-      };
+      // Get Supabase credentials from environment variables
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+      const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-      // Replace with your analytics endpoint
-      await fetch('https://your-analytics-endpoint.com/events', {
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        console.warn('Supabase credentials not configured')
+        return
+      }
+
+      const eventsToSend = this.events.map(event => ({
+        anonymous_id: this.settings.anonymousId,
+        event_type: event.type,
+        action: event.action,
+        session_id: event.sessionId,
+        region: event.region,
+        version: event.version,
+        user_agent: navigator.userAgent.substring(0, 100),
+        language: navigator.language,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        viewport: `${window.innerWidth}x${window.innerHeight}`
+      }))
+
+      await fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Prefer': 'return=minimal'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(eventsToSend)
       });
 
       this.events = []; // Clear sent events
