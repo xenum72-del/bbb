@@ -27,7 +27,15 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
       lat: '',
       lon: ''
     },
-    pictures: [] as string[] // Array of image URLs
+    pictures: [] as string[], // Array of image URLs
+    // Payment fields
+    isPaid: false,
+    paymentType: 'given' as 'received' | 'given',
+    amountAsked: '',
+    amountGiven: '',
+    currency: 'USD',
+    paymentMethod: 'cash' as 'cash' | 'venmo' | 'cashapp' | 'paypal' | 'zelle' | 'crypto' | 'gift' | 'other',
+    paymentNotes: ''
   });
 
   const [searchQueries, setSearchQueries] = useState({
@@ -126,7 +134,15 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
           place: formData.location.place || undefined,
         } : undefined,
         pictures: formData.pictures.length > 0 ? formData.pictures : undefined,
-        createdAt: new Date()
+        createdAt: new Date(),
+        // Payment fields
+        isPaid: formData.isPaid,
+        paymentType: formData.isPaid ? formData.paymentType : undefined,
+        amountAsked: formData.isPaid && formData.amountAsked ? parseFloat(formData.amountAsked) : undefined,
+        amountGiven: formData.isPaid && formData.amountGiven ? parseFloat(formData.amountGiven) : undefined,
+        currency: formData.isPaid ? formData.currency : undefined,
+        paymentMethod: formData.isPaid ? formData.paymentMethod : undefined,
+        paymentNotes: formData.isPaid && formData.paymentNotes.trim() ? formData.paymentNotes.trim() : undefined
       };      await encountersApi.create(encounter);
       onNavigate('dashboard');
     } catch (error) {
@@ -635,6 +651,136 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
             rows={3}
             placeholder="How did it go? What happened?"
           />
+        </div>
+
+        {/* Payment Information */}
+        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border">
+          <div className="flex items-center justify-between mb-3">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isPaid}
+                onChange={(e) => setFormData(f => ({...f, isPaid: e.target.checked}))}
+                className="rounded"
+              />
+              <span className="font-medium">💰 Money Involved</span>
+            </label>
+          </div>
+
+          {formData.isPaid && (
+            <div className="space-y-3">
+              {/* Payment Type */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Payment Direction</label>
+                <div className="flex gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer bg-white dark:bg-gray-700 p-2 rounded border flex-1">
+                    <input
+                      type="radio"
+                      value="given"
+                      checked={formData.paymentType === 'given'}
+                      onChange={(e) => setFormData(f => ({...f, paymentType: e.target.value as 'given' | 'received'}))}
+                    />
+                    <span>💸 I Paid</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer bg-white dark:bg-gray-700 p-2 rounded border flex-1">
+                    <input
+                      type="radio"
+                      value="received"
+                      checked={formData.paymentType === 'received'}
+                      onChange={(e) => setFormData(f => ({...f, paymentType: e.target.value as 'given' | 'received'}))}
+                    />
+                    <span>💵 I Got Paid</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Amount Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {formData.paymentType === 'given' ? 'Amount Asked' : 'Amount I Asked For'}
+                  </label>
+                  <div className="flex">
+                    <select
+                      value={formData.currency}
+                      onChange={(e) => setFormData(f => ({...f, currency: e.target.value}))}
+                      className="w-20 p-2 border rounded-l bg-white dark:bg-gray-700 border-r-0"
+                    >
+                      <option value="USD">$</option>
+                      <option value="EUR">€</option>
+                      <option value="GBP">£</option>
+                      <option value="CAD">C$</option>
+                      <option value="AUD">A$</option>
+                    </select>
+                    <input
+                      type="number"
+                      value={formData.amountAsked}
+                      onChange={(e) => setFormData(f => ({...f, amountAsked: e.target.value}))}
+                      className="flex-1 p-2 border rounded-r bg-white dark:bg-gray-700"
+                      placeholder="0"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {formData.paymentType === 'given' ? 'Amount Actually Paid' : 'Amount Actually Received'}
+                  </label>
+                  <div className="flex">
+                    <div className="w-20 p-2 border rounded-l bg-gray-100 dark:bg-gray-600 border-r-0 flex items-center justify-center text-gray-600 dark:text-gray-300">
+                      {formData.currency === 'USD' ? '$' : 
+                       formData.currency === 'EUR' ? '€' :
+                       formData.currency === 'GBP' ? '£' :
+                       formData.currency === 'CAD' ? 'C$' :
+                       formData.currency === 'AUD' ? 'A$' : '$'}
+                    </div>
+                    <input
+                      type="number"
+                      value={formData.amountGiven}
+                      onChange={(e) => setFormData(f => ({...f, amountGiven: e.target.value}))}
+                      className="flex-1 p-2 border rounded-r bg-white dark:bg-gray-700"
+                      placeholder="0"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Payment Method</label>
+                <select
+                  value={formData.paymentMethod}
+                  onChange={(e) => setFormData(f => ({...f, paymentMethod: e.target.value as 'cash' | 'venmo' | 'cashapp' | 'paypal' | 'zelle' | 'crypto' | 'gift' | 'other'}))}
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700"
+                >
+                  <option value="cash">💵 Cash</option>
+                  <option value="venmo">📱 Venmo</option>
+                  <option value="cashapp">💚 Cash App</option>
+                  <option value="paypal">🅿️ PayPal</option>
+                  <option value="zelle">⚡ Zelle</option>
+                  <option value="crypto">₿ Crypto</option>
+                  <option value="gift">🎁 Gift/Items</option>
+                  <option value="other">🔄 Other</option>
+                </select>
+              </div>
+
+              {/* Payment Notes */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Payment Details</label>
+                <textarea
+                  value={formData.paymentNotes}
+                  onChange={(e) => setFormData(f => ({...f, paymentNotes: e.target.value}))}
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700"
+                  rows={2}
+                  placeholder="Additional payment details, negotiations, etc..."
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Pictures */}

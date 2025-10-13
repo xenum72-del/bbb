@@ -51,6 +51,25 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
     count: encounters.filter(e => e.rating === rating).length
   }));
 
+  // Payment Analytics
+  const paidEncounters = encounters.filter(e => e.isPaid);
+  const totalSpent = paidEncounters
+    .filter(e => e.paymentType === 'given')
+    .reduce((sum, e) => sum + (parseFloat(String(e.amountGiven || '0')) || 0), 0);
+  const totalEarned = paidEncounters
+    .filter(e => e.paymentType === 'received')
+    .reduce((sum, e) => sum + (parseFloat(String(e.amountGiven || '0')) || 0), 0);
+  const netAmount = totalEarned - totalSpent;
+  
+  const paymentMethodStats = paidEncounters.reduce((acc, e) => {
+    if (e.paymentMethod) {
+      acc[e.paymentMethod] = (acc[e.paymentMethod] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+
+
   const getScoreColor = (score: number): string => {
     if (score >= 0.8) return '#22c55e'; // green-500
     if (score >= 0.6) return '#eab308'; // yellow-500
@@ -88,6 +107,53 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
           <div className="text-sm text-gray-600 dark:text-gray-300">Avg Rating</div>
         </div>
       </div>
+
+      {/* Financial Overview */}
+      {paidEncounters.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3">💰 Financial Overview</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">${totalEarned.toFixed(2)}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Earned</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-red-600">${totalSpent.toFixed(2)}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Spent</div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <div className={`text-2xl font-bold ${netAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                ${Math.abs(netAmount).toFixed(2)}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                Net {netAmount >= 0 ? 'Profit' : 'Loss'}
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-primary">{paidEncounters.length}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Paid Encounters</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {((paidEncounters.length / encounters.length) * 100).toFixed(1)}% of total
+              </div>
+            </div>
+          </div>
+          
+          {/* Payment Methods Breakdown */}
+          {Object.keys(paymentMethodStats).length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-medium mb-2">Payment Methods Used</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {Object.entries(paymentMethodStats).map(([method, count]) => (
+                  <div key={method} className="bg-gray-100 dark:bg-gray-700 p-2 rounded text-center">
+                    <div className="text-sm font-medium capitalize">{method}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-300">{count} times</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Friend Leaderboard */}
       <div className="mb-6">

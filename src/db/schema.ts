@@ -119,6 +119,15 @@ export interface Encounter {
   // Follow-up
   exchangedContacts?: boolean;
   plannedMeetAgain?: boolean;
+  
+  // Payment/Financial Details
+  isPaid?: boolean;
+  paymentType?: 'received' | 'given'; // Who paid whom
+  amountAsked?: number; // What was initially requested
+  amountGiven?: number; // What was actually paid
+  currency?: string; // e.g., 'USD', 'EUR', 'GBP'
+  paymentMethod?: 'cash' | 'venmo' | 'cashapp' | 'paypal' | 'zelle' | 'crypto' | 'gift' | 'other';
+  paymentNotes?: string; // Additional context about payment
 }
 
 export interface Settings {
