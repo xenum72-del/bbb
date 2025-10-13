@@ -1,6 +1,7 @@
 import { useActiveFriends, friendsApi, useEncountersByFriend } from '../hooks/useDatabase';
 import { useState } from 'react';
 import type { Friend } from '../db/schema';
+import { showBackupPrompt } from '../utils/backup';
 
 interface FriendsProps {
   onNavigate: (page: string) => void;
@@ -85,6 +86,11 @@ export default function Friends({ onNavigate }: FriendsProps) {
       
       setFormData(getInitialFormData());
       setShowAddForm(false);
+      
+      // Show backup prompt after successful save
+      setTimeout(() => {
+        showBackupPrompt();
+      }, 100);
     } catch (error) {
       console.error('Error adding friend:', error);
     }

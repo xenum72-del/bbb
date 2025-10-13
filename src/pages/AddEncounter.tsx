@@ -1,6 +1,7 @@
 import { useActiveFriends, useInteractionTypes, useSettings, useEncounters, encountersApi } from '../hooks/useDatabase';
 import React, { useState } from 'react';
 import { convertToUSD } from '../utils/currency';
+import { showBackupPrompt } from '../utils/backup';
 
 interface AddEncounterProps {
   onNavigate: (page: string) => void;
@@ -173,6 +174,12 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
       };
       
       await encountersApi.create(encounter);
+      
+      // Show backup prompt after successful save
+      setTimeout(() => {
+        showBackupPrompt();
+      }, 100);
+      
       onNavigate('dashboard');
     } catch (error) {
       console.error('Error creating encounter:', error);

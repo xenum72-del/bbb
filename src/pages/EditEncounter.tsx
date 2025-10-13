@@ -1,7 +1,9 @@
-import { useActiveFriends, useInteractionTypes, useEncounter, useEncounters, encountersApi } from '../hooks/useDatabase';
+import { useActiveFriends, useEncounter, useEncounters, encountersApi } from '../hooks/useDatabase';
 import React, { useState, useEffect } from 'react';
 import { convertToUSD } from '../utils/currency';
 import type { Encounter } from '../db/schema';
+import { GAY_ACTIVITIES } from '../db/schema';
+import { showBackupPrompt } from '../utils/backup';
 
 interface EditEncounterProps {
   onNavigate: (page: string) => void;
@@ -10,7 +12,6 @@ interface EditEncounterProps {
 
 export default function EditEncounter({ onNavigate, encounterId }: EditEncounterProps) {
   const friends = useActiveFriends();
-  const interactionTypes = useInteractionTypes();
   const allEncounters = useEncounters();
   
   // Use the specific hook to get a single encounter
@@ -22,6 +23,18 @@ export default function EditEncounter({ onNavigate, encounterId }: EditEncounter
     participants: '',
     location: ''
   });
+
+  // Get all existing tags from encounters for suggestions - moved here before conditional logic
+  const existingTags = React.useMemo(() => {
+    if (!allEncounters) return [];
+    const tagSet = new Set<string>();
+    allEncounters.forEach(encounter => {
+      if (encounter.tags) {
+        encounter.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [allEncounters]);
   
   // Initialize form with existing data or redirect if not found
   useEffect(() => {
@@ -154,6 +167,12 @@ export default function EditEncounter({ onNavigate, encounterId }: EditEncounter
       };
       
       await encountersApi.update(encounterId, updatedEncounter);
+      
+      // Show backup prompt after successful save
+      setTimeout(() => {
+        showBackupPrompt();
+      }, 100);
+      
       onNavigate('timeline');
     } catch (error) {
       console.error('Error updating encounter:', error);
@@ -178,18 +197,6 @@ export default function EditEncounter({ onNavigate, encounterId }: EditEncounter
       </div>
     );
   }
-
-  // Get all existing tags from encounters for suggestions
-  const existingTags = React.useMemo(() => {
-    if (!allEncounters) return [];
-    const tagSet = new Set<string>();
-    allEncounters.forEach(encounter => {
-      if (encounter.tags) {
-        encounter.tags.forEach(tag => tagSet.add(tag));
-      }
-    });
-    return Array.from(tagSet).sort();
-  }, [allEncounters]);
 
   const suggestedTags = [
     'first-time', 'repeat-client', 'regular', 'vip', 'quick-session', 'extended',
@@ -257,16 +264,16 @@ export default function EditEncounter({ onNavigate, encounterId }: EditEncounter
           />
           
           <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border rounded p-2 bg-gray-50 dark:bg-gray-800">
-            {interactionTypes
-              .filter(type => 
+            {GAY_ACTIVITIES
+              .filter(activity => 
                 searchQueries.activities === '' ||
-                type.name.toLowerCase().includes(searchQueries.activities.toLowerCase())
+                activity.name.toLowerCase().includes(searchQueries.activities.toLowerCase())
               )
-              .map(type => {
-                const isSelected = formData.activitiesPerformed.includes(type.id!);
+              .map((activity, index) => {
+                const isSelected = formData.activitiesPerformed.includes(index);
                 return (
                   <label
-                    key={type.id}
+                    key={index}
                     className={`flex items-center space-x-3 p-2 rounded cursor-pointer transition-colors ${
                       isSelected
                         ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600'
@@ -277,19 +284,18 @@ export default function EditEncounter({ onNavigate, encounterId }: EditEncounter
                       type="checkbox"
                       checked={isSelected}
                       onChange={(e) => {
-                        const typeId = type.id!;
                         setFormData(f => ({
                           ...f,
                           activitiesPerformed: e.target.checked
-                            ? [...f.activitiesPerformed, typeId]
-                            : f.activitiesPerformed.filter(id => id !== typeId),
-                          typeId: e.target.checked && f.activitiesPerformed.length === 0 ? typeId : f.typeId
+                            ? [...f.activitiesPerformed, index]
+                            : f.activitiesPerformed.filter(id => id !== index),
+                          typeId: e.target.checked && f.activitiesPerformed.length === 0 ? index : f.typeId
                         }));
                       }}
                       className="rounded text-blue-600"
                     />
-                    <span className="text-lg">{type.icon}</span>
-                    <span className="font-medium flex-1">{type.name}</span>
+                    <span className="text-lg">{activity.icon}</span>
+                    <span className="font-medium flex-1">{activity.name}</span>
                   </label>
                 );
               })}
