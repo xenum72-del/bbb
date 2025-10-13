@@ -99,8 +99,12 @@ export default function Settings({}: SettingsProps) {
         const text = await file.text();
         const importData = JSON.parse(text);
         
-        if (!importData.data) {
-          alert('Invalid backup file format');
+        // Support both old format (with .data) and new format (direct)
+        const backupData = importData.data || importData;
+        
+        // Validate backup format - check for required fields
+        if (!backupData.friends && !backupData.encounters && !backupData.interactionTypes) {
+          alert('Invalid backup file format. Expected friends, encounters, or interactionTypes data.');
           return;
         }
 
@@ -120,8 +124,8 @@ export default function Settings({}: SettingsProps) {
         }
 
         // Import data
-        if (importData.data.friends) {
-          await db.friends.bulkAdd(importData.data.friends.map((f: any) => ({
+        if (backupData.friends && backupData.friends.length > 0) {
+          await db.friends.bulkAdd(backupData.friends.map((f: any) => ({
             ...f,
             createdAt: new Date(f.createdAt),
             updatedAt: f.updatedAt ? new Date(f.updatedAt) : undefined,
@@ -129,8 +133,8 @@ export default function Settings({}: SettingsProps) {
           })));
         }
 
-        if (importData.data.encounters) {
-          await db.encounters.bulkAdd(importData.data.encounters.map((e: any) => ({
+        if (backupData.encounters && backupData.encounters.length > 0) {
+          await db.encounters.bulkAdd(backupData.encounters.map((e: any) => ({
             ...e,
             date: new Date(e.date),
             createdAt: new Date(e.createdAt),
@@ -138,12 +142,12 @@ export default function Settings({}: SettingsProps) {
           })));
         }
 
-        if (importData.data.interactionTypes) {
-          await db.interactionTypes.bulkAdd(importData.data.interactionTypes);
+        if (backupData.interactionTypes && backupData.interactionTypes.length > 0) {
+          await db.interactionTypes.bulkAdd(backupData.interactionTypes);
         }
 
-        if (importData.data.settings) {
-          await db.settings.bulkAdd(importData.data.settings.map((s: any) => ({
+        if (backupData.settings && backupData.settings.length > 0) {
+          await db.settings.bulkAdd(backupData.settings.map((s: any) => ({
             ...s,
             createdAt: new Date(s.createdAt),
             updatedAt: s.updatedAt ? new Date(s.updatedAt) : undefined
