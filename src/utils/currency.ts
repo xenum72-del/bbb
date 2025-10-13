@@ -3,6 +3,30 @@
 // Free exchange rate API (no auth required, 1500 requests/month)
 const EXCHANGE_API_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
 
+// Supported currencies with their display information
+export const CURRENCIES = [
+  { code: 'USD', name: 'US Dollar', symbol: '$', flag: '🇺🇸' },
+  { code: 'EUR', name: 'Euro', symbol: '€', flag: '🇪🇺' },
+  { code: 'GBP', name: 'British Pound', symbol: '£', flag: '🇬🇧' },
+  { code: 'JPY', name: 'Japanese Yen', symbol: '¥', flag: '🇯🇵' },
+  { code: 'AUD', name: 'Australian Dollar', symbol: '$', flag: '🇦🇺' },
+  { code: 'CAD', name: 'Canadian Dollar', symbol: '$', flag: '🇨🇦' },
+  { code: 'CHF', name: 'Swiss Franc', symbol: '₣', flag: '🇨🇭' },
+  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', flag: '🇨🇳' },
+  { code: 'SEK', name: 'Swedish Krona', symbol: 'kr', flag: '🇸🇪' },
+  { code: 'NZD', name: 'New Zealand Dollar', symbol: '$', flag: '🇳🇿' },
+  { code: 'MXN', name: 'Mexican Peso', symbol: '$', flag: '🇲🇽' },
+  { code: 'SGD', name: 'Singapore Dollar', symbol: '$', flag: '🇸🇬' },
+  { code: 'HKD', name: 'Hong Kong Dollar', symbol: '$', flag: '🇭🇰' },
+  { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr', flag: '🇳🇴' },
+  { code: 'KRW', name: 'South Korean Won', symbol: '₩', flag: '🇰🇷' },
+  { code: 'TRY', name: 'Turkish Lira', symbol: '₺', flag: '🇹🇷' },
+  { code: 'RUB', name: 'Russian Ruble', symbol: '₽', flag: '🇷🇺' },
+  { code: 'INR', name: 'Indian Rupee', symbol: '₹', flag: '🇮🇳' },
+  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', flag: '🇧🇷' },
+  { code: 'ZAR', name: 'South African Rand', symbol: 'R', flag: '🇿🇦' }
+] as const;
+
 interface ExchangeRates {
   base: string;
   date: string;
