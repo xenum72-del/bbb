@@ -486,15 +486,116 @@ export default function Friends({ onNavigate }: FriendsProps) {
             <div className="space-y-3 pb-3 border-b border-gray-200 dark:border-gray-600">
               <h4 className="font-semibold text-sm text-gray-600 dark:text-gray-400">Pictures</h4>
               
-              <div>
-                <label className="block text-sm font-medium mb-1">Picture URLs</label>
-                <textarea
-                  value={formData.pictures.join('\n')}
-                  onChange={(e) => setFormData(f => ({...f, pictures: e.target.value.split('\n').filter(url => url.trim())}))}
-                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600"
-                  rows={3}
-                  placeholder="https://example.com/photo1.jpg&#10;https://example.com/photo2.jpg&#10;(one URL per line)"
-                />
+              {/* Photo Action Buttons */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.multiple = true;
+                    input.onchange = async (e) => {
+                      const files = (e.target as HTMLInputElement).files;
+                      if (!files) return;
+                      
+                      const newPictures: string[] = [];
+                      for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                          alert(`${file.name} is too large. Max size is 5MB.`);
+                          continue;
+                        }
+                        
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          const result = e.target?.result as string;
+                          newPictures.push(result);
+                          if (newPictures.length === files.length || newPictures.length === i + 1) {
+                            setFormData(f => ({...f, pictures: [...f.pictures, ...newPictures]}));
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    };
+                    input.click();
+                  }}
+                  className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                >
+                  📷 Choose Photos
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.capture = 'environment'; // Use back camera
+                    input.onchange = async (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (!file) return;
+                      
+                      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                        alert('Photo is too large. Max size is 5MB.');
+                        return;
+                      }
+                      
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        const result = e.target?.result as string;
+                        setFormData(f => ({...f, pictures: [...f.pictures, result]}));
+                      };
+                      reader.readAsDataURL(file);
+                    };
+                    input.click();
+                  }}
+                  className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
+                >
+                  📱 Take Photo
+                </button>
+
+                {formData.pictures.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData(f => ({...f, pictures: []}))}
+                    className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
+                  >
+                    🗑️ Clear All
+                  </button>
+                )}
+              </div>
+
+              {/* Photo Preview */}
+              {formData.pictures.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">{formData.pictures.length} photo(s) selected:</div>
+                  <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto">
+                    {formData.pictures.map((picture, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={picture}
+                          alt={`Photo ${index + 1}`}
+                          className="w-full h-20 object-cover rounded border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData(f => ({
+                            ...f, 
+                            pictures: f.pictures.filter((_, i) => i !== index)
+                          }))}
+                          className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="text-xs text-gray-500">
+                Max 5MB per photo. Photos are stored locally in your browser.
               </div>
             </div>
 
@@ -531,14 +632,102 @@ export default function Friends({ onNavigate }: FriendsProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Avatar URL</label>
-                <input
-                  type="url"
-                  value={formData.avatarUrl}
-                  onChange={(e) => setFormData(f => ({...f, avatarUrl: e.target.value}))}
-                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600"
-                  placeholder="https://..."
-                />
+                <label className="block text-sm font-medium mb-1">Profile Picture</label>
+                
+                {/* Avatar Actions */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = async (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0];
+                        if (!file) return;
+                        
+                        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                          alert('Photo is too large. Max size is 5MB.');
+                          return;
+                        }
+                        
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          const result = e.target?.result as string;
+                          setFormData(f => ({...f, avatarUrl: result}));
+                        };
+                        reader.readAsDataURL(file);
+                      };
+                      input.click();
+                    }}
+                    className="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                  >
+                    📷 Choose Photo
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.capture = 'user'; // Use front camera for profile pic
+                      input.onchange = async (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0];
+                        if (!file) return;
+                        
+                        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                          alert('Photo is too large. Max size is 5MB.');
+                          return;
+                        }
+                        
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          const result = e.target?.result as string;
+                          setFormData(f => ({...f, avatarUrl: result}));
+                        };
+                        reader.readAsDataURL(file);
+                      };
+                      input.click();
+                    }}
+                    className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
+                  >
+                    🤳 Take Selfie
+                  </button>
+
+                  {formData.avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData(f => ({...f, avatarUrl: ''}))}
+                      className="px-3 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
+                    >
+                      🗑️ Remove
+                    </button>
+                  )}
+                </div>
+
+                {/* Avatar Preview */}
+                {formData.avatarUrl && (
+                  <div className="mb-2">
+                    <img
+                      src={formData.avatarUrl}
+                      alt="Avatar preview"
+                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                    />
+                  </div>
+                )}
+                
+                {/* Fallback URL input */}
+                <details className="text-xs text-gray-500">
+                  <summary className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">Or enter URL manually</summary>
+                  <input
+                    type="url"
+                    value={formData.avatarUrl}
+                    onChange={(e) => setFormData(f => ({...f, avatarUrl: e.target.value}))}
+                    className="w-full p-1 mt-1 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 text-xs"
+                    placeholder="https://..."
+                  />
+                </details>
               </div>
 
               <div>
