@@ -10,6 +10,7 @@ on:
       - 'vite.config.ts'
       - 'package.json'
       - '.github/workflows/**'
+      - 'README.md'
   pull_request:
     branches: [ main ]
   schedule:
