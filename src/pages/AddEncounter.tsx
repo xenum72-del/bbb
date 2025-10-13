@@ -24,7 +24,8 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
       place: '',
       lat: '',
       lon: ''
-    }
+    },
+    pictures: [] as string[] // Array of image URLs
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,7 +51,8 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
           place: formData.location.place.trim() || undefined,
           lat: formData.location.lat ? Number(formData.location.lat) : 0,
           lon: formData.location.lon ? Number(formData.location.lon) : 0,
-        } : undefined
+        } : undefined,
+        photos: formData.pictures.length > 0 ? formData.pictures : undefined
       };
 
       await encountersApi.create(encounter);
@@ -254,8 +256,11 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
               location: {...f.location, place: e.target.value}
             }))}
             className="w-full p-2 border rounded bg-white dark:bg-gray-700"
-            placeholder="e.g., Coffee Shop Downtown"
+            placeholder="e.g., My apartment, Hotel, Bar name, Address, etc."
           />
+          <div className="text-xs text-gray-500 mt-1">
+            Enter any location: home, hotel, address, venue name
+          </div>
         </div>
 
         {/* Tags */}
@@ -283,6 +288,21 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
             rows={3}
             placeholder="How did it go? What happened?"
           />
+        </div>
+
+        {/* Pictures */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Pictures</label>
+          <textarea
+            value={formData.pictures.join('\n')}
+            onChange={(e) => setFormData(f => ({...f, pictures: e.target.value.split('\n').filter(url => url.trim())}))}
+            className="w-full p-2 border rounded bg-white dark:bg-gray-700"
+            rows={3}
+            placeholder="https://example.com/photo1.jpg&#10;https://example.com/photo2.jpg&#10;(one URL per line)"
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            Add photo URLs, one per line
+          </div>
         </div>
 
         {/* Submit */}
