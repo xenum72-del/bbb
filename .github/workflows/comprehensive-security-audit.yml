@@ -292,11 +292,9 @@ jobs:
           BEHAVIOR_SCORE=$(node -p "
             try {
               const data = JSON.parse(require('fs').readFileSync('behavior-security-report.json', 'utf8'));
-              const score = data.summary?.totalScore || data.totalScore || data.score || 75;
-              console.log('Parsed behavioral score:', score);
+              const score = data.summary?.overallSafety?.score || data.summary?.totalScore || data.totalScore || data.score || 75;
               score;
             } catch (e) {
-              console.log('Error parsing behavioral score:', e.message);
               75;
             }
           " 2>/dev/null || echo "75")
