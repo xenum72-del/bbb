@@ -1,5 +1,5 @@
 {
-  "name": "encounter-ledger-behavioral-tests",
+  "name": "the-load-down-behavioral-tests",
   "version": "1.0.0", 
   "description": "Comprehensive behavioral security testing for Encounter Ledger PWA",
   "scripts": {
