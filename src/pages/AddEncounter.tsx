@@ -29,6 +29,11 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
     pictures: [] as string[] // Array of image URLs
   });
 
+  const [searchQueries, setSearchQueries] = useState({
+    activities: '',
+    participants: ''
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -111,38 +116,53 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
               ({formData.activitiesPerformed.length} selected)
             </span>
           </label>
+          
+          {/* Activities Search */}
+          <input
+            type="text"
+            placeholder="🔍 Search activities..."
+            value={searchQueries.activities}
+            onChange={(e) => setSearchQueries(sq => ({...sq, activities: e.target.value}))}
+            className="w-full p-2 mb-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+          />
+          
           <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border rounded p-2 bg-gray-50 dark:bg-gray-800">
-            {interactionTypes.map(type => {
-              const isSelected = formData.activitiesPerformed.includes(type.id!);
-              return (
-                <label
-                  key={type.id}
-                  className={`flex items-center space-x-3 p-2 rounded cursor-pointer transition-colors ${
-                    isSelected
-                      ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600'
-                      : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
-                  } border`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={(e) => {
-                      const typeId = type.id!;
-                      setFormData(f => ({
-                        ...f,
-                        activitiesPerformed: e.target.checked
-                          ? [...f.activitiesPerformed, typeId]
-                          : f.activitiesPerformed.filter(id => id !== typeId),
-                        typeId: e.target.checked && f.activitiesPerformed.length === 0 ? typeId : f.typeId // Update primary typeId
-                      }));
-                    }}
-                    className="rounded text-blue-600"
-                  />
-                  <span className="text-lg">{type.icon}</span>
-                  <span className="font-medium flex-1">{type.name}</span>
-                </label>
-              );
-            })}
+            {interactionTypes
+              .filter(type => 
+                searchQueries.activities === '' ||
+                type.name.toLowerCase().includes(searchQueries.activities.toLowerCase())
+              )
+              .map(type => {
+                const isSelected = formData.activitiesPerformed.includes(type.id!);
+                return (
+                  <label
+                    key={type.id}
+                    className={`flex items-center space-x-3 p-2 rounded cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600'
+                        : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
+                    } border`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => {
+                        const typeId = type.id!;
+                        setFormData(f => ({
+                          ...f,
+                          activitiesPerformed: e.target.checked
+                            ? [...f.activitiesPerformed, typeId]
+                            : f.activitiesPerformed.filter(id => id !== typeId),
+                          typeId: e.target.checked && f.activitiesPerformed.length === 0 ? typeId : f.typeId // Update primary typeId
+                        }));
+                      }}
+                      className="rounded text-blue-600"
+                    />
+                    <span className="text-lg">{type.icon}</span>
+                    <span className="font-medium flex-1">{type.name}</span>
+                  </label>
+                );
+              })}
           </div>
           {formData.activitiesPerformed.length === 0 && (
             <div className="text-xs text-red-500 mt-1">
@@ -205,8 +225,23 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
                 </button>
               </div>
             ) : (
-              <div className="max-h-40 overflow-y-auto border rounded p-2">
-                {friends.map(friend => (
+              <div>
+                {/* Participants Search */}
+                <input
+                  type="text"
+                  placeholder="🔍 Search friends..."
+                  value={searchQueries.participants}
+                  onChange={(e) => setSearchQueries(sq => ({...sq, participants: e.target.value}))}
+                  className="w-full p-2 mb-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 text-sm"
+                />
+                
+                <div className="max-h-40 overflow-y-auto border rounded p-2">
+                  {friends
+                    .filter(friend =>
+                      searchQueries.participants === '' ||
+                      friend.name.toLowerCase().includes(searchQueries.participants.toLowerCase())
+                    )
+                    .map(friend => (
                   <label
                     key={friend.id}
                     className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
@@ -230,7 +265,8 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
                     </div>
                     <span>{friend.name}</span>
                   </label>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -277,7 +313,10 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
 
         {/* Location */}
         <div>
-          <label className="block text-sm font-medium mb-1">Location</label>
+          <label className="block text-sm font-medium mb-1">
+            Location 
+            <span className="text-xs text-gray-500 font-normal"> (currently text-only, no online search yet)</span>
+          </label>
           <input
             type="text"
             value={formData.location.place}
@@ -286,25 +325,29 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
               location: {...f.location, place: e.target.value}
             }))}
             className="w-full p-2 border rounded bg-white dark:bg-gray-700"
-            placeholder="e.g., My apartment, Hotel, Bar name, Address, etc."
+            placeholder="e.g., My place, His apartment, Hotel Marriott, Central Park, Gym locker room, Office, Car"
           />
           <div className="text-xs text-gray-500 mt-1">
-            Enter any location: home, hotel, address, venue name
+            📍 <strong>Note:</strong> Location search integration (Google Places, etc.) is not implemented yet. 
+            For now, just type location names manually. Common examples: "My place", "His apartment", "Hotel [name]", "Sauna", "Park", "Car", "Office", etc.
           </div>
         </div>
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium mb-1">Tags</label>
+          <label className="block text-sm font-medium mb-1">
+            Tags 
+            <span className="text-xs text-gray-500 font-normal"> (for filtering & analytics)</span>
+          </label>
           <input
             type="text"
             value={formData.tags}
             onChange={(e) => setFormData(f => ({...f, tags: e.target.value}))}
             className="w-full p-2 border rounded bg-white dark:bg-gray-700"
-            placeholder="e.g., work, casual, celebration (comma-separated)"
+            placeholder="e.g., vacation, drunk, kinky, spontaneous, planned, first-time, celebration"
           />
           <div className="text-xs text-gray-500 mt-1">
-            Separate multiple tags with commas
+            Add custom tags for filtering encounters later. Examples: "vacation", "drunk", "kinky", "romantic", "revenge", "hookup", "fwb", "first-time", "makeup-sex"
           </div>
         </div>
 
