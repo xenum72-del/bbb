@@ -167,8 +167,36 @@ async function generateTestEncounter(friendIds: number[], index: number): Promis
     tags: [`tag${index}`, `test-encounter`],
     notes: `Test encounter #${index + 1} - Generated for comprehensive testing`,
     photos,
-    amountGiven: Math.random() > 0.7 ? Math.floor(Math.random() * 500) + 50 : undefined,
-    currency: Math.random() > 0.7 ? ['USD', 'EUR', 'GBP'][Math.floor(Math.random() * 3)] as any : undefined
+    
+    // Enhanced payment data (50% of encounters have payment info)
+    ...(Math.random() > 0.5 ? {
+      isPaid: true,
+      paymentType: Math.random() > 0.5 ? 'received' as const : 'given' as const,
+      amountAsked: Math.floor(Math.random() * 400) + 100, // $100-500 asked
+      amountGiven: Math.floor(Math.random() * 300) + 80,   // $80-380 actually paid
+      currency: ['USD', 'EUR', 'GBP', 'CAD', 'AUD'][Math.floor(Math.random() * 5)] as any,
+      paymentMethod: ['cash', 'venmo', 'cashapp', 'paypal', 'zelle', 'crypto'][Math.floor(Math.random() * 6)] as any,
+      paymentNotes: [
+        'Quick and easy transaction',
+        'Paid upfront as agreed',
+        'Negotiated down from original price',
+        'Tip included for great service',
+        'Split payment - cash + app',
+        'Generous bonus for extra time'
+      ][Math.floor(Math.random() * 6)]
+    } : {}),
+    
+    // Additional encounter details
+    myRole: ['Top', 'Bottom', 'Versatile', 'Side'][Math.floor(Math.random() * 4)] as any,
+    theirRole: ['Top', 'Bottom', 'Versatile', 'Side'][Math.floor(Math.random() * 4)] as any,
+    condomUsed: Math.random() > 0.3, // 70% used condoms
+    wouldRepeat: Math.random() > 0.2, // 80% would repeat
+    chemistry: 1 + Math.floor(Math.random() * 5), // 1-5 chemistry rating
+    kinkiness: 1 + Math.floor(Math.random() * 5), // 1-5 kinkiness rating
+    discussedStatus: Math.random() > 0.4, // 60% discussed status
+    feelsSafe: Math.random() > 0.1, // 90% felt safe
+    exchangedContacts: Math.random() > 0.5, // 50% exchanged contacts
+    plannedMeetAgain: Math.random() > 0.6 // 40% planned to meet again
   };
 }
 
@@ -569,6 +597,17 @@ export async function createTestDataOnly(): Promise<void> {
   
   console.log('🎨 Test data created successfully!');
   console.log(`✨ Generated ${friendIds.length} friends and ${encounterIds.length} encounters`);
+  
+  // Check payment data
+  const allEncounters = await db.encounters.toArray();
+  const paidEncounters = allEncounters.filter(e => e.isPaid);
+  console.log(`💰 Payment data: ${paidEncounters.length}/${allEncounters.length} encounters have payment info`);
+  
+  if (paidEncounters.length > 0) {
+    const samplePayment = paidEncounters[0];
+    console.log(`💳 Sample payment: ${samplePayment.paymentType} $${samplePayment.amountGiven} ${samplePayment.currency} via ${samplePayment.paymentMethod}`);
+  }
+  
   console.log('Navigate to Friends and Timeline pages to see the generated data');
 }
 
