@@ -7,6 +7,8 @@ import Settings from './pages/Settings'
 import AddEncounter from './pages/AddEncounter'
 import EditEncounter from './pages/EditEncounter'
 import TestRunner from './components/TestRunner'
+import UnlockScreen from './components/UnlockScreen'
+import { requiresUnlock, updateLastActivity, shouldAutoLock, lockSession } from './utils/security'
 
 type Page = 'dashboard' | 'timeline' | 'friends' | 'analytics' | 'settings' | 'add' | 'tests' | string
 
@@ -16,7 +18,62 @@ function App() {
     const saved = localStorage.getItem('darkMode')
     return saved ? JSON.parse(saved) : false
   })
+  const [isUnlocked, setIsUnlocked] = useState(false)
+  const [needsUnlock, setNeedsUnlock] = useState(true)
 
+  // Check security status on app start
+  useEffect(() => {
+    const checkSecurity = () => {
+      const needsAuth = requiresUnlock()
+      setNeedsUnlock(needsAuth)
+      setIsUnlocked(!needsAuth)
+    }
+    
+    checkSecurity()
+  }, [])
+
+  // Update activity and check auto-lock periodically
+  useEffect(() => {
+    let autoLockTimer: number
+
+    if (isUnlocked) {
+      // Update activity on user interactions
+      const handleActivity = () => {
+        updateLastActivity()
+      }
+
+      // Listen for user activity
+      window.addEventListener('mousedown', handleActivity)
+      window.addEventListener('keydown', handleActivity)
+      window.addEventListener('touchstart', handleActivity)
+      window.addEventListener('scroll', handleActivity)
+
+      // Check for auto-lock every 30 seconds
+      autoLockTimer = window.setInterval(() => {
+        if (shouldAutoLock()) {
+          lockSession()
+          setIsUnlocked(false)
+          setNeedsUnlock(true)
+        }
+      }, 30000)
+
+      return () => {
+        window.removeEventListener('mousedown', handleActivity)
+        window.removeEventListener('keydown', handleActivity)
+        window.removeEventListener('touchstart', handleActivity)
+        window.removeEventListener('scroll', handleActivity)
+        clearInterval(autoLockTimer)
+      }
+    }
+  }, [isUnlocked])
+
+  const handleUnlocked = () => {
+    setIsUnlocked(true)
+    setNeedsUnlock(false)
+    updateLastActivity()
+  }
+
+  // Dark mode effect
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(isDarkMode))
     if (isDarkMode) {
@@ -61,6 +118,11 @@ function App() {
       default:
         return <Dashboard onNavigate={navigate} />
     }
+  }
+
+  // Show unlock screen if security is required
+  if (needsUnlock) {
+    return <UnlockScreen onUnlocked={handleUnlocked} />
   }
 
   return (

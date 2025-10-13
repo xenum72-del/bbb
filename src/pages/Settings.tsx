@@ -2,8 +2,16 @@ import { useSettings, useInteractionTypes, settingsApi } from '../hooks/useDatab
 import { useState, useEffect } from 'react';
 import { db, GAY_ACTIVITIES } from '../db/schema';
 import { showiOSBackupModal, isiOS, isiOSPWA } from '../utils/iosBackup';
-
-interface SettingsProps {
+import {
+  getSecuritySettings,
+  saveSecuritySettings,
+  setupPin,
+  removePin,
+  verifyPin,
+  setupBiometrics,
+  disableBiometrics,
+  lockSession
+} from '../utils/security';interface SettingsProps {
   onNavigate: (page: string) => void;
 }
 
@@ -26,6 +34,11 @@ export default function Settings({ onNavigate }: SettingsProps) {
   });
 
   const [showExport, setShowExport] = useState(false);
+  const [securitySettings, setSecuritySettings] = useState(() => getSecuritySettings());
+  const [showPinSetup, setShowPinSetup] = useState(false);
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [currentPin, setCurrentPin] = useState('');
 
   useEffect(() => {
     if (settings) {
@@ -39,6 +52,76 @@ export default function Settings({ onNavigate }: SettingsProps) {
       });
     }
   }, [settings]);
+
+  // Refresh security settings
+  useEffect(() => {
+    setSecuritySettings(getSecuritySettings());
+  }, []);
+
+  // Security functions
+  const handlePinSetup = async () => {
+    if (newPin !== confirmPin) {
+      alert('PINs do not match');
+      return;
+    }
+    if (newPin.length < 4) {
+      alert('PIN must be at least 4 digits');
+      return;
+    }
+    
+    try {
+      await setupPin(newPin);
+      setSecuritySettings(getSecuritySettings());
+      setShowPinSetup(false);
+      setNewPin('');
+      setConfirmPin('');
+      alert('PIN set successfully!');
+    } catch (error) {
+      alert('Error setting PIN: ' + (error as Error).message);
+    }
+  };
+
+  const handlePinRemove = async () => {
+    if (!currentPin) {
+      alert('Please enter your current PIN');
+      return;
+    }
+    
+    try {
+      // Verify current PIN first
+      const isValid = await verifyPin(currentPin);
+      if (!isValid) {
+        alert('Incorrect PIN');
+        return;
+      }
+      
+      removePin();
+      setSecuritySettings(getSecuritySettings());
+      setCurrentPin('');
+      alert('PIN removed successfully');
+    } catch (error) {
+      alert('Error removing PIN: ' + (error as Error).message);
+    }
+  };
+
+  const handleBiometricsToggle = async () => {
+    try {
+      if (securitySettings.biometricsEnabled) {
+        await disableBiometrics();
+      } else {
+        await setupBiometrics();
+      }
+      setSecuritySettings(getSecuritySettings());
+    } catch (error) {
+      alert('Error with biometrics: ' + (error as Error).message);
+    }
+  };
+
+  const handleAutoLockChange = (minutes: number) => {
+    const updated = { ...securitySettings, autoLockMinutes: minutes };
+    saveSecuritySettings(updated);
+    setSecuritySettings(updated);
+  };
 
   const handleSaveSettings = async () => {
     try {
@@ -296,6 +379,152 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 <span className="text-sm flex-1 truncate">{type.name}</span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Security Settings */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-600 rounded-xl flex items-center justify-center">
+              <span className="text-white text-xl">🔒</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+                Security & Privacy
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Protect your intimate data with PIN or biometrics</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* PIN Section */}
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h4 className="font-medium">PIN Protection</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {securitySettings.hasPin ? 'PIN is enabled' : 'No PIN set'}
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  {securitySettings.hasPin ? (
+                    <button
+                      onClick={() => {
+                        const pin = prompt('Enter current PIN to remove:');
+                        if (pin) {
+                          setCurrentPin(pin);
+                          handlePinRemove();
+                        }
+                      }}
+                      className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setShowPinSetup(!showPinSetup)}
+                      className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors"
+                    >
+                      Set PIN
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {showPinSetup && (
+                <div className="space-y-3 border-t pt-3">
+                  <input
+                    type="password"
+                    placeholder="Enter 4+ digit PIN"
+                    value={newPin}
+                    onChange={(e) => setNewPin(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Confirm PIN"
+                    value={confirmPin}
+                    onChange={(e) => setConfirmPin(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600"
+                  />
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={handlePinSetup}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      Save PIN
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowPinSetup(false);
+                        setNewPin('');
+                        setConfirmPin('');
+                      }}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Biometrics Section */}
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Biometric Authentication</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Use Face ID, Touch ID, or fingerprint
+                  </p>
+                </div>
+                <button
+                  onClick={handleBiometricsToggle}
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                    securitySettings.biometricsEnabled
+                      ? 'bg-green-500 text-white hover:bg-green-600'
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  {securitySettings.biometricsEnabled ? 'Enabled' : 'Enable'}
+                </button>
+              </div>
+            </div>
+
+            {/* Auto-lock Section */}
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+              <div>
+                <h4 className="font-medium mb-3">Auto-lock Timer</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Lock app after: {securitySettings.autoLockMinutes} minutes
+                </p>
+                <select
+                  value={securitySettings.autoLockMinutes}
+                  onChange={(e) => handleAutoLockChange(Number(e.target.value))}
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600"
+                >
+                  <option value={1}>1 minute</option>
+                  <option value={5}>5 minutes</option>
+                  <option value={15}>15 minutes</option>
+                  <option value={30}>30 minutes</option>
+                  <option value={60}>1 hour</option>
+                  <option value={0}>Never</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Lock Now Button */}
+            {securitySettings.hasPin || securitySettings.biometricsEnabled ? (
+              <button
+                onClick={() => {
+                  lockSession();
+                  window.location.reload(); // Force re-authentication
+                }}
+                className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl font-medium hover:shadow-lg hover:scale-105 transition-all duration-200"
+              >
+                🔒 Lock App Now
+              </button>
+            ) : null}
           </div>
         </div>
 
