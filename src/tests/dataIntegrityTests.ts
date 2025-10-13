@@ -3,13 +3,13 @@ import { friendsApi, encountersApi } from '../hooks/useDatabase';
 import { createBackup, restoreFromBackup } from '../utils/backup';
 import type { Friend, Encounter } from '../db/schema';
 
-// Test configuration
+// Test configuration - SIGNIFICANTLY MORE DATA
 const TEST_CONFIG = {
-  FRIENDS_COUNT: 10,
-  ENCOUNTERS_COUNT: 20,
-  PHOTOS_PER_FRIEND: 3,
-  PHOTOS_PER_ENCOUNTER: 2,
-  TEST_TIMEOUT: 30000 // 30 seconds
+  FRIENDS_COUNT: 50,           // 5x more friends
+  ENCOUNTERS_COUNT: 200,       // 10x more encounters  
+  PHOTOS_PER_FRIEND: 5,        // More photos per friend
+  PHOTOS_PER_ENCOUNTER: 4,     // More photos per encounter
+  TEST_TIMEOUT: 60000          // 60 seconds for larger dataset
 };
 
 // Test utilities
@@ -66,11 +66,36 @@ function generateTestPhoto(): string {
 }
 
 function generateTestFriend(index: number): Omit<Friend, 'id' | 'createdAt' | 'updatedAt'> {
-  const names = ['Alex', 'Blake', 'Casey', 'Drew', 'Emery', 'Finley', 'Gray', 'Harley', 'Indigo', 'Jazz'];
+  // Expanded name pools for more diversity
+  const firstNames = [
+    'Alex', 'Blake', 'Casey', 'Drew', 'Emery', 'Finley', 'Gray', 'Harley', 'Indigo', 'Jazz',
+    'Kai', 'Logan', 'Morgan', 'Noah', 'Oakley', 'Parker', 'Quinn', 'River', 'Sage', 'Taylor',
+    'Adrian', 'Brandon', 'Carter', 'Daniel', 'Ethan', 'Felix', 'Gabriel', 'Hunter', 'Ivan', 'Jake',
+    'Kyle', 'Liam', 'Mason', 'Nathan', 'Owen', 'Preston', 'Quincy', 'Ryan', 'Sean', 'Tyler',
+    'Victor', 'Wesley', 'Xavier', 'Yuki', 'Zane', 'Aiden', 'Bryce', 'Colin', 'Dylan', 'Eli'
+  ];
+  
+  const lastNames = [
+    'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
+    'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
+    'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson'
+  ];
+  
   const bodyTypes = ['Slim', 'Athletic', 'Average', 'Muscular', 'Chubby', 'Bear', 'Daddy', 'Twink', 'Otter'];
   const roles = ['Top', 'Bottom', 'Versatile', 'Vers Top', 'Vers Bottom', 'Side'];
-  const hivStatuses = ['Negative', 'Positive Undetectable', 'Unknown'];
-  const relationships = ['Single', 'Taken', 'Open Relationship', 'Married'];
+  const hivStatuses = ['Negative', 'Positive Undetectable', 'Unknown', 'Prefer Not to Say'];
+  const relationships = ['Single', 'Taken', 'Open Relationship', 'Married', 'Complicated'];
+  const ethnicities = ['White', 'Black', 'Latino', 'Asian', 'Middle Eastern', 'Native American', 'Mixed', 'Other'];
+  const occupations = [
+    'Teacher', 'Engineer', 'Doctor', 'Nurse', 'Artist', 'Chef', 'Lawyer', 'Student', 'Trainer', 'Designer',
+    'Developer', 'Consultant', 'Manager', 'Therapist', 'Photographer', 'Writer', 'Musician', 'Actor',
+    'Entrepreneur', 'Mechanic', 'Bartender', 'Server', 'Retail', 'Sales', 'Marketing', 'Finance'
+  ];
+  const cities = [
+    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego',
+    'Dallas', 'San Jose', 'Austin', 'Jacksonville', 'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco',
+    'Indianapolis', 'Seattle', 'Denver', 'Washington DC', 'Boston', 'Nashville', 'Baltimore', 'Portland'
+  ];
   
   const photos = [];
   for (let i = 0; i < TEST_CONFIG.PHOTOS_PER_FRIEND; i++) {
@@ -87,41 +112,74 @@ function generateTestFriend(index: number): Omit<Friend, 'id' | 'createdAt' | 'u
   }
   
   return {
-    name: `${names[index % names.length]} ${index + 1}`,
+    name: `${firstNames[index % firstNames.length]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
     avatarUrl: generateTestPhoto(),
-    notes: `Test friend #${index + 1} - Generated for data integrity testing`,
-    age: 18 + Math.floor(Math.random() * 30),
+    notes: `Test friend #${index + 1} - Generated for comprehensive testing. Lives in ${cities[Math.floor(Math.random() * cities.length)]}.`,
+    age: 18 + Math.floor(Math.random() * 45), // Ages 18-62
     height: `${5 + Math.floor(Math.random() * 2)}'${Math.floor(Math.random() * 12)}"`,
-    weight: `${120 + Math.floor(Math.random() * 80)} lbs`,
+    weight: `${120 + Math.floor(Math.random() * 120)} lbs`, // 120-240 lbs
     bodyType: bodyTypes[Math.floor(Math.random() * bodyTypes.length)] as any,
+    ethnicity: ethnicities[Math.floor(Math.random() * ethnicities.length)],
     sexualRole: roles[Math.floor(Math.random() * roles.length)] as any,
-    dickSize: `${4 + Math.floor(Math.random() * 5)} inches`,
+    dickSize: `${3 + Math.floor(Math.random() * 7)} inches`, // 3-9 inches
+    dickType: Math.random() > 0.3 ? 'Cut' : 'Uncut' as any, // 70% cut
     preferences,
-    limits: ['No bareback', 'No pain'].slice(0, Math.floor(Math.random() * 2) + 1),
+    limits: ['No bareback', 'No pain', 'No kissing', 'No anal', 'No oral'].slice(0, Math.floor(Math.random() * 3)),
+    metOn: ['Grindr', 'Romeo', 'Tinder', 'Instagram', 'Bar/Club', 'Friend Intro', 'Work', 'Gym'][Math.floor(Math.random() * 8)] as any,
     socialProfiles: {
-      grindr: `testuser${index}`,
-      instagram: `@testuser${index}`,
-      twitter: `@test${index}`,
-      telegram: `@user${index}`,
-      whatsapp: `+1555000${String(index).padStart(4, '0')}`,
-      phone: `+1555000${String(index).padStart(4, '0')}`
+      grindr: Math.random() > 0.3 ? `${firstNames[index % firstNames.length].toLowerCase()}${Math.floor(Math.random() * 999)}` : undefined,
+      instagram: Math.random() > 0.5 ? `@${firstNames[index % firstNames.length].toLowerCase()}_${Math.floor(Math.random() * 99)}` : undefined,
+      twitter: Math.random() > 0.7 ? `@${firstNames[index % firstNames.length].toLowerCase()}${Math.floor(Math.random() * 999)}` : undefined,
+      telegram: Math.random() > 0.6 ? `@${firstNames[index % firstNames.length].toLowerCase()}${index}` : undefined,
+      whatsapp: Math.random() > 0.4 ? `+1${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 900) + 100}${String(index).padStart(4, '0')}` : undefined,
+      phone: Math.random() > 0.7 ? `+1${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 900) + 100}${String(index).padStart(4, '0')}` : undefined
     },
     photos,
-    lastTested: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000), // Random date in last year
+    lastTested: Math.random() > 0.2 ? new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000) : undefined,
     hivStatus: hivStatuses[Math.floor(Math.random() * hivStatuses.length)] as any,
-    onPrep: Math.random() > 0.5,
+    onPrep: Math.random() > 0.6, // 40% on PrEP
     relationshipStatus: relationships[Math.floor(Math.random() * relationships.length)] as any,
-    location: `${Math.floor(Math.random() * 10)} miles away`,
-    isArchived: false
+    overallRating: Math.random() > 0.3 ? 1 + Math.floor(Math.random() * 5) : undefined,
+    sexRating: Math.random() > 0.4 ? 1 + Math.floor(Math.random() * 5) : undefined,
+    personalityRating: Math.random() > 0.4 ? 1 + Math.floor(Math.random() * 5) : undefined,
+    location: `${cities[Math.floor(Math.random() * cities.length)]}, ${Math.floor(Math.random() * 20) + 1} miles away`,
+    canHost: Math.random() > 0.4, // 60% can host
+    canTravel: Math.random() > 0.3, // 70% can travel
+    occupation: occupations[Math.floor(Math.random() * occupations.length)],
+    languages: Math.random() > 0.5 ? ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'].slice(0, 1 + Math.floor(Math.random() * 2)) : ['English'],
+    tags: [`tag-${index}`, 'test-friend', 'generated'].concat(
+      Math.random() > 0.5 ? ['kinky'] : [],
+      Math.random() > 0.7 ? ['romantic'] : [],
+      Math.random() > 0.8 ? ['experienced'] : []
+    ),
+    isArchived: Math.random() > 0.95 // 5% archived
   };
 }
 
 async function generateTestEncounter(friendIds: number[], index: number): Promise<Omit<Encounter, 'id' | 'createdAt' | 'updatedAt'>> {
   const beneficiaries = ['me', 'friend', 'both'];
   const locations = [
-    { lat: 40.7128, lon: -74.0060, place: 'New York, NY' },
-    { lat: 34.0522, lon: -118.2437, place: 'Los Angeles, CA' },
-    { lat: 41.8781, lon: -87.6298, place: 'Chicago, IL' }
+    { lat: 40.7128, lon: -74.0060, place: 'Manhattan, New York' },
+    { lat: 34.0522, lon: -118.2437, place: 'West Hollywood, Los Angeles' },
+    { lat: 41.8781, lon: -87.6298, place: 'Boystown, Chicago' },
+    { lat: 37.7749, lon: -122.4194, place: 'Castro District, San Francisco' },
+    { lat: 25.7617, lon: -80.1918, place: 'South Beach, Miami' },
+    { lat: 30.2672, lon: -97.7431, place: 'Downtown Austin' },
+    { lat: 47.6062, lon: -122.3321, place: 'Capitol Hill, Seattle' },
+    { lat: 39.7392, lon: -104.9903, place: 'Denver, Colorado' },
+    { lat: 33.4484, lon: -112.0740, place: 'Phoenix, Arizona' },
+    { lat: 42.3601, lon: -71.0589, place: 'Back Bay, Boston' },
+    { lat: 32.7767, lon: -96.7970, place: 'Oak Lawn, Dallas' },
+    { lat: 29.7604, lon: -95.3698, place: 'Montrose, Houston' },
+    { lat: 39.2904, lon: -76.6122, place: 'Mount Vernon, Baltimore' },
+    { lat: 45.5152, lon: -122.6784, place: 'Pearl District, Portland' },
+    { lat: 36.1627, lon: -86.7816, place: 'Music Row, Nashville' }
+  ];
+  
+  const venues = [
+    'My place', 'Their place', 'Hotel room', 'Car', 'Public restroom', 'Park', 'Gym', 'Sauna',
+    'Bathhouse', 'Adult bookstore', 'Club back room', 'Parking garage', 'Beach', 'Cruise ship',
+    'Office building', 'Friend\'s place', 'AirBnB', 'Motel', 'Truck stop', 'Rest area'
   ];
   
   const photos = [];
@@ -163,9 +221,13 @@ async function generateTestEncounter(friendIds: number[], index: number): Promis
     isAnonymous: Math.random() > 0.8, // 20% anonymous
     beneficiary: beneficiaries[Math.floor(Math.random() * beneficiaries.length)] as any,
     durationMinutes: 15 + Math.floor(Math.random() * 180), // 15-195 minutes
-    location: Math.random() > 0.3 ? locations[Math.floor(Math.random() * locations.length)] : undefined,
-    tags: [`tag${index}`, `test-encounter`],
-    notes: `Test encounter #${index + 1} - Generated for comprehensive testing`,
+    location: Math.random() > 0.2 ? locations[Math.floor(Math.random() * locations.length)] : undefined,
+    tags: [`encounter-${index}`, `test-data`, Math.random() > 0.5 ? 'hot' : 'mild', Math.random() > 0.7 ? 'repeat' : 'first-time'],
+    notes: `Test encounter #${index + 1} at ${venues[Math.floor(Math.random() * venues.length)]}. ${
+      Math.random() > 0.5 ? 'Great chemistry and would definitely meet again!' : 
+      Math.random() > 0.5 ? 'Good time, exactly what we both wanted.' :
+      'Nice encounter, probably won\'t repeat but no regrets.'
+    }`,
     photos,
     
     // Enhanced payment data (50% of encounters have payment info)
@@ -567,7 +629,9 @@ export async function runDataIntegrityTests(keepTestData: boolean = false): Prom
 
 // Export function to create test data without running full tests
 export async function createTestDataOnly(): Promise<void> {
-  console.log('🎨 Creating test data...');
+  console.log('🎨 Creating MASSIVE test dataset...');
+  console.log(`📊 Generating ${TEST_CONFIG.FRIENDS_COUNT} friends and ${TEST_CONFIG.ENCOUNTERS_COUNT} encounters`);
+  console.log('⏳ This may take a moment due to the large dataset...');
   
   // Clear existing data
   await db.transaction('rw', [db.friends, db.encounters, db.interactionTypes], async () => {
@@ -579,36 +643,55 @@ export async function createTestDataOnly(): Promise<void> {
   // Add GAY_ACTIVITIES for encounters
   await db.interactionTypes.bulkAdd(GAY_ACTIVITIES);
   
-  // Create 10 test friends
+  // Create friends with progress logging
   const friendIds: number[] = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < TEST_CONFIG.FRIENDS_COUNT; i++) {
     const friendData = generateTestFriend(i);
     const friendId = await friendsApi.create(friendData);
     if (friendId) friendIds.push(friendId);
+    
+    // Progress logging every 10 friends
+    if ((i + 1) % 10 === 0) {
+      console.log(`👥 Created ${i + 1}/${TEST_CONFIG.FRIENDS_COUNT} friends...`);
+    }
   }
   
-  // Create 20 test encounters
+  // Create encounters with progress logging
   const encounterIds: number[] = [];
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < TEST_CONFIG.ENCOUNTERS_COUNT; i++) {
     const encounterData = await generateTestEncounter(friendIds, i);
     const encounterId = await encountersApi.create(encounterData);
     if (encounterId) encounterIds.push(encounterId);
+    
+    // Progress logging every 20 encounters
+    if ((i + 1) % 20 === 0) {
+      console.log(`🔥 Created ${i + 1}/${TEST_CONFIG.ENCOUNTERS_COUNT} encounters...`);
+    }
   }
   
-  console.log('🎨 Test data created successfully!');
+  console.log('� MASSIVE test dataset created successfully!');
   console.log(`✨ Generated ${friendIds.length} friends and ${encounterIds.length} encounters`);
   
-  // Check payment data
+  // Comprehensive statistics
+  const allFriends = await db.friends.toArray();
   const allEncounters = await db.encounters.toArray();
   const paidEncounters = allEncounters.filter(e => e.isPaid);
-  console.log(`💰 Payment data: ${paidEncounters.length}/${allEncounters.length} encounters have payment info`);
+  const totalPhotos = allFriends.reduce((sum, f) => sum + (f.photos?.length || 0), 0) + 
+                     allEncounters.reduce((sum, e) => sum + (e.photos?.length || 0), 0);
+  
+  console.log('📊 Dataset Statistics:');
+  console.log(`👥 Friends: ${allFriends.length} (${allFriends.filter(f => f.canHost).length} can host, ${allFriends.filter(f => f.onPrep).length} on PrEP)`);
+  console.log(`🔥 Encounters: ${allEncounters.length} (${paidEncounters.length} with payments, ${allEncounters.filter(e => e.wouldRepeat).length} would repeat)`);
+  console.log(`📸 Photos: ${totalPhotos} total (${allFriends.reduce((sum, f) => sum + (f.photos?.length || 0), 0)} friend photos + ${allEncounters.reduce((sum, e) => sum + (e.photos?.length || 0), 0)} encounter photos)`);
+  console.log(`💰 Payments: ${paidEncounters.length} encounters with payment data`);
+  console.log(`🌍 Locations: ${allEncounters.filter(e => e.location).length} encounters have location data`);
   
   if (paidEncounters.length > 0) {
-    const samplePayment = paidEncounters[0];
-    console.log(`💳 Sample payment: ${samplePayment.paymentType} $${samplePayment.amountGiven} ${samplePayment.currency} via ${samplePayment.paymentMethod}`);
+    const totalPaid = paidEncounters.reduce((sum, e) => sum + (e.amountGiven || 0), 0);
+    console.log(`💳 Total money involved: $${totalPaid.toFixed(2)} across all paid encounters`);
   }
   
-  console.log('Navigate to Friends and Timeline pages to see the generated data');
+  console.log('🎯 Navigate to Friends and Timeline pages to explore your massive dataset!');
 }
 
 // Global test functions for console access

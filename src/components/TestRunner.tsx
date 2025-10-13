@@ -128,20 +128,20 @@ const TestRunner: React.FC = () => {
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
               <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">👥 Friends Testing</h3>
               <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                <li>• Create 10 test friends</li>
-                <li>• Edit friend data</li>
-                <li>• Validate data integrity</li>
-                <li>• Test photos & preferences</li>
+                <li>• Create <strong>50 test friends</strong></li>
+                <li>• Rich profiles & photos (5 each)</li>
+                <li>• Social profiles & ratings</li>
+                <li>• Cities, occupations, ethnicities</li>
               </ul>
             </div>
             
             <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
               <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">🔥 Encounters Testing</h3>
               <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
-                <li>• Create 20 test encounters</li>
-                <li>• Edit encounter details</li>
-                <li>• Delete encounters</li>
-                <li>• Test photos & activities</li>
+                <li>• Create <strong>200 test encounters</strong></li>
+                <li>• Payment data (50% paid)</li>
+                <li>• Photos (4 each) & locations</li>
+                <li>• Ratings, roles, safety data</li>
               </ul>
             </div>
             
@@ -205,10 +205,13 @@ const TestRunner: React.FC = () => {
           </div>
 
           <div className="flex justify-center mt-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+            <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
               <strong>🧪 Clean Tests:</strong> Validates everything, cleans up after<br/>
               <strong>🎨 Keep Data:</strong> Same tests but leaves data for exploration<br/>
-              <strong>🎨 Data Only:</strong> Just creates test friends & encounters
+              <strong>🎨 Data Only:</strong> Creates <strong>50 friends + 200 encounters</strong> with photos<br/>
+              <div className="mt-2 text-xs opacity-75">
+                ⚠️ Large dataset may take 30-60 seconds to generate
+              </div>
             </div>
             
             {testsPassed !== null && (
