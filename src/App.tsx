@@ -6,8 +6,9 @@ import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
 import AddEncounter from './pages/AddEncounter'
 import EditEncounter from './pages/EditEncounter'
+import TestRunner from './components/TestRunner'
 
-type Page = 'dashboard' | 'timeline' | 'friends' | 'analytics' | 'settings' | 'add' | string
+type Page = 'dashboard' | 'timeline' | 'friends' | 'analytics' | 'settings' | 'add' | 'tests' | string
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
@@ -55,6 +56,8 @@ function App() {
         return <Settings onNavigate={navigate} />
       case 'add':
         return <AddEncounter onNavigate={navigate} />
+      case 'tests':
+        return <TestRunner />
       default:
         return <Dashboard onNavigate={navigate} />
     }
