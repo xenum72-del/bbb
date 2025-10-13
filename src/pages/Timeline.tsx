@@ -36,8 +36,12 @@ export default function Timeline({ onNavigate }: TimelineProps) {
       }
     }
 
-    if (filters.typeId !== 'all' && encounter.typeId !== Number(filters.typeId)) {
-      return false;
+    if (filters.typeId !== 'all') {
+      const targetTypeId = Number(filters.typeId);
+      const hasActivity = encounter.activitiesPerformed 
+        ? encounter.activitiesPerformed.includes(targetTypeId)
+        : encounter.typeId === targetTypeId;
+      if (!hasActivity) return false;
     }
 
     if (!filters.showAnonymous && encounter.isAnonymous) {
@@ -190,15 +194,45 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                 <div className="space-y-2">
                   {encounters.map(encounter => {
                     const type = typesMap.get(encounter.typeId);
+                    const activities = encounter.activitiesPerformed 
+                      ? encounter.activitiesPerformed.map(id => typesMap.get(id)).filter(Boolean)
+                      : [type].filter(Boolean);
+                    
                     return (
                       <div
                         key={encounter.id}
                         className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border"
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-lg">{type?.icon || '💭'}</span>
-                            <span className="font-medium">{type?.name || 'Unknown'}</span>
+                          <div className="flex-1">
+                            {activities.length > 1 ? (
+                              <div>
+                                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                  {activities.length} Activities:
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {activities.slice(0, 3).map((activity, idx) => (
+                                    <span 
+                                      key={idx}
+                                      className="inline-flex items-center space-x-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs"
+                                    >
+                                      <span>{activity?.icon}</span>
+                                      <span>{activity?.name}</span>
+                                    </span>
+                                  ))}
+                                  {activities.length > 3 && (
+                                    <span className="text-xs text-gray-500 px-2 py-1">
+                                      +{activities.length - 3} more
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center space-x-2">
+                                <span className="text-lg">{activities[0]?.icon || '💭'}</span>
+                                <span className="font-medium">{activities[0]?.name || 'Unknown'}</span>
+                              </div>
+                            )}
                           </div>
                           <div className="text-right">
                             <div className="text-lg">{'⭐'.repeat(encounter.rating)}</div>

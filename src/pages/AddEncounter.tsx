@@ -15,7 +15,8 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
     rating: settings?.defaultRating || 4,
     participants: [] as number[],
     isAnonymous: false,
-    typeId: settings?.defaultTypeId || (interactionTypes[0]?.id || 1),
+    typeId: settings?.defaultTypeId || (interactionTypes[0]?.id || 1), // Keep for backward compatibility
+    activitiesPerformed: settings?.defaultTypeId ? [settings.defaultTypeId] : (interactionTypes[0]?.id ? [interactionTypes[0].id] : []), // Multiple activities
     beneficiary: 'both' as 'me' | 'friend' | 'both',
     durationMinutes: '',
     notes: '',
@@ -35,27 +36,32 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
       alert('Please select at least one friend or mark as anonymous');
       return;
     }
+    
+    if (formData.activitiesPerformed.length === 0) {
+      alert('Please select at least one activity');
+      return;
+    }
 
     try {
       const encounter = {
         date: new Date(formData.date),
         rating: formData.rating,
-        participants: formData.participants,
+        participants: formData.isAnonymous ? [] : formData.participants,
         isAnonymous: formData.isAnonymous,
-        typeId: formData.typeId,
+        typeId: formData.activitiesPerformed[0] || formData.typeId, // Use first activity for backward compatibility
+        activitiesPerformed: formData.activitiesPerformed.length > 0 ? formData.activitiesPerformed : undefined,
         beneficiary: formData.beneficiary,
-        durationMinutes: formData.durationMinutes ? Number(formData.durationMinutes) : undefined,
+        durationMinutes: formData.durationMinutes ? parseInt(formData.durationMinutes) : undefined,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
         notes: formData.notes.trim() || undefined,
-        tags: formData.tags.trim() ? formData.tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
-        location: (formData.location.place || formData.location.lat) ? {
-          place: formData.location.place.trim() || undefined,
-          lat: formData.location.lat ? Number(formData.location.lat) : 0,
-          lon: formData.location.lon ? Number(formData.location.lon) : 0,
+        location: (formData.location.lat && formData.location.lon) ? {
+          lat: parseFloat(formData.location.lat),
+          lon: parseFloat(formData.location.lon),
+          place: formData.location.place || undefined,
         } : undefined,
-        photos: formData.pictures.length > 0 ? formData.pictures : undefined
-      };
-
-      await encountersApi.create(encounter);
+        pictures: formData.pictures.length > 0 ? formData.pictures : undefined,
+        createdAt: new Date()
+      };      await encountersApi.create(encounter);
       onNavigate('dashboard');
     } catch (error) {
       console.error('Error creating encounter:', error);
@@ -97,28 +103,52 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
           />
         </div>
 
-        {/* Interaction Type */}
+        {/* Activities Performed */}
         <div>
-          <label className="block text-sm font-medium mb-1">Type *</label>
-          <div className="grid grid-cols-2 gap-2">
-            {interactionTypes.map(type => (
-              <button
-                key={type.id}
-                type="button"
-                onClick={() => setFormData(f => ({...f, typeId: type.id!}))}
-                className={`p-3 rounded border text-left ${
-                  formData.typeId === type.id
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-              >
-                <div className="flex items-center space-x-2">
+          <label className="block text-sm font-medium mb-1">
+            Activities Performed * 
+            <span className="text-xs text-gray-500 font-normal">
+              ({formData.activitiesPerformed.length} selected)
+            </span>
+          </label>
+          <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border rounded p-2 bg-gray-50 dark:bg-gray-800">
+            {interactionTypes.map(type => {
+              const isSelected = formData.activitiesPerformed.includes(type.id!);
+              return (
+                <label
+                  key={type.id}
+                  className={`flex items-center space-x-3 p-2 rounded cursor-pointer transition-colors ${
+                    isSelected
+                      ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600'
+                      : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
+                  } border`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={(e) => {
+                      const typeId = type.id!;
+                      setFormData(f => ({
+                        ...f,
+                        activitiesPerformed: e.target.checked
+                          ? [...f.activitiesPerformed, typeId]
+                          : f.activitiesPerformed.filter(id => id !== typeId),
+                        typeId: e.target.checked && f.activitiesPerformed.length === 0 ? typeId : f.typeId // Update primary typeId
+                      }));
+                    }}
+                    className="rounded text-blue-600"
+                  />
                   <span className="text-lg">{type.icon}</span>
-                  <span className="font-medium">{type.name}</span>
-                </div>
-              </button>
-            ))}
+                  <span className="font-medium flex-1">{type.name}</span>
+                </label>
+              );
+            })}
           </div>
+          {formData.activitiesPerformed.length === 0 && (
+            <div className="text-xs text-red-500 mt-1">
+              Please select at least one activity
+            </div>
+          )}
         </div>
 
         {/* Rating */}
