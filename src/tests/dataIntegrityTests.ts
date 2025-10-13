@@ -116,7 +116,7 @@ function generateTestFriend(index: number): Omit<Friend, 'id' | 'createdAt' | 'u
   };
 }
 
-function generateTestEncounter(friendIds: number[], index: number): Omit<Encounter, 'id' | 'createdAt' | 'updatedAt'> {
+async function generateTestEncounter(friendIds: number[], index: number): Promise<Omit<Encounter, 'id' | 'createdAt' | 'updatedAt'>> {
   const beneficiaries = ['me', 'friend', 'both'];
   const locations = [
     { lat: 40.7128, lon: -74.0060, place: 'New York, NY' },
@@ -129,13 +129,19 @@ function generateTestEncounter(friendIds: number[], index: number): Omit<Encount
     photos.push(generateTestPhoto());
   }
   
-  // Random activities selection
+  // Get available interaction types from database
+  const availableTypes = await db.interactionTypes.toArray();
+  const randomTypeId = availableTypes.length > 0 
+    ? availableTypes[Math.floor(Math.random() * availableTypes.length)].id!
+    : 1; // Fallback to ID 1 if no types found
+  
+  // Random activities selection from available types
   const numActivities = 1 + Math.floor(Math.random() * 5);
   const activitiesPerformed: number[] = [];
-  for (let i = 0; i < numActivities; i++) {
-    const activityIndex = Math.floor(Math.random() * GAY_ACTIVITIES.length) + 1; // +1 because DB IDs start at 1
-    if (!activitiesPerformed.includes(activityIndex)) {
-      activitiesPerformed.push(activityIndex);
+  for (let i = 0; i < numActivities && availableTypes.length > 0; i++) {
+    const randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+    if (randomType.id && !activitiesPerformed.includes(randomType.id)) {
+      activitiesPerformed.push(randomType.id);
     }
   }
   
@@ -151,7 +157,7 @@ function generateTestEncounter(friendIds: number[], index: number): Omit<Encount
   return {
     date: new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000), // Random date in last 6 months
     rating: 1 + Math.floor(Math.random() * 5),
-    typeId: 1 + Math.floor(Math.random() * 10), // Random interaction type ID
+    typeId: randomTypeId, // Use actual interaction type ID from database
     activitiesPerformed,
     participants,
     isAnonymous: Math.random() > 0.8, // 20% anonymous
@@ -174,7 +180,7 @@ export class DataIntegrityTester {
   private testFriendIds: number[] = [];
   private testEncounterIds: number[] = [];
 
-  async runAllTests(): Promise<boolean> {
+  async runAllTests(keepTestData: boolean = false): Promise<boolean> {
     this.logger.log('🚀 Starting comprehensive data integrity tests...');
     
     try {
@@ -182,7 +188,13 @@ export class DataIntegrityTester {
       await this.testFriendsOperations();
       await this.testEncountersOperations();
       await this.testBackupAndRestore();
-      await this.testDataClearing();
+      
+      if (!keepTestData) {
+        await this.testDataClearing();
+      } else {
+        this.logger.log('🎯 Keeping test data for exploration (skipping cleanup)');
+        this.logger.log(`✨ Generated ${this.testFriendIds.length} friends and ${this.testEncounterIds.length} encounters`);
+      }
       
       return this.logger.summary();
     } catch (error) {
@@ -284,7 +296,7 @@ export class DataIntegrityTester {
     // Test encounter creation
     const createdEncounters: Encounter[] = [];
     for (let i = 0; i < TEST_CONFIG.ENCOUNTERS_COUNT; i++) {
-      const encounterData = generateTestEncounter(this.testFriendIds, i);
+      const encounterData = await generateTestEncounter(this.testFriendIds, i);
       const encounterId = await encountersApi.create(encounterData);
       
       const retrievedEncounter = await db.encounters.get(encounterId);
@@ -520,12 +532,51 @@ export class DataIntegrityTester {
 }
 
 // Export test runner function
-export async function runDataIntegrityTests(): Promise<boolean> {
+export async function runDataIntegrityTests(keepTestData: boolean = false): Promise<boolean> {
   const tester = new DataIntegrityTester();
-  return await tester.runAllTests();
+  return await tester.runAllTests(keepTestData);
 }
 
-// Global test function for console access
-(window as any).runDataIntegrityTests = runDataIntegrityTests;
+// Export function to create test data without running full tests
+export async function createTestDataOnly(): Promise<void> {
+  console.log('🎨 Creating test data...');
+  
+  // Clear existing data
+  await db.transaction('rw', [db.friends, db.encounters, db.interactionTypes], async () => {
+    await db.friends.clear();
+    await db.encounters.clear();
+    await db.interactionTypes.clear();
+  });
+  
+  // Add GAY_ACTIVITIES for encounters
+  await db.interactionTypes.bulkAdd(GAY_ACTIVITIES);
+  
+  // Create 10 test friends
+  const friendIds: number[] = [];
+  for (let i = 0; i < 10; i++) {
+    const friendData = generateTestFriend(i);
+    const friendId = await friendsApi.create(friendData);
+    if (friendId) friendIds.push(friendId);
+  }
+  
+  // Create 20 test encounters
+  const encounterIds: number[] = [];
+  for (let i = 0; i < 20; i++) {
+    const encounterData = await generateTestEncounter(friendIds, i);
+    const encounterId = await encountersApi.create(encounterData);
+    if (encounterId) encounterIds.push(encounterId);
+  }
+  
+  console.log('🎨 Test data created successfully!');
+  console.log(`✨ Generated ${friendIds.length} friends and ${encounterIds.length} encounters`);
+  console.log('Navigate to Friends and Timeline pages to see the generated data');
+}
 
-console.log('🧪 Data integrity tests loaded. Run with: runDataIntegrityTests()');
+// Global test functions for console access
+(window as any).runDataIntegrityTests = runDataIntegrityTests;
+(window as any).createTestDataOnly = createTestDataOnly;
+
+console.log('🧪 Data integrity tests loaded!');
+console.log('• runDataIntegrityTests() - Full validation (cleans up)');
+console.log('• runDataIntegrityTests(true) - Full validation (keeps data)');
+console.log('• createTestDataOnly() - Just create test data');

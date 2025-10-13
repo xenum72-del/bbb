@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { runDataIntegrityTests } from '../tests/dataIntegrityTests';
+import { runDataIntegrityTests, createTestDataOnly } from '../tests/dataIntegrityTests';
 
 const TestRunner: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -43,7 +43,7 @@ const TestRunner: React.FC = () => {
     };
   };
 
-  const runTests = async () => {
+  const runTests = async (keepData: boolean = false) => {
     setIsRunning(true);
     setResults('');
     setTestsPassed(null);
@@ -52,7 +52,7 @@ const TestRunner: React.FC = () => {
     
     try {
       const startTime = Date.now();
-      const passed = await runDataIntegrityTests();
+      const passed = await runDataIntegrityTests(keepData);
       const endTime = Date.now();
       
       const output = consoleCapture.getOutput();
@@ -71,6 +71,41 @@ const TestRunner: React.FC = () => {
     } catch (error) {
       const output = consoleCapture.getOutput();
       setResults(output + `\n❌ Test suite failed with error: ${error}`);
+      setTestsPassed(false);
+    } finally {
+      consoleCapture.restore();
+      setIsRunning(false);
+    }
+  };
+
+  const createTestData = async () => {
+    setIsRunning(true);
+    setResults('');
+    setTestsPassed(null);
+    
+    const consoleCapture = captureConsoleOutput();
+    
+    try {
+      const startTime = Date.now();
+      await createTestDataOnly();
+      const endTime = Date.now();
+      
+      const output = consoleCapture.getOutput();
+      const duration = ((endTime - startTime) / 1000).toFixed(2);
+      
+      setResults(output + `\n⏱️ Test data created in ${duration} seconds\n\n🎯 Navigate to Friends or Timeline to see your new test data!`);
+      setTestsPassed(true);
+      
+      // Scroll to bottom of results
+      setTimeout(() => {
+        if (logRef.current) {
+          logRef.current.scrollTop = logRef.current.scrollHeight;
+        }
+      }, 100);
+      
+    } catch (error) {
+      const output = consoleCapture.getOutput();
+      setResults(output + `\n❌ Failed to create test data: ${error}`);
       setTestsPassed(false);
     } finally {
       consoleCapture.restore();
@@ -121,9 +156,9 @@ const TestRunner: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
-              onClick={runTests}
+              onClick={() => runTests(false)}
               disabled={isRunning}
               className={`px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
                 isRunning
@@ -132,17 +167,49 @@ const TestRunner: React.FC = () => {
               }`}
             >
               {isRunning ? (
-                <div className="flex items-center">
+                <div className="flex items-center justify-center">
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Running Tests...
+                  Running...
                 </div>
               ) : (
-                '🚀 Run All Tests'
+                '🧪 Run Tests (Clean)'
               )}
             </button>
+
+            <button
+              onClick={() => runTests(true)}
+              disabled={isRunning}
+              className={`px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
+                isRunning
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 active:scale-95'
+              }`}
+            >
+              🧪 Test + Keep Data
+            </button>
+
+            <button
+              onClick={() => createTestData()}
+              disabled={isRunning}
+              className={`px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
+                isRunning
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 active:scale-95'
+              }`}
+            >
+              🎨 Create Test Data Only
+            </button>
+          </div>
+
+          <div className="flex justify-center mt-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+              <strong>🧪 Clean Tests:</strong> Validates everything, cleans up after<br/>
+              <strong>🎨 Keep Data:</strong> Same tests but leaves data for exploration<br/>
+              <strong>🎨 Data Only:</strong> Just creates test friends & encounters
+            </div>
             
             {testsPassed !== null && (
               <div className={`flex items-center px-4 py-2 rounded-lg font-semibold ${
