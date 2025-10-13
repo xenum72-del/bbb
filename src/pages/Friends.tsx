@@ -1,6 +1,7 @@
 import { useActiveFriends, friendsApi, useEncountersByFriend } from '../hooks/useDatabase';
 import { useState } from 'react';
 import type { Friend } from '../db/schema';
+import { GAY_ACTIVITIES } from '../db/schema';
 import { showBackupPrompt } from '../utils/backup';
 
 interface FriendsProps {
@@ -324,7 +325,8 @@ export default function Friends({ onNavigate }: FriendsProps) {
           <h3 className="font-semibold mb-3">
             {editingFriend ? `Edit ${editingFriend.name}` : 'Add New Friend'}
           </h3>
-          <form onSubmit={handleSubmit} className="space-y-4 max-h-96 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="max-h-[70vh] overflow-y-auto pr-2 space-y-4">{/* Scrollable form content */}
             {/* Basic Info */}
             <div className="space-y-3 pb-3 border-b border-gray-200 dark:border-gray-600">
               <h4 className="font-semibold text-sm text-gray-600 dark:text-gray-400">Basic Info</h4>
@@ -439,13 +441,38 @@ export default function Friends({ onNavigate }: FriendsProps) {
 
               <div>
                 <label className="block text-sm font-medium mb-1">Sexual Preferences</label>
-                <input
-                  type="text"
-                  value={formData.sexualPreferences}
-                  onChange={(e) => setFormData(f => ({...f, sexualPreferences: e.target.value}))}
-                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600"
-                  placeholder="Oral, Anal, Kinky (comma separated)"
-                />
+                <div className="border rounded bg-white dark:bg-gray-700 dark:border-gray-600 p-2 max-h-32 overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-1 text-xs">
+                    {GAY_ACTIVITIES.slice(0, 20).map(activity => {
+                      const isSelected = formData.sexualPreferences.split(', ').filter(p => p.trim()).includes(activity.name);
+                      return (
+                        <label key={activity.name} className="flex items-center space-x-1 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              const preferences = formData.sexualPreferences.split(', ').filter(p => p.trim());
+                              if (e.target.checked) {
+                                preferences.push(activity.name);
+                              } else {
+                                const index = preferences.indexOf(activity.name);
+                                if (index > -1) preferences.splice(index, 1);
+                              }
+                              setFormData(f => ({...f, sexualPreferences: preferences.join(', ')}));
+                            }}
+                            className="w-3 h-3"
+                          />
+                          <span className="text-xs">{activity.icon} {activity.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {formData.sexualPreferences && (
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                      <div className="text-xs text-gray-500">Selected: {formData.sexualPreferences || 'None'}</div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -836,8 +863,11 @@ export default function Friends({ onNavigate }: FriendsProps) {
                 />
               </div>
             </div>
+            {/* Close scrollable container */}
+            </div>
 
-            <div className="flex space-x-2">
+            {/* Buttons outside scrollable area */}
+            <div className="flex space-x-2 mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
               <button
                 type="submit"
                 className="flex-1 bg-primary text-primary-foreground py-2 rounded font-medium"
