@@ -283,16 +283,16 @@ jobs:
       id: security-scores
       run: |
         # Simple, bulletproof score parsing
-        BEHAVIOR_SCORE=78
+        BEHAVIOR_SCORE=50
         NPM_VULNS=0
         NPM_STATUS="secure"
         
         # Try to get real behavioral score if file exists
         if [ -f "behavior-security-report.json" ] && command -v jq >/dev/null 2>&1; then
-          BEHAVIOR_SCORE=$(jq -r '.summary.overallSafety.score // 78' behavior-security-report.json 2>/dev/null || echo "78")
+          BEHAVIOR_SCORE=$(jq -r '.summary.overallSafety.score // 50' behavior-security-report.json 2>/dev/null || echo "50")
         elif [ -f "behavior-security-report.json" ]; then
           # Fallback without jq - extract number after "score":
-          BEHAVIOR_SCORE=$(grep -o '"score":[[:space:]]*[0-9]\+' behavior-security-report.json | grep -o '[0-9]\+' | head -1 || echo "78")
+          BEHAVIOR_SCORE=$(grep -o '"score":[[:space:]]*[0-9]\+' behavior-security-report.json | grep -o '[0-9]\+' | head -1 || echo "50")
         fi
         
         # Try to get NPM vulnerabilities if file exists
@@ -306,7 +306,7 @@ jobs:
         fi
         
         # Ensure values are clean numbers/strings
-        BEHAVIOR_SCORE=$(echo "$BEHAVIOR_SCORE" | grep -o '^[0-9]\+$' || echo "78")
+        BEHAVIOR_SCORE=$(echo "$BEHAVIOR_SCORE" | grep -o '^[0-9]\+$' || echo "50")
         NPM_VULNS=$(echo "$NPM_VULNS" | grep -o '^[0-9]\+$' || echo "0")
         NPM_STATUS=$(echo "$NPM_STATUS" | tr -d '"' | tr -d "'" | tr -d '\n' | tr -d '\r' || echo "secure")
         
@@ -469,10 +469,10 @@ jobs:
         OVERALL_SCORE="${{ steps.security-scores.outputs.overall_score }}"
         
         # Fallback to actual parsed defaults if empty (not hardcoded 75!)
-        BEHAVIOR_SCORE=${BEHAVIOR_SCORE:-78}
+        BEHAVIOR_SCORE=${BEHAVIOR_SCORE:-50}
         NPM_VULNS=${NPM_VULNS:-0}  
         NPM_STATUS=${NPM_STATUS:-"secure"}
-        OVERALL_SCORE=${OVERALL_SCORE:-78}
+        OVERALL_SCORE=${OVERALL_SCORE:-50}
         
         echo "🎯 Generating dashboard with:"
         echo "  Behavioral Score: $BEHAVIOR_SCORE/100"
