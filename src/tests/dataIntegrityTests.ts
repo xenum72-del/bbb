@@ -679,19 +679,53 @@ export async function createTestDataOnly(): Promise<void> {
   const totalPhotos = allFriends.reduce((sum, f) => sum + (f.photos?.length || 0), 0) + 
                      allEncounters.reduce((sum, e) => sum + (e.photos?.length || 0), 0);
   
-  console.log('📊 Dataset Statistics:');
-  console.log(`👥 Friends: ${allFriends.length} (${allFriends.filter(f => f.canHost).length} can host, ${allFriends.filter(f => f.onPrep).length} on PrEP)`);
-  console.log(`🔥 Encounters: ${allEncounters.length} (${paidEncounters.length} with payments, ${allEncounters.filter(e => e.wouldRepeat).length} would repeat)`);
-  console.log(`📸 Photos: ${totalPhotos} total (${allFriends.reduce((sum, f) => sum + (f.photos?.length || 0), 0)} friend photos + ${allEncounters.reduce((sum, e) => sum + (e.photos?.length || 0), 0)} encounter photos)`);
-  console.log(`💰 Payments: ${paidEncounters.length} encounters with payment data`);
-  console.log(`🌍 Locations: ${allEncounters.filter(e => e.location).length} encounters have location data`);
+  // Calculate exciting personal stats
+  const totalMinutes = allEncounters.reduce((sum, e) => sum + (e.durationMinutes || 0), 0);
+  const averageRating = allEncounters.reduce((sum, e) => sum + e.rating, 0) / allEncounters.length;
+  const topRatedEncounters = allEncounters.filter(e => e.rating >= 4);
+  const kinkiestEncounters = allEncounters.filter(e => (e.kinkiness || 0) >= 4);
+  const repeatableGuys = allEncounters.filter(e => e.wouldRepeat);
+  const safeEncounters = allEncounters.filter(e => e.condomUsed);
+  const moneyReceived = paidEncounters.filter(e => e.paymentType === 'received').reduce((sum, e) => sum + (e.amountGiven || 0), 0);
+  const moneyPaid = paidEncounters.filter(e => e.paymentType === 'given').reduce((sum, e) => sum + (e.amountGiven || 0), 0);
+  const hostingFriends = allFriends.filter(f => f.canHost);
+  const prepGuys = allFriends.filter(f => f.onPrep);
   
-  if (paidEncounters.length > 0) {
-    const totalPaid = paidEncounters.reduce((sum, e) => sum + (e.amountGiven || 0), 0);
-    console.log(`💳 Total money involved: $${totalPaid.toFixed(2)} across all paid encounters`);
+  console.log('🔥 YOUR PERSONAL SEX STATS:');
+  console.log(`� You've got ${allFriends.length} guys in your contact list (${hostingFriends.length} can host you over!)`);
+  console.log(`🍆 ${allEncounters.length} total encounters - you're clearly popular! 😏`);
+  console.log(`⭐ Average encounter rating: ${averageRating.toFixed(1)}/5 - you know how to pick 'em!`);
+  console.log(`🔥 ${topRatedEncounters.length} were 4+ star experiences - incredible encounters!`);
+  console.log(`😈 ${kinkiestEncounters.length} were kinky AF (4+ kink rating) - you're adventurous!`);
+  console.log(`🔁 ${repeatableGuys.length} guys want to see you again - you're clearly amazing in bed!`);
+  
+  if (totalMinutes > 0) {
+    const hours = Math.floor(totalMinutes / 60);
+    const avgDuration = Math.floor(totalMinutes / allEncounters.length);
+    console.log(`⏰ ${hours} hours of fun total - averaging ${avgDuration} minutes per session`);
   }
   
-  console.log('🎯 Navigate to Friends and Timeline pages to explore your massive dataset!');
+  console.log(`📸 ${totalPhotos} steamy photos captured - you're building quite the collection!`);
+  console.log(`🛡️ ${safeEncounters.length}/${allEncounters.length} were safe (${Math.round(safeEncounters.length/allEncounters.length*100)}%) - you're smart AND sexy!`);
+  console.log(`💊 ${prepGuys.length} friends on PrEP - staying healthy is hot!`);
+  
+  if (paidEncounters.length > 0) {
+    console.log(`� MONEY MOVES:`);
+    if (moneyReceived > 0) {
+      console.log(`   💸 You MADE $${moneyReceived.toFixed(2)} - damn, you're worth every penny!`);
+    }
+    if (moneyPaid > 0) {
+      console.log(`   💳 You spent $${moneyPaid.toFixed(2)} - investing in good times!`);
+    }
+    const netGain = moneyReceived - moneyPaid;
+    if (netGain > 0) {
+      console.log(`   🎯 NET PROFIT: +$${netGain.toFixed(2)} - you're making bank! 💅`);
+    } else if (netGain < 0) {
+      console.log(`   🛍️ NET INVESTMENT: $${Math.abs(netGain).toFixed(2)} - money well spent on pleasure!`);
+    }
+  }
+  
+  console.log('🎯 Ready to explore your legendary sex life? Check Friends and Timeline pages! 🔥');
 }
 
 // Global test functions for console access
