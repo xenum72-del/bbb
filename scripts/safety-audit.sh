@@ -139,6 +139,108 @@ else
     print_result 1 "Secret Scan: Potential hardcoded secrets found"
 fi
 
+# 11. Runtime Behavior Test (if puppeteer is available)
+if command -v npm >/dev/null 2>&1 && npm list puppeteer >/dev/null 2>&1; then
+    echo "🎭 Running runtime behavior analysis..."
+    
+    # Build and serve app for testing
+    if npm run build >/dev/null 2>&1; then
+        # Start server in background
+        npx serve dist -l 3333 >/dev/null 2>&1 &
+        SERVER_PID=$!
+        sleep 3
+        
+        # Create quick behavior test
+        cat > quick-behavior-test.js << 'EOF'
+const puppeteer = require('puppeteer');
+
+(async () => {
+  try {
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+    const page = await browser.newPage();
+    
+    let networkRequests = 0;
+    page.on('request', (req) => {
+      if (!req.url().includes('localhost')) networkRequests++;
+    });
+    
+    await page.goto('http://localhost:3333', { timeout: 10000 });
+    await page.waitForTimeout(2000);
+    
+    // Test offline capability
+    await page.setOfflineMode(true);
+    await page.reload();
+    const offlineContent = await page.content();
+    
+    const results = {
+      loads: offlineContent.length > 1000,
+      offline: offlineContent.includes('html'),
+      externalRequests: networkRequests
+    };
+    
+    console.log(JSON.stringify(results));
+    await browser.close();
+    process.exit(0);
+  } catch (error) {
+    console.log(JSON.stringify({ error: error.message }));
+    process.exit(1);
+  }
+})();
+EOF
+        
+        # Run quick test
+        BEHAVIOR_RESULT=$(node quick-behavior-test.js 2>/dev/null || echo '{"error":"test failed"}')
+        
+        # Clean up
+        kill $SERVER_PID 2>/dev/null || true
+        rm -f quick-behavior-test.js
+        
+        # Parse results
+        LOADS=$(echo "$BEHAVIOR_RESULT" | grep -o '"loads":true' || true)
+        OFFLINE=$(echo "$BEHAVIOR_RESULT" | grep -o '"offline":true' || true)
+        EXT_REQ=$(echo "$BEHAVIOR_RESULT" | grep -o '"externalRequests":[0-9]*' | cut -d: -f2 || echo "unknown")
+        
+        if [ -n "$LOADS" ] && [ -n "$OFFLINE" ] && [ "$EXT_REQ" = "0" ]; then
+            print_result 0 "Runtime Behavior: App works offline with no external requests"
+        else
+            print_result 1 "Runtime Behavior: Issues detected (offline: $OFFLINE, external requests: $EXT_REQ)"
+        fi
+    else
+        print_result 1 "Runtime Behavior: Build failed, cannot test runtime"
+    fi
+else
+    echo "ℹ️  Runtime behavior test skipped (puppeteer not installed)"
+    echo "   Install with: npm install --save-dev puppeteer"
+fi
+
+# 12. Bundle Analysis (if available)
+echo "📦 Analyzing bundle for security risks..."
+if [ -f "dist/assets/index-*.js" ]; then
+    # Check bundle size
+    BUNDLE_SIZE=$(find dist/assets -name "index-*.js" -exec wc -c {} + | tail -1 | awk '{print $1}')
+    BUNDLE_SIZE_KB=$((BUNDLE_SIZE / 1024))
+    
+    if [ $BUNDLE_SIZE_KB -lt 500 ]; then
+        print_result 0 "Bundle Analysis: Reasonable size (${BUNDLE_SIZE_KB}KB)"
+    elif [ $BUNDLE_SIZE_KB -lt 1000 ]; then
+        print_result 1 "Bundle Analysis: Large bundle (${BUNDLE_SIZE_KB}KB) - review dependencies"
+    else
+        print_result 1 "Bundle Analysis: Very large bundle (${BUNDLE_SIZE_KB}KB) - optimization needed"
+    fi
+    
+    # Check for common security issues in bundle
+    DANGEROUS_PATTERNS=$(grep -c "eval\|Function(\|innerHTML\|document.write" dist/assets/index-*.js 2>/dev/null || echo "0")
+    
+    if [ "$DANGEROUS_PATTERNS" -eq 0 ]; then
+        print_result 0 "Bundle Security: No dangerous patterns in compiled code"
+    else
+        print_result 1 "Bundle Security: $DANGEROUS_PATTERNS potentially dangerous patterns found"
+    fi
+else
+    echo "ℹ️  Bundle analysis skipped (no built files found)"
+    echo "   Run 'npm run build' first for complete analysis"
+fi
+
 echo ""
 echo "================================================="
 echo -e "${BLUE}🏳️‍🌈 Gay Safety Audit Summary${NC}"
