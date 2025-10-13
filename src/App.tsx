@@ -9,6 +9,7 @@ import EditEncounter from './pages/EditEncounter'
 import TestRunner from './components/TestRunner'
 import UnlockScreen from './components/UnlockScreen'
 import { requiresUnlock, updateLastActivity, shouldAutoLock, lockSession } from './utils/security'
+import { useAnalytics } from './utils/analytics'
 
 type Page = 'dashboard' | 'timeline' | 'friends' | 'analytics' | 'settings' | 'add' | 'tests' | string
 
@@ -20,6 +21,14 @@ function App() {
   })
   const [isUnlocked, setIsUnlocked] = useState(false)
   const [needsUnlock, setNeedsUnlock] = useState(true)
+  
+  // Analytics tracking
+  const { trackPageView, trackInteraction } = useAnalytics()
+
+  // Track page views
+  useEffect(() => {
+    trackPageView(currentPage)
+  }, [currentPage, trackPageView])
 
   // Check security status on app start
   useEffect(() => {
@@ -167,7 +176,10 @@ function App() {
         }`}>
           <div className="flex justify-around items-center px-4 py-3 pt-4">
             <button
-              onClick={() => setCurrentPage('dashboard')}
+              onClick={() => {
+                setCurrentPage('dashboard')
+                trackInteraction('nav-dashboard')
+              }}
               className={`flex flex-col items-center py-2 px-3 rounded-2xl transition-all duration-300 ${
                 currentPage === 'dashboard' 
                   ? 'text-blue-600 bg-blue-50 scale-105 shadow-md' 

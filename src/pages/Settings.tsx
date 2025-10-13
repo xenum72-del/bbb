@@ -11,7 +11,8 @@ import {
   setupBiometrics,
   disableBiometrics,
   lockSession
-} from '../utils/security';interface SettingsProps {
+} from '../utils/security';
+import { useAnalytics } from '../utils/analytics';interface SettingsProps {
   onNavigate: (page: string) => void;
 }
 
@@ -39,6 +40,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [currentPin, setCurrentPin] = useState('');
+  
+  // Analytics hook
+  const { enable, disable, getStatus } = useAnalytics();
+  const [analyticsStatus, setAnalyticsStatus] = useState(() => getStatus());
 
   useEffect(() => {
     if (settings) {
@@ -121,6 +126,16 @@ export default function Settings({ onNavigate }: SettingsProps) {
     const updated = { ...securitySettings, autoLockMinutes: minutes };
     saveSecuritySettings(updated);
     setSecuritySettings(updated);
+  };
+
+  // Analytics functions
+  const handleAnalyticsToggle = () => {
+    if (analyticsStatus.enabled) {
+      disable();
+    } else {
+      enable();
+    }
+    setAnalyticsStatus(getStatus());
   };
 
   const handleSaveSettings = async () => {
@@ -525,6 +540,76 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 🔒 Lock App Now
               </button>
             ) : null}
+          </div>
+        </div>
+
+        {/* Analytics Settings */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <span className="text-white text-xl">📊</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+                Anonymous Usage Analytics
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Help improve the app with completely anonymous data</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Analytics Toggle */}
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h4 className="font-medium">Enable Anonymous Analytics</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {analyticsStatus.enabled ? 'Sharing anonymous usage data' : 'No data collection (default)'}
+                  </p>
+                </div>
+                <button
+                  onClick={handleAnalyticsToggle}
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                    analyticsStatus.enabled
+                      ? 'bg-green-500 text-white hover:bg-green-600'
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  {analyticsStatus.enabled ? 'Enabled' : 'Disabled'}
+                </button>
+              </div>
+              
+              {analyticsStatus.enabled && (
+                <div className="text-xs text-gray-500 dark:text-gray-400 border-t pt-3">
+                  <p className="mb-1">📊 Anonymous ID: {analyticsStatus.anonymousId.substring(0, 16)}...</p>
+                  <p className="mb-1">📈 Events queued: {analyticsStatus.eventsQueued}</p>
+                </div>
+              )}
+            </div>
+
+            {/* What We Collect */}
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">📋 What We Collect (If Enabled)</h4>
+              <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <p>✅ Anonymous app interactions (button clicks, page views)</p>
+                <p>✅ General location (city/state level only)</p>
+                <p>✅ Feature usage patterns and error rates</p>
+                <p>✅ Performance metrics and app version</p>
+                <p className="font-medium text-green-700 dark:text-green-300 mt-2">❌ NO personal data, names, or encounter details</p>
+                <p className="font-medium text-green-700 dark:text-green-300">❌ NO precise location or device identification</p>
+              </div>
+            </div>
+
+            {/* Privacy Notice */}
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+              <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">🛡️ Privacy Guarantee</h4>
+              <div className="text-sm text-green-800 dark:text-green-200 space-y-1">
+                <p>• All analytics are completely anonymous and cannot be traced back to you</p>
+                <p>• Your encounter data, friends list, and personal info are NEVER shared</p>
+                <p>• You can disable this anytime with zero impact on app functionality</p>
+                <p>• Data helps us improve features but your privacy comes first, always</p>
+              </div>
+            </div>
           </div>
         </div>
 
