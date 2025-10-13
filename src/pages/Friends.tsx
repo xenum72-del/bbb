@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { Friend } from '../db/schema';
 import { GAY_ACTIVITIES } from '../db/schema';
 import { showBackupPrompt } from '../utils/backup';
+import { showiOSBackupModal, isiOS } from '../utils/iosBackup';
 
 interface FriendsProps {
   onNavigate: (page: string) => void;
@@ -167,8 +168,12 @@ export default function Friends({ onNavigate }: FriendsProps) {
       setFormData(getInitialFormData());
       
       // Show backup prompt after successful save
-      setTimeout(() => {
-        showBackupPrompt();
+      setTimeout(async () => {
+        if (isiOS()) {
+          await showiOSBackupModal();
+        } else {
+          showBackupPrompt();
+        }
       }, 100);
     } catch (error) {
       console.error('Error saving friend:', error);

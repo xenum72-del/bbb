@@ -1,6 +1,7 @@
 import { useSettings, useInteractionTypes, settingsApi } from '../hooks/useDatabase';
 import { useState, useEffect } from 'react';
 import { db, GAY_ACTIVITIES } from '../db/schema';
+import { showiOSBackupModal, isiOS, isiOSPWA } from '../utils/iosBackup';
 
 interface SettingsProps {
   onNavigate: (page: string) => void;
@@ -310,16 +311,26 @@ export default function Settings({}: SettingsProps) {
           
           <div className="space-y-3">
             <button
-              onClick={() => setShowExport(true)}
+              onClick={async () => {
+                if (isiOS() || isiOSPWA()) {
+                  await showiOSBackupModal();
+                } else {
+                  setShowExport(true);
+                }
+              }}
               className="w-full p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
             >
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">📤</span>
+                  <span className="text-white text-sm">{isiOS() ? '📱' : '📤'}</span>
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-800 dark:text-white">Export Data</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Download all your data as JSON</div>
+                  <div className="font-semibold text-gray-800 dark:text-white">
+                    {isiOS() ? 'Share Data' : 'Export Data'}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    {isiOS() ? 'iOS-optimized sharing options' : 'Download all your data as JSON'}
+                  </div>
                 </div>
               </div>
             </button>
