@@ -46,53 +46,132 @@ const getInitialFormData = () => ({
 export default function Friends({ onNavigate }: FriendsProps) {
   const friends = useActiveFriends();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingFriend, setEditingFriend] = useState<Friend | null>(null);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [formData, setFormData] = useState(getInitialFormData);
 
   const selectedFriendEncounters = useEncountersByFriend(selectedFriend?.id);
+
+  const handleEdit = (friend: Friend) => {
+    // Populate form with existing friend data
+    setFormData({
+      name: friend.name || '',
+      notes: friend.notes || '',
+      avatarUrl: friend.avatarUrl || '',
+      age: friend.age?.toString() || '',
+      height: friend.height || '',
+      weight: friend.weight || '',
+      bodyType: friend.bodyType || '',
+      sexualRole: friend.sexualRole || '',
+      dickSize: friend.dickSize || '',
+      sexualPreferences: friend.preferences?.join(', ') || '',
+      relationship: friend.relationshipStatus || '',
+      livingDistance: friend.location || '',
+      socialMedia: {
+        grindr: friend.socialProfiles?.grindr || '',
+        scruff: '', // Not in schema, keeping empty
+        instagram: friend.socialProfiles?.instagram || '',
+        twitter: friend.socialProfiles?.twitter || '',
+        telegram: friend.socialProfiles?.telegram || '',
+        snapchat: '', // Not in schema, keeping empty
+        whatsapp: friend.socialProfiles?.whatsapp || '',
+        phone: friend.socialProfiles?.phone || ''
+      },
+      pictures: friend.photos || [],
+      healthStatus: {
+        hivStatus: friend.hivStatus || '',
+        lastTested: friend.lastTested ? new Date(friend.lastTested).toISOString().slice(0, 10) : '',
+        onPrep: friend.onPrep || false,
+        stdHistory: '' // This field might not exist in the schema, keeping for consistency
+      },
+      kinks: '', // This field might not exist in the schema
+      boundaries: friend.limits?.join(', ') || '',
+      meetupPreference: '', // This field might not exist in the schema
+      isVerified: false // This field might not exist in the schema
+    });
+    setEditingFriend(friend);
+    setSelectedFriend(null); // Hide detail view
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
     try {
-      await friendsApi.create({
-        name: formData.name.trim(),
-        notes: formData.notes.trim() || undefined,
-        avatarUrl: formData.avatarUrl.trim() || undefined,
-        age: formData.age ? parseInt(formData.age) : undefined,
-        height: formData.height.trim() || undefined,
-        weight: formData.weight.trim() || undefined,
-        bodyType: formData.bodyType as any || undefined,
-        sexualRole: formData.sexualRole as any || undefined,
-        dickSize: formData.dickSize.trim() || undefined,
-        preferences: formData.sexualPreferences ? formData.sexualPreferences.split(',').map(p => p.trim()) : undefined,
-        relationshipStatus: formData.relationship as any || undefined,
-        location: formData.livingDistance.trim() || undefined,
-        socialProfiles: {
-          grindr: formData.socialMedia.grindr.trim() || undefined,
-          instagram: formData.socialMedia.instagram.trim() || undefined,
-          twitter: formData.socialMedia.twitter.trim() || undefined,
-          telegram: formData.socialMedia.telegram.trim() || undefined,
-          whatsapp: formData.socialMedia.whatsapp.trim() || undefined,
-          phone: formData.socialMedia.phone.trim() || undefined
-        },
-        photos: formData.pictures.length > 0 ? formData.pictures : undefined,
-        hivStatus: formData.healthStatus.hivStatus as any || undefined,
-        lastTested: formData.healthStatus.lastTested ? new Date(formData.healthStatus.lastTested) : undefined,
-        onPrep: formData.healthStatus.onPrep,
-        limits: formData.boundaries ? formData.boundaries.split(',').map(b => b.trim()) : undefined
-      });
+      if (editingFriend) {
+        // Update existing friend
+        await friendsApi.update(editingFriend.id!, {
+          name: formData.name.trim(),
+          notes: formData.notes.trim() || undefined,
+          avatarUrl: formData.avatarUrl.trim() || undefined,
+          age: formData.age ? parseInt(formData.age) : undefined,
+          height: formData.height.trim() || undefined,
+          weight: formData.weight.trim() || undefined,
+          bodyType: formData.bodyType as any || undefined,
+          sexualRole: formData.sexualRole as any || undefined,
+          dickSize: formData.dickSize.trim() || undefined,
+          preferences: formData.sexualPreferences ? formData.sexualPreferences.split(',').map(p => p.trim()) : undefined,
+          relationshipStatus: formData.relationship as any || undefined,
+          location: formData.livingDistance.trim() || undefined,
+          socialProfiles: {
+            grindr: formData.socialMedia.grindr.trim() || undefined,
+            instagram: formData.socialMedia.instagram.trim() || undefined,
+            twitter: formData.socialMedia.twitter.trim() || undefined,
+            telegram: formData.socialMedia.telegram.trim() || undefined,
+            whatsapp: formData.socialMedia.whatsapp.trim() || undefined,
+            phone: formData.socialMedia.phone.trim() || undefined
+          },
+          photos: formData.pictures.length > 0 ? formData.pictures : undefined,
+          hivStatus: formData.healthStatus.hivStatus as any || undefined,
+          lastTested: formData.healthStatus.lastTested ? new Date(formData.healthStatus.lastTested) : undefined,
+          onPrep: formData.healthStatus.onPrep,
+          limits: formData.boundaries ? formData.boundaries.split(',').map(b => b.trim()) : undefined,
+          updatedAt: new Date()
+        });
+        
+        setEditingFriend(null);
+      } else {
+        // Create new friend
+        await friendsApi.create({
+          name: formData.name.trim(),
+          notes: formData.notes.trim() || undefined,
+          avatarUrl: formData.avatarUrl.trim() || undefined,
+          age: formData.age ? parseInt(formData.age) : undefined,
+          height: formData.height.trim() || undefined,
+          weight: formData.weight.trim() || undefined,
+          bodyType: formData.bodyType as any || undefined,
+          sexualRole: formData.sexualRole as any || undefined,
+          dickSize: formData.dickSize.trim() || undefined,
+          preferences: formData.sexualPreferences ? formData.sexualPreferences.split(',').map(p => p.trim()) : undefined,
+          relationshipStatus: formData.relationship as any || undefined,
+          location: formData.livingDistance.trim() || undefined,
+          socialProfiles: {
+            grindr: formData.socialMedia.grindr.trim() || undefined,
+            instagram: formData.socialMedia.instagram.trim() || undefined,
+            twitter: formData.socialMedia.twitter.trim() || undefined,
+            telegram: formData.socialMedia.telegram.trim() || undefined,
+            whatsapp: formData.socialMedia.whatsapp.trim() || undefined,
+            phone: formData.socialMedia.phone.trim() || undefined
+          },
+          photos: formData.pictures.length > 0 ? formData.pictures : undefined,
+          hivStatus: formData.healthStatus.hivStatus as any || undefined,
+          lastTested: formData.healthStatus.lastTested ? new Date(formData.healthStatus.lastTested) : undefined,
+          onPrep: formData.healthStatus.onPrep,
+          limits: formData.boundaries ? formData.boundaries.split(',').map(b => b.trim()) : undefined
+        });
+        
+        setShowAddForm(false);
+      }
       
       setFormData(getInitialFormData());
-      setShowAddForm(false);
       
       // Show backup prompt after successful save
       setTimeout(() => {
         showBackupPrompt();
       }, 100);
     } catch (error) {
-      console.error('Error adding friend:', error);
+      console.error('Error saving friend:', error);
+      alert('Failed to save friend. Please try again.');
     }
   };
 
@@ -141,12 +220,20 @@ export default function Friends({ onNavigate }: FriendsProps) {
                 Added {new Date(selectedFriend.createdAt).toLocaleDateString()}
               </p>
             </div>
-            <button
-              onClick={() => handleArchive(selectedFriend.id!)}
-              className="text-red-500 text-sm"
-            >
-              Archive
-            </button>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleEdit(selectedFriend)}
+                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+              >
+                ✏️ Edit
+              </button>
+              <button
+                onClick={() => handleArchive(selectedFriend.id!)}
+                className="text-red-500 text-sm hover:text-red-600 transition-colors"
+              >
+                🗄️ Archive
+              </button>
+            </div>
           </div>
 
           {selectedFriend.notes && (
@@ -232,9 +319,11 @@ export default function Friends({ onNavigate }: FriendsProps) {
         </button>
       </div>
 
-      {showAddForm && (
+      {(showAddForm || editingFriend) && (
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4 border">
-          <h3 className="font-semibold mb-3">Add New Friend</h3>
+          <h3 className="font-semibold mb-3">
+            {editingFriend ? `Edit ${editingFriend.name}` : 'Add New Friend'}
+          </h3>
           <form onSubmit={handleSubmit} className="space-y-4 max-h-96 overflow-y-auto">
             {/* Basic Info */}
             <div className="space-y-3 pb-3 border-b border-gray-200 dark:border-gray-600">
@@ -753,12 +842,13 @@ export default function Friends({ onNavigate }: FriendsProps) {
                 type="submit"
                 className="flex-1 bg-primary text-primary-foreground py-2 rounded font-medium"
               >
-                Add Friend
+                {editingFriend ? 'Save Changes' : 'Add Friend'}
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setShowAddForm(false);
+                  setEditingFriend(null);
                   setFormData(getInitialFormData());
                 }}
                 className="px-4 py-2 border rounded"
