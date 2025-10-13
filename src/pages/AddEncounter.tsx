@@ -724,7 +724,7 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
               </div>
 
               {/* Amount Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     {formData.paymentType === 'given' ? 'Amount Asked' : 'Amount I Asked For'}
@@ -733,13 +733,28 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
                     <select
                       value={formData.currency}
                       onChange={(e) => setFormData(f => ({...f, currency: e.target.value}))}
-                      className="w-20 p-2 border rounded-l bg-white dark:bg-gray-700 border-r-0"
+                      className="w-24 p-2 border rounded-l bg-white dark:bg-gray-700 border-r-0 text-sm"
                     >
-                      <option value="USD">$</option>
-                      <option value="EUR">€</option>
-                      <option value="GBP">£</option>
-                      <option value="CAD">C$</option>
-                      <option value="AUD">A$</option>
+                      <option value="USD">🇺🇸 USD</option>
+                      <option value="EUR">🇪🇺 EUR</option>
+                      <option value="GBP">🇬🇧 GBP</option>
+                      <option value="JPY">🇯🇵 JPY</option>
+                      <option value="AUD">🇦🇺 AUD</option>
+                      <option value="CAD">🇨🇦 CAD</option>
+                      <option value="CHF">🇨🇭 CHF</option>
+                      <option value="CNY">🇨🇳 CNY</option>
+                      <option value="SEK">🇸🇪 SEK</option>
+                      <option value="NZD">🇳🇿 NZD</option>
+                      <option value="MXN">🇲🇽 MXN</option>
+                      <option value="SGD">🇸🇬 SGD</option>
+                      <option value="HKD">🇭🇰 HKD</option>
+                      <option value="NOK">🇳🇴 NOK</option>
+                      <option value="KRW">🇰🇷 KRW</option>
+                      <option value="TRY">🇹🇷 TRY</option>
+                      <option value="RUB">🇷🇺 RUB</option>
+                      <option value="INR">🇮🇳 INR</option>
+                      <option value="BRL">🇧🇷 BRL</option>
+                      <option value="ZAR">🇿🇦 ZAR</option>
                     </select>
                     <input
                       type="number"
@@ -758,12 +773,27 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
                     {formData.paymentType === 'given' ? 'Amount Actually Paid' : 'Amount Actually Received'}
                   </label>
                   <div className="flex">
-                    <div className="w-20 p-2 border rounded-l bg-gray-100 dark:bg-gray-600 border-r-0 flex items-center justify-center text-gray-600 dark:text-gray-300">
-                      {formData.currency === 'USD' ? '$' : 
-                       formData.currency === 'EUR' ? '€' :
-                       formData.currency === 'GBP' ? '£' :
-                       formData.currency === 'CAD' ? 'C$' :
-                       formData.currency === 'AUD' ? 'A$' : '$'}
+                    <div className="w-24 p-2 border rounded-l bg-gray-100 dark:bg-gray-600 border-r-0 flex items-center justify-center text-gray-600 dark:text-gray-300 text-sm">
+                      {formData.currency === 'USD' ? '🇺🇸 $' : 
+                       formData.currency === 'EUR' ? '🇪🇺 €' :
+                       formData.currency === 'GBP' ? '🇬🇧 £' :
+                       formData.currency === 'JPY' ? '🇯🇵 ¥' :
+                       formData.currency === 'AUD' ? '🇦🇺 $' :
+                       formData.currency === 'CAD' ? '🇨🇦 $' :
+                       formData.currency === 'CHF' ? '🇨🇭 ₣' :
+                       formData.currency === 'CNY' ? '🇨🇳 ¥' :
+                       formData.currency === 'SEK' ? '🇸🇪 kr' :
+                       formData.currency === 'NZD' ? '🇳🇿 $' :
+                       formData.currency === 'MXN' ? '🇲🇽 $' :
+                       formData.currency === 'SGD' ? '🇸🇬 $' :
+                       formData.currency === 'HKD' ? '🇭🇰 $' :
+                       formData.currency === 'NOK' ? '🇳🇴 kr' :
+                       formData.currency === 'KRW' ? '🇰🇷 ₩' :
+                       formData.currency === 'TRY' ? '🇹🇷 ₺' :
+                       formData.currency === 'RUB' ? '🇷🇺 ₽' :
+                       formData.currency === 'INR' ? '🇮🇳 ₹' :
+                       formData.currency === 'BRL' ? '🇧🇷 R$' :
+                       formData.currency === 'ZAR' ? '🇿🇦 R' : '🇺🇸 $'}
                     </div>
                     <input
                       type="number"

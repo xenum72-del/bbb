@@ -283,7 +283,17 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                             )}
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onNavigate(`edit-encounter/${encounter.id}`);
+                                }}
+                                className="text-blue-500 hover:text-blue-700 p-1 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                                title="Edit encounter"
+                              >
+                                ✏️
+                              </button>
                               <button
                                 onClick={(e) => handleDeleteEncounter(encounter.id!, e)}
                                 className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"

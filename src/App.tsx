@@ -5,8 +5,9 @@ import Friends from './pages/Friends'
 import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
 import AddEncounter from './pages/AddEncounter'
+import EditEncounter from './pages/EditEncounter'
 
-type Page = 'dashboard' | 'timeline' | 'friends' | 'analytics' | 'settings' | 'add'
+type Page = 'dashboard' | 'timeline' | 'friends' | 'analytics' | 'settings' | 'add' | string
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
@@ -29,6 +30,12 @@ function App() {
   };
 
   const renderPage = () => {
+    // Handle edit-encounter routes
+    if (currentPage.startsWith('edit-encounter/')) {
+      const encounterId = parseInt(currentPage.split('/')[1]);
+      return <EditEncounter onNavigate={navigate} encounterId={encounterId} />
+    }
+    
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard onNavigate={navigate} />

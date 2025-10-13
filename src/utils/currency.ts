@@ -40,15 +40,26 @@ export async function getExchangeRates(): Promise<ExchangeRates> {
       base: 'USD',
       date: new Date().toISOString().split('T')[0],
       rates: {
-        USD: 1,
-        EUR: 0.85,
-        GBP: 0.73,
-        CAD: 1.25,
-        AUD: 1.35,
-        JPY: 110,
-        CHF: 0.92,
-        CNY: 6.45,
-        INR: 75
+        USD: 1.00,     // US Dollar
+        EUR: 0.85,     // Euro
+        GBP: 0.73,     // British Pound
+        JPY: 110.00,   // Japanese Yen
+        AUD: 1.35,     // Australian Dollar
+        CAD: 1.25,     // Canadian Dollar
+        CHF: 0.92,     // Swiss Franc
+        CNY: 6.45,     // Chinese Yuan
+        SEK: 8.75,     // Swedish Krona
+        NZD: 1.45,     // New Zealand Dollar
+        MXN: 18.50,    // Mexican Peso
+        SGD: 1.35,     // Singapore Dollar
+        HKD: 7.85,     // Hong Kong Dollar
+        NOK: 8.90,     // Norwegian Krone
+        KRW: 1180.00,  // South Korean Won
+        TRY: 8.75,     // Turkish Lira
+        RUB: 65.00,    // Russian Ruble
+        INR: 75.00,    // Indian Rupee
+        BRL: 5.25,     // Brazilian Real
+        ZAR: 15.50     // South African Rand
       }
     };
     
@@ -89,19 +100,20 @@ export function formatCurrency(amount: number, currency: string = 'USD'): string
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency.toUpperCase(),
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: currency === 'JPY' || currency === 'KRW' ? 0 : 2,
+      maximumFractionDigits: currency === 'JPY' || currency === 'KRW' ? 0 : 2
     }).format(amount);
   } catch {
     // Fallback if currency is not supported
     const symbols: Record<string, string> = {
-      USD: '$',
-      EUR: '€',
-      GBP: '£',
-      CAD: 'C$',
-      AUD: 'A$'
+      USD: '$',      EUR: '€',      GBP: '£',      JPY: '¥',
+      AUD: 'A$',     CAD: 'C$',     CHF: '₣',      CNY: '¥',
+      SEK: 'kr',     NZD: 'NZ$',    MXN: 'MX$',    SGD: 'S$',
+      HKD: 'HK$',    NOK: 'kr',     KRW: '₩',      TRY: '₺',
+      RUB: '₽',      INR: '₹',      BRL: 'R$',     ZAR: 'R'
     };
     const symbol = symbols[currency.toUpperCase()] || '$';
-    return `${symbol}${amount.toFixed(2)}`;
+    const decimals = (currency === 'JPY' || currency === 'KRW') ? 0 : 2;
+    return `${symbol}${amount.toFixed(decimals)}`;
   }
 }
