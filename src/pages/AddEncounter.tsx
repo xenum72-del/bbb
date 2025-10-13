@@ -44,6 +44,42 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
 
+  // Suggested starter tags for new users
+  const suggestedTags = [
+    // Contexts & Situations
+    'first-time', 'hookup', 'fwb', 'dating', 'relationship', 'one-night-stand',
+    'vacation', 'travel', 'hotel', 'home', 'his-place', 'my-place',
+    'spontaneous', 'planned', 'romantic', 'casual', 'wild', 'intimate',
+    
+    // Timing & Occasions
+    'morning', 'afternoon', 'evening', 'late-night', 'weekend', 'weekday',
+    'birthday', 'celebration', 'holiday', 'new-years', 'pride', 'anniversary',
+    
+    // Moods & Emotions  
+    'horny', 'drunk', 'high', 'sober', 'kinky', 'vanilla', 'rough', 'gentle',
+    'passionate', 'experimental', 'nervous', 'confident', 'lustful', 'romantic-mood',
+    
+    // Relationship Dynamics
+    'makeup-sex', 'breakup-sex', 'goodbye-sex', 'reunion', 'revenge', 
+    'rebound', 'jealous', 'forbidden', 'secret', 'public-ish',
+    
+    // Performance & Experience
+    'amazing', 'disappointing', 'awkward', 'hot', 'intense', 'playful',
+    'marathon', 'quickie', 'multiple-rounds', 'edging-session', 'power-play',
+    
+    // Settings & Locations
+    'outdoors', 'car', 'bathroom', 'shower', 'sauna', 'gym', 'office', 'park',
+    'beach', 'camping', 'party', 'club', 'bar-hookup', 'app-meetup',
+    
+    // Special Circumstances
+    'bareback', 'safe', 'tested', 'prep', 'anonymous', 'masked', 'blindfolded',
+    'recorded', 'photographed', 'threesome', 'group', 'orgy', 'exhibition',
+    
+    // Gear & Accessories
+    'toys', 'poppers', 'lube', 'condoms', 'underwear', 'leather', 'uniform',
+    'jockstrap', 'harness', 'collar', 'blindfold', 'ropes'
+  ];
+
   // Get all existing tags from encounters for suggestions
   const existingTags = React.useMemo(() => {
     if (!allEncounters) return [];
@@ -55,6 +91,9 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
     });
     return Array.from(tagSet).sort();
   }, [allEncounters]);
+
+  // Use existing tags if available, otherwise show suggested starter tags
+  const availableTags = existingTags.length > 0 ? existingTags : suggestedTags;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -475,8 +514,10 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
           <label className="block text-sm font-medium mb-1">
             Tags 
             <span className="text-xs text-gray-500 font-normal"> (for filtering & analytics)</span>
-            {existingTags.length > 0 && (
+            {existingTags.length > 0 ? (
               <span className="text-xs text-green-600 font-normal"> - {existingTags.length} existing tags available</span>
+            ) : (
+              <span className="text-xs text-blue-600 font-normal"> - {suggestedTags.length} suggested starter tags</span>
             )}
           </label>
           
@@ -488,10 +529,10 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
                 const value = e.target.value;
                 setFormData(f => ({...f, tags: value}));
                 
-                // Filter existing tags for suggestions
+                // Filter available tags for suggestions
                 if (value.trim()) {
                   const lastTag = value.split(',').pop()?.trim().toLowerCase() || '';
-                  const matchingTags = existingTags.filter(tag => 
+                  const matchingTags = availableTags.filter(tag => 
                     tag.toLowerCase().includes(lastTag) && tag.toLowerCase() !== lastTag
                   );
                   setTagSuggestions(matchingTags.slice(0, 8)); // Limit to 8 suggestions
@@ -501,15 +542,15 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
               }}
               onFocus={() => {
                 setShowTagSuggestions(true);
-                if (!formData.tags.trim() && existingTags.length > 0) {
-                  setTagSuggestions(existingTags.slice(0, 8)); // Show popular tags when focused
+                if (!formData.tags.trim() && availableTags.length > 0) {
+                  setTagSuggestions(availableTags.slice(0, 8)); // Show popular/suggested tags when focused
                 }
               }}
               onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
               className="w-full p-2 border rounded bg-white dark:bg-gray-700"
               placeholder={existingTags.length > 0 
                 ? `e.g., ${existingTags.slice(0, 3).join(', ')}... (or create new ones)`
-                : "e.g., vacation, drunk, kinky, spontaneous, planned, first-time, celebration"
+                : `e.g., ${suggestedTags.slice(0, 3).join(', ')}... (suggested starter tags)`
               }
             />
             
@@ -546,24 +587,32 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
             )}
           </div>
           
-          {/* Popular Tags (if no input) */}
-          {!formData.tags.trim() && existingTags.length > 0 && (
+          {/* Popular/Suggested Tags (if no input) */}
+          {!formData.tags.trim() && (
             <div className="mt-2">
-              <div className="text-xs text-gray-500 mb-1">Popular existing tags:</div>
+              <div className="text-xs text-gray-500 mb-1">
+                {existingTags.length > 0 ? 'Popular existing tags:' : 'Suggested starter tags:'}
+              </div>
               <div className="flex flex-wrap gap-1">
-                {existingTags.slice(0, 6).map((tag, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => {
-                      const currentTags = formData.tags ? formData.tags + ', ' + tag : tag;
-                      setFormData(f => ({...f, tags: currentTags + ', '}));
-                    }}
-                    className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    {tag} ({allEncounters?.filter(e => e.tags?.includes(tag)).length || 0})
-                  </button>
-                ))}
+                {availableTags.slice(0, 8).map((tag, index) => {
+                  const usageCount = existingTags.length > 0 
+                    ? allEncounters?.filter(e => e.tags?.includes(tag)).length || 0
+                    : null;
+                  
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => {
+                        const currentTags = formData.tags ? formData.tags + ', ' + tag : tag;
+                        setFormData(f => ({...f, tags: currentTags + ', '}));
+                      }}
+                      className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      {tag} {usageCount !== null && `(${usageCount})`}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -571,7 +620,7 @@ export default function AddEncounter({ onNavigate }: AddEncounterProps) {
           <div className="text-xs text-gray-500 mt-1">
             {existingTags.length > 0 
               ? `💡 Start typing to see suggestions from your ${existingTags.length} existing tags, or create new ones. Separate with commas.`
-              : "Add custom tags for filtering encounters later. Examples: 'vacation', 'drunk', 'kinky', 'romantic', 'revenge', 'hookup', 'fwb', 'first-time', 'makeup-sex'"
+              : `💡 Start typing or click chips above to add tags. Use them to categorize encounters for easy filtering later. ${suggestedTags.length} starter suggestions provided!`
             }
           </div>
         </div>
