@@ -53,6 +53,11 @@ export class AzureStorageService {
     this.validateConfig();
   }
   
+  private getSasTokenForUrl(): string {
+    // Remove leading ? if present since we'll add it in URL construction
+    return this.config.sasToken.startsWith('?') ? this.config.sasToken.substring(1) : this.config.sasToken;
+  }
+  
   private validateConfig(): void {
     if (!this.config.sasToken) {
       throw new Error('SAS token is required');
@@ -78,7 +83,7 @@ export class AzureStorageService {
     try {
       // Test blob storage connection by trying to list blobs in the specific container
       // This requires less permissions than listing all containers
-      const url = `${this.blobBaseUrl}/${this.config.containerName}?restype=container&comp=list&${this.config.sasToken}`;
+      const url = `${this.blobBaseUrl}/${this.config.containerName}?restype=container&comp=list&${this.getSasTokenForUrl()}`;
       
       const response = await fetch(url, {
         method: 'GET',
@@ -179,7 +184,11 @@ export class AzureStorageService {
    */
   async listBackups(): Promise<BackupMetadata[]> {
     try {
-      const url = `${this.blobBaseUrl}/${this.config.containerName}?restype=container&comp=list&prefix=${this.userId}_backup_&${this.config.sasToken}`;
+      // Properly encode the prefix parameter
+      const encodedPrefix = encodeURIComponent(`${this.userId}_backup_`);
+      const url = `${this.blobBaseUrl}/${this.config.containerName}?restype=container&comp=list&prefix=${encodedPrefix}&${this.getSasTokenForUrl()}`;
+      
+      console.log('Listing backups with URL:', url.replace(this.getSasTokenForUrl(), '[SAS_TOKEN_HIDDEN]'));
       
       const response = await fetch(url, {
         method: 'GET',
@@ -287,7 +296,7 @@ export class AzureStorageService {
 
   // Blob Storage operations
   async uploadBlob(blobName: string, content: string): Promise<void> {
-    const url = `${this.blobBaseUrl}/${this.config.containerName}/${blobName}?${this.config.sasToken}`;
+    const url = `${this.blobBaseUrl}/${this.config.containerName}/${blobName}?${this.getSasTokenForUrl()}`;
 
     const response = await fetch(url, {
       method: 'PUT',
@@ -304,7 +313,7 @@ export class AzureStorageService {
   }
 
   private async downloadBlob(blobName: string): Promise<string> {
-    const url = `${this.blobBaseUrl}/${this.config.containerName}/${blobName}?${this.config.sasToken}`;
+    const url = `${this.blobBaseUrl}/${this.config.containerName}/${blobName}?${this.getSasTokenForUrl()}`;
 
     const response = await fetch(url, {
       method: 'GET'
@@ -318,7 +327,7 @@ export class AzureStorageService {
   }
 
   private async deleteBlob(blobName: string): Promise<void> {
-    const url = `${this.blobBaseUrl}/${this.config.containerName}/${blobName}?${this.config.sasToken}`;
+    const url = `${this.blobBaseUrl}/${this.config.containerName}/${blobName}?${this.getSasTokenForUrl()}`;
 
     const response = await fetch(url, {
       method: 'DELETE'
