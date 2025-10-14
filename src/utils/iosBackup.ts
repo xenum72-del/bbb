@@ -54,8 +54,8 @@ export async function createCSVBackup(includePhotos: boolean = false): Promise<s
   
   backup.encounters.forEach(encounter => {
     const friendName = backup.friends.find(f => f.id === encounter.participants?.[0])?.name || 'Unknown';
-    const activities = encounter.selectedActivities?.map((i: number) => 
-      backup.interactionTypes[i]?.name || 'Unknown'
+    const activities = encounter.activitiesPerformed?.map((i: number) => 
+      backup.interactionTypes.find(type => type.id === i)?.name || 'Unknown'
     ).join('; ') || '';
     
     const row = [
@@ -106,7 +106,7 @@ export async function createMarkdownBackup(): Promise<string> {
   md += `\n## 👥 Friends\n\n`;
   backup.friends.forEach(friend => {
     const encounterCount = backup.encounters.filter(e => 
-      e.participants?.includes(friend.id)
+      friend.id && e.participants?.includes(friend.id)
     ).length;
     
     md += `### ${friend.name}\n`;
