@@ -1,6 +1,6 @@
 import { useSettings, useInteractionTypes, settingsApi } from '../hooks/useDatabase';
 import { useState, useEffect } from 'react';
-import { db, GAY_ACTIVITIES } from '../db/schema';
+import { db } from '../db/schema';
 import { showiOSBackupModal, isiOS, isiOSPWA } from '../utils/iosBackup';
 import {
   getSecuritySettings,
@@ -12,7 +12,11 @@ import {
   disableBiometrics,
   lockSession
 } from '../utils/security';
-import { useAnalytics } from '../utils/analytics';interface SettingsProps {
+import { useAnalytics } from '../utils/analytics';
+import AzureBackup from '../components/AzureBackup';
+
+
+interface SettingsProps {
   onNavigate: (page: string) => void;
 }
 
@@ -44,6 +48,26 @@ export default function Settings({ onNavigate }: SettingsProps) {
   // Analytics hook
   const { enable, disable, getStatus } = useAnalytics();
   const [analyticsStatus, setAnalyticsStatus] = useState(() => getStatus());
+  
+  // Azure Backup state
+  const [showAzureBackup, setShowAzureBackup] = useState(false);
+  
+
+  
+  // Azure Storage state - temporarily commented out
+  // const [azureConfig, setAzureConfig] = useState<AzureConfig>({
+  //   storageAccount: '',
+  //   storageKey: '',
+  //   containerName: 'photos',
+  //   tableName: 'theloaddown',
+  //   region: 'eastus',
+  //   enabled: false
+  // });
+  // const [azureConnectionStatus, setAzureConnectionStatus] = useState<'offline' | 'connecting' | 'connected' | 'error'>('offline');
+  // const [azureService, setAzureService] = useState<AzureStorageService | null>(null);
+  // const [migrationProgress, setMigrationProgress] = useState<MigrationProgress | null>(null);
+  // const [showMigrationModal, setShowMigrationModal] = useState(false);
+  // const [showDemo, setShowDemo] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -138,6 +162,94 @@ export default function Settings({ onNavigate }: SettingsProps) {
     setAnalyticsStatus(getStatus());
   };
 
+  // Azure Storage functions - temporarily commented out
+  // const handleTestConnection = async () => {
+  //   if (!azureConfig.storageAccount || !azureConfig.storageKey) {
+  //     alert('Please enter storage account and key');
+  //     return;
+  //   }
+
+  //   setAzureConnectionStatus('connecting');
+    
+  //   try {
+  //     const service = new AzureStorageService(azureConfig, 'user123'); // TODO: use actual user ID
+  //     const isConnected = await service.testConnection();
+      
+  //     if (isConnected) {
+  //       setAzureService(service);
+  //       setAzureConnectionStatus('connected');
+  //       alert('Connection successful!');
+  //     } else {
+  //       setAzureConnectionStatus('error');
+  //       alert('Connection failed. Please check your credentials.');
+  //     }
+  //   } catch (error) {
+  //     setAzureConnectionStatus('error');
+  //     alert('Connection error: ' + (error as Error).message);
+  //   }
+  // };
+
+  // const handleMigrateToAzure = async () => {
+  //   if (!azureService) {
+  //     alert('Please test connection first');
+  //     return;
+  //   }
+
+  //   if (!confirm('This will upload all your data to Azure. Continue?')) {
+  //     return;
+  //   }
+
+  //   setShowMigrationModal(true);
+    
+  //   try {
+  //     // Get local data
+  //     const friends = await db.friends.toArray();
+  //     const encounters = await db.encounters.toArray();
+  //     const interactionTypes = await db.interactionTypes.toArray();
+  //     const settings = await db.settings.toArray();
+
+  //     await azureService.migrateToAzure(
+  //       { friends, encounters, interactionTypes, settings },
+  //       (progress: MigrationProgress) => {
+  //         setMigrationProgress(progress);
+  //       }
+  //     );
+      
+  //     alert('Migration to Azure completed successfully!');
+  //   } catch (error) {
+  //     alert('Migration failed: ' + (error as Error).message);
+  //   } finally {
+  //     setShowMigrationModal(false);
+  //     setMigrationProgress(null);
+  //   }
+  // };
+
+  // const handleMigrateFromAzure = async () => {
+  //   if (!azureService) {
+  //     alert('Please test connection first');
+  //     return;
+  //   }
+
+  //   if (!confirm('This will download data from Azure and merge with local data. Continue?')) {
+  //     return;
+  //   }
+
+  //   setShowMigrationModal(true);
+    
+  //   try {
+  //     await azureService.migrateFromAzure((progress: MigrationProgress) => {
+  //       setMigrationProgress(progress);
+  //     });
+      
+  //     alert('Migration from Azure completed successfully!');
+  //   } catch (error) {
+  //     alert('Migration failed: ' + (error as Error).message);
+  //   } finally {
+  //     setShowMigrationModal(false);
+  //     setMigrationProgress(null);
+  //   }
+  // };
+
   const handleSaveSettings = async () => {
     try {
       await settingsApi.update(localSettings);
@@ -147,6 +259,8 @@ export default function Settings({ onNavigate }: SettingsProps) {
       alert('Failed to save settings');
     }
   };
+
+
 
   const handleExportData = async () => {
     try {
@@ -262,23 +376,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
     input.click();
   };
 
-  const handleResetToGayActivities = async () => {
-    if (!confirm('This will replace all current interaction types with explicit gay sex activities. Continue?')) {
-      return;
-    }
 
-    try {
-      // Clear existing types
-      await db.interactionTypes.clear();
-      
-      // Add new gay sex activities from schema
-      await db.interactionTypes.bulkAdd(GAY_ACTIVITIES);
-      alert('Reset to explicit gay sex activities successfully!');
-    } catch (error) {
-      console.error('Error resetting activities:', error);
-      alert('Failed to reset activities');
-    }
-  };
 
   const handleClearData = async () => {
     if (!confirm('This will permanently delete ALL your data. This cannot be undone. Are you sure?')) {
@@ -379,12 +477,6 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Manage activity categories</p>
               </div>
             </div>
-            <button
-              onClick={handleResetToGayActivities}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl text-sm font-medium hover:shadow-lg hover:scale-105 transition-all duration-200"
-            >
-              Reset to Explicit Gay Sex Activities
-            </button>
           </div>
 
           <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
@@ -613,6 +705,8 @@ export default function Settings({ onNavigate }: SettingsProps) {
           </div>
         </div>
 
+
+
         {/* Data Management */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20">
           <div className="flex items-center space-x-3 mb-4">
@@ -682,6 +776,23 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 </div>
               </div>
             </button>
+
+            <button
+              onClick={() => setShowAzureBackup(true)}
+              className="w-full p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm">☁️</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-800 dark:text-white">Azure Backup & Restore</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Backup to Microsoft Azure with date selection</div>
+                </div>
+              </div>
+            </button>
+
+
 
             <button
               onClick={() => onNavigate('tests')}
@@ -767,6 +878,12 @@ export default function Settings({ onNavigate }: SettingsProps) {
           </div>
         </div>
       )}
+
+      {/* Azure Backup Modal */}
+      <AzureBackup
+        isOpen={showAzureBackup}
+        onClose={() => setShowAzureBackup(false)}
+      />
     </div>
   );
 }

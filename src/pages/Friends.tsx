@@ -2,7 +2,7 @@ import { useActiveFriends, friendsApi, useEncountersByFriend } from '../hooks/us
 import { useState } from 'react';
 import type { Friend } from '../db/schema';
 import { GAY_ACTIVITIES } from '../db/schema';
-import { showBackupPrompt } from '../utils/backup';
+import { showBackupPrompt, triggerAutoAzureBackup, shouldShowBackupPrompt } from '../utils/backup';
 import { showiOSBackupModal, isiOS } from '../utils/iosBackup';
 
 interface FriendsProps {
@@ -167,14 +167,21 @@ export default function Friends({ onNavigate }: FriendsProps) {
       
       setFormData(getInitialFormData());
       
-      // Show backup prompt after successful save
-      setTimeout(async () => {
-        if (isiOS()) {
-          await showiOSBackupModal();
-        } else {
-          showBackupPrompt();
-        }
-      }, 100);
+      // Trigger automatic Azure backup (async, non-blocking)
+      triggerAutoAzureBackup().catch(err => 
+        console.warn('Auto Azure backup failed:', err)
+      );
+      
+      // Show manual backup prompt only if auto backup is not enabled
+      if (shouldShowBackupPrompt()) {
+        setTimeout(async () => {
+          if (isiOS()) {
+            await showiOSBackupModal();
+          } else {
+            showBackupPrompt();
+          }
+        }, 100);
+      }
     } catch (error) {
       console.error('Error saving friend:', error);
       alert('Failed to save friend. Please try again.');
