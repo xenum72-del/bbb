@@ -58,6 +58,14 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
     setConnectionStatus('connecting');
     
     try {
+      // Debug info
+      console.log('Testing Azure connection with:', {
+        storageAccount: config.storageAccount,
+        containerName: config.containerName,
+        sasTokenStart: config.sasToken.substring(0, 20) + '...',
+        sasTokenLength: config.sasToken.length
+      });
+      
       const newService = new AzureStorageService(config, 'backup-user');
       
       // Initialize storage (create table and container)
@@ -85,11 +93,26 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
         alert('Configuration saved and storage initialized! Ready to create backups.');
       } else {
         setConnectionStatus('error');
-        alert('Connection failed. Please check your credentials.');
+        alert('Connection failed. Please check:\n\n1. Storage account name is correct\n2. Container exists and is named correctly\n3. SAS token has read/write/list permissions\n4. SAS token is not expired\n5. Container name matches exactly (case-sensitive)');
       }
     } catch (error) {
       setConnectionStatus('error');
-      alert('Connection error: ' + (error as Error).message);
+      const errorMsg = (error as Error).message;
+      let troubleshootingMsg = 'Connection error: ' + errorMsg + '\n\nTroubleshooting:\n';
+      
+      if (errorMsg.includes('NetworkError') || errorMsg.includes('fetch')) {
+        troubleshootingMsg += '• Check your internet connection\n• Ensure you\'re not on a restricted network';
+      } else if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+        troubleshootingMsg += '• SAS token lacks required permissions\n• Generate new SAS token with read/write/list permissions';
+      } else if (errorMsg.includes('404') || errorMsg.includes('Not Found')) {
+        troubleshootingMsg += '• Storage account name is incorrect\n• Container doesn\'t exist - create it in Azure Portal first';
+      } else if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+        troubleshootingMsg += '• SAS token is invalid or expired\n• Generate a new SAS token';
+      } else {
+        troubleshootingMsg += '• Verify all credentials are correct\n• Try generating a new SAS token';
+      }
+      
+      alert(troubleshootingMsg);
     }
   };
 
