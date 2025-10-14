@@ -66,3 +66,182 @@ body {
 .dark .slider::-moz-range-thumb {
   border-color: #8b5cf6;
 }
+
+/* Map View Enhancements */
+.map-container {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdf4 100%);
+}
+
+.dark .map-container {
+  background: linear-gradient(135deg, #0c4a6e 0%, #164e63 50%, #065f46 100%);
+}
+
+.map-pin {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.map-pin:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.map-cluster {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.map-cluster:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.user-location-pin {
+  background: radial-gradient(circle, #3b82f6 0%, #1d4ed8 100%);
+  filter: drop-shadow(0 2px 6px rgba(59, 130, 246, 0.4));
+  animation: pulse-location 2s infinite;
+}
+
+@keyframes pulse-location {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* Mobile-optimized map styles */
+.map-container .cursor-grab {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.map-container .cursor-grabbing {
+  cursor: grabbing !important;
+}
+
+/* Smooth animations for mobile interactions */
+.map-pin, .map-cluster {
+  will-change: transform;
+}
+
+/* Larger touch targets for mobile */
+@media (max-width: 768px) {
+  .map-pin {
+    transform: scale(1.2) translate(-50%, -50%);
+  }
+  
+  .map-cluster {
+    transform: scale(1.1) translate(-50%, -50%);
+  }
+  
+  .map-pin:hover, .map-cluster:hover {
+    transform: scale(1.3) translate(-50%, -50%);
+  }
+  
+  /* Make controls larger on mobile */
+  .absolute.top-4.right-4 button,
+  .absolute.bottom-4.right-4 button {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Enhanced grid lines */
+.map-container .absolute.inset-0.opacity-20 div {
+  background: linear-gradient(90deg, rgba(156, 163, 175, 0.3) 0%, rgba(156, 163, 175, 0.1) 50%, rgba(156, 163, 175, 0.3) 100%);
+}
+
+.dark .map-container .absolute.inset-0.opacity-20 div {
+  background: linear-gradient(90deg, rgba(209, 213, 219, 0.2) 0%, rgba(209, 213, 219, 0.05) 50%, rgba(209, 213, 219, 0.2) 100%);
+}
+
+/* Leaflet Map Styles */
+.leaflet-container {
+  font-family: inherit;
+}
+
+/* Custom marker animations */
+.custom-marker-icon .custom-marker {
+  transition: transform 0.2s ease;
+}
+
+.custom-marker-icon:hover .custom-marker {
+  transform: rotate(-45deg) scale(1.2);
+}
+
+.custom-cluster-icon .cluster-marker {
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.custom-cluster-icon:hover .cluster-marker {
+  transform: scale(1.1);
+}
+
+/* Cluster marker styling */
+.cluster-marker {
+  position: relative;
+}
+
+.cluster-marker::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: rgba(249, 115, 22, 0.2);
+  animation: pulse-cluster 2s infinite;
+  z-index: -1;
+}
+
+@keyframes pulse-cluster {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* User location pulse animation for Leaflet */
+.user-location-icon {
+  animation: leaflet-pulse 2s infinite;
+}
+
+@keyframes leaflet-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+/* Leaflet popup customization */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dark .leaflet-popup-content-wrapper {
+  background-color: #374151;
+  color: #f9fafb;
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark .leaflet-popup-tip {
+  background-color: #374151;
+}

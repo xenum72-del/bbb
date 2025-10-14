@@ -8,7 +8,7 @@ import TagsInput from './TagsInput';
 import PhotoManager from './PhotoManager';
 import { convertToUSD } from '../utils/currency';
 import { encountersApi } from '../hooks/useDatabase';
-import { showBackupPrompt } from '../utils/backup';
+import { showBackupPrompt, triggerAutoAzureBackup, shouldShowBackupPrompt } from '../utils/backup';
 
 interface EncounterFormData {
   date: string;
@@ -180,10 +180,17 @@ export default function EncounterForm({
         await encountersApi.update(existingEncounter.id!, encounterData);
       }
       
-      // Show backup prompt after successful save
-      setTimeout(() => {
-        showBackupPrompt();
-      }, 100);
+      // Trigger automatic Azure backup (async, non-blocking)
+      triggerAutoAzureBackup().catch(err => 
+        console.warn('Auto Azure backup failed:', err)
+      );
+      
+      // Show manual backup prompt only if auto backup is not enabled
+      if (shouldShowBackupPrompt()) {
+        setTimeout(() => {
+          showBackupPrompt();
+        }, 100);
+      }
       
       onSubmit(true);
     } catch (error) {

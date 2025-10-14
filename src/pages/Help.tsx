@@ -391,25 +391,47 @@ export default function Help({ onNavigate }: HelpProps) {
       <HelpSection id="backup" title="Backup & Data Export" icon="💾">
         <div className="space-y-4">
           <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
-            <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">📤 Export Options</h4>
+            <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">☁️ Cloud Backup Available</h4>
             <p className="text-blue-700 dark:text-blue-300 text-sm">
-              Because Receipts are Forever - Multiple formats for different needs
+              Your receipts, safely stored in the cloud with enterprise-grade security
             </p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <h4 className="font-bold text-lg mb-3">📄 JSON Format (For the Tech Gays)</h4>
+              <h4 className="font-bold text-lg mb-3">☁️ Azure Cloud Backup (RECOMMENDED)</h4>
               <div className="space-y-2 text-sm">
-                <p><strong>Complete Data:</strong> Every detail with full structure</p>
-                <p><strong>Re-importable:</strong> Perfect for switching to a new gayphone</p>
-                <p><strong>File Size:</strong> Usually 1-5MB (your sex life is efficient)</p>
-                <p><strong>Use Case:</strong> Device migration, complete backups</p>
+                <p><strong>Secure Cloud Storage:</strong> Your data encrypted and stored in Microsoft Azure</p>
+                <p><strong>One-Click Backup:</strong> Create timestamped backups instantly</p>
+                <p><strong>Easy Restore:</strong> Select any backup to completely restore your data</p>
+                <p><strong>Cross-Device Sync:</strong> Access your backups from any device</p>
+                <p><strong>Automatic Encryption:</strong> All data encrypted in transit and at rest</p>
+              </div>
+              
+              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800 mt-3">
+                <h5 className="font-bold text-green-800 dark:text-green-200 mb-1">🔧 Setup Instructions:</h5>
+                <div className="text-green-700 dark:text-green-300 text-xs space-y-1">
+                  <p><strong>1.</strong> Go to Settings → Azure Backup</p>
+                  <p><strong>2.</strong> Enter your Azure Storage Account name</p>
+                  <p><strong>3.</strong> Create a container in Azure Portal (e.g., "backups")</p>
+                  <p><strong>4.</strong> Generate a SAS token with read/write/list permissions</p>
+                  <p><strong>5.</strong> Test connection and start backing up!</p>
+                </div>
               </div>
             </div>
 
             <div>
-              <h4 className="font-bold text-lg mb-3">📊 CSV Format (For the Excel Queens)</h4>
+              <h4 className="font-bold text-lg mb-3">📄 JSON Export (For the Tech Gays)</h4>
+              <div className="space-y-2 text-sm">
+                <p><strong>Complete Data:</strong> Every detail with full structure</p>
+                <p><strong>Re-importable:</strong> Perfect for switching to a new gayphone</p>
+                <p><strong>File Size:</strong> Usually 1-5MB (your sex life is efficient)</p>
+                <p><strong>Use Case:</strong> Device migration, manual backups</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-lg mb-3">📊 CSV Export (For the Excel Queens)</h4>
               <div className="space-y-2 text-sm">
                 <p><strong>Spreadsheet Ready:</strong> Open in Numbers, Excel, Google Sheets</p>
                 <p><strong>Analysis Friendly:</strong> Create your own charts and pivot tables</p>
@@ -418,25 +440,26 @@ export default function Help({ onNavigate }: HelpProps) {
               </div>
             </div>
 
-            <div>
-              <h4 className="font-bold text-lg mb-3">🔐 Encrypted Backup (For the Paranoid Gays)</h4>
-              <div className="space-y-2 text-sm">
-                <p><strong>Password Protected:</strong> AES-256 encryption with your password</p>
-                <p><strong>Cloud Safe:</strong> Encrypted files are safe for iCloud, Google Drive, Dropbox</p>
-                <p><strong>Discrete:</strong> Looks like any other encrypted file</p>
-                <p><strong>Use Case:</strong> Regular backups to cloud storage</p>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl">
+              <h4 className="font-bold mb-3">� The UPDATED Gay Backup Strategy</h4>
+              <div className="space-y-1 text-sm">
+                <p><strong>Daily:</strong> Use Azure cloud backup after each session</p>
+                <p><strong>Weekly:</strong> Export JSON backup to secure local storage</p>
+                <p><strong>Monthly:</strong> CSV export for your personal analytics</p>
+                <p><strong>Before Travel:</strong> Create Azure backup (accessible anywhere)</p>
+                <p><strong>Before Phone Upgrade:</strong> Azure backup + JSON export (double safety)</p>
+                <p><strong>Pro Tip:</strong> Azure backups include timestamps and file sizes</p>
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl">
-              <h4 className="font-bold mb-3">💾 The Gay Backup Strategy</h4>
-              <div className="space-y-1 text-sm">
-                <p><strong>Weekly:</strong> Quick JSON export to secure location</p>
-                <p><strong>Monthly:</strong> Encrypted backup to multiple cloud services</p>
-                <p><strong>Quarterly:</strong> Full backup with analytics reports to external drive</p>
-                <p><strong>Annually:</strong> Archive backup with year-end "best of" statistics</p>
-                <p><strong>Before Travel:</strong> Backup to offline storage (airports are risky)</p>
-                <p><strong>Before Phone Upgrade:</strong> MULTIPLE backups in MULTIPLE formats</p>
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
+              <h4 className="font-bold text-purple-800 dark:text-purple-200 mb-2">� Why Azure Cloud Backup?</h4>
+              <div className="text-purple-700 dark:text-purple-300 text-sm space-y-1">
+                <p>• <strong>Enterprise Security:</strong> Same infrastructure used by Fortune 500 companies</p>
+                <p>• <strong>Global Access:</strong> Your backups available worldwide</p>
+                <p>• <strong>Redundancy:</strong> Microsoft handles all the infrastructure</p>
+                <p>• <strong>Privacy:</strong> Your data, your container, your control</p>
+                <p>• <strong>Cost Effective:</strong> Pay only for what you store (usually pennies)</p>
               </div>
             </div>
           </div>
@@ -562,7 +585,7 @@ export default function Help({ onNavigate }: HelpProps) {
             You won't regret using this app. 💅✨
           </p>
           <div className="text-xs text-gray-400 dark:text-gray-600 mt-4">
-            Help Guide | Last updated: October 2024
+            Help Guide | Last updated: October 2025
           </div>
         </div>
       </div>

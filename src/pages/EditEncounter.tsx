@@ -78,11 +78,20 @@ export default function EditEncounter({ onNavigate, encounterId }: EditEncounter
                 const { encountersApi } = await import('../hooks/useDatabase');
                 await encountersApi.delete(existingEncounter.id!);
                 
-                // Show backup prompt after successful delete
-                const { showBackupPrompt } = await import('../utils/backup');
-                setTimeout(() => {
-                  showBackupPrompt();
-                }, 100);
+                // Show backup prompt after successful delete (only if auto backup not enabled)
+                const { showBackupPrompt, shouldShowBackupPrompt, triggerAutoAzureBackup } = await import('../utils/backup');
+                
+                // Trigger auto backup first
+                triggerAutoAzureBackup().catch(err => 
+                  console.warn('Auto Azure backup failed:', err)
+                );
+                
+                // Only show manual prompt if needed
+                if (shouldShowBackupPrompt()) {
+                  setTimeout(() => {
+                    showBackupPrompt();
+                  }, 100);
+                }
                 
                 onNavigate('timeline');
               } catch (error) {

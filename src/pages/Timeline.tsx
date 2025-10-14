@@ -1,5 +1,6 @@
 import { useEncounters, useActiveFriends, useInteractionTypes, encountersApi } from '../hooks/useDatabase';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import MapViewLeaflet from '../components/MapViewLeaflet';
 
 interface TimelineProps {
   onNavigate: (page: string) => void;
@@ -34,10 +35,14 @@ export default function Timeline({ onNavigate }: TimelineProps) {
     typeId: 'all',
     showAnonymous: true,
     tags: ''
-  });  const friendsMap = new Map(friends.map(f => [f.id!, f]));
-  const typesMap = new Map(interactionTypes.map(t => [t.id!, t]));
+  });
+  
+  const [showMapView, setShowMapView] = useState(false);
+  
+  const friendsMap = useMemo(() => new Map(friends.map(f => [f.id!, f])), [friends]);
+  const typesMap = useMemo(() => new Map(interactionTypes.map(t => [t.id!, t])), [interactionTypes]);
 
-  const filteredEncounters = allEncounters.filter(encounter => {
+  const filteredEncounters = useMemo(() => allEncounters.filter(encounter => {
     if (encounter.rating < filters.rating[0] || encounter.rating > filters.rating[1]) {
       return false;
     }
@@ -81,25 +86,36 @@ export default function Timeline({ onNavigate }: TimelineProps) {
     }
 
     return true;
-  });
+  }), [allEncounters, filters]);
 
-  const groupedByDate = filteredEncounters.reduce((acc, encounter) => {
-    const date = new Date(encounter.date).toDateString();
-    if (!acc[date]) acc[date] = [];
-    acc[date].push(encounter);
-    return acc;
-  }, {} as Record<string, typeof filteredEncounters>);
+  const groupedByDate = useMemo(() => {
+    return filteredEncounters.reduce((acc, encounter) => {
+      const date = new Date(encounter.date).toDateString();
+      if (!acc[date]) acc[date] = [];
+      acc[date].push(encounter);
+      return acc;
+    }, {} as Record<string, typeof filteredEncounters>);
+  }, [filteredEncounters]);
 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Timeline</h2>
-        <button
-          onClick={() => onNavigate('add')}
-          className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm"
-        >
-          + Add
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setShowMapView(true)}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm flex items-center space-x-1"
+          >
+            <span>🗺️</span>
+            <span>Show on Map</span>
+          </button>
+          <button
+            onClick={() => onNavigate('add')}
+            className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm"
+          >
+            + Add
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -246,6 +262,11 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                       ? encounter.activitiesPerformed.map(id => typesMap.get(id)).filter(Boolean)
                       : [type].filter(Boolean);
                     
+                    // If no activities found, provide a fallback
+                    const finalActivities = activities.length > 0 
+                      ? activities 
+                      : [{ name: 'Encounter', icon: '💭', color: '#9CA3AF' }];
+                    
                     return (
                       <div
                         key={encounter.id}
@@ -253,13 +274,13 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1">
-                            {activities.length > 1 ? (
+                            {finalActivities.length > 1 ? (
                               <div>
                                 <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                  {activities.length} Activities:
+                                  {finalActivities.length} Activities:
                                 </div>
                                 <div className="flex flex-wrap gap-1">
-                                  {activities.slice(0, 3).map((activity, idx) => (
+                                  {finalActivities.slice(0, 3).map((activity, idx) => (
                                     <span 
                                       key={idx}
                                       className="inline-flex items-center space-x-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs"
@@ -268,17 +289,17 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                                       <span>{activity?.name}</span>
                                     </span>
                                   ))}
-                                  {activities.length > 3 && (
+                                  {finalActivities.length > 3 && (
                                     <span className="text-xs text-gray-500 px-2 py-1">
-                                      +{activities.length - 3} more
+                                      +{finalActivities.length - 3} more
                                     </span>
                                   )}
                                 </div>
                               </div>
                             ) : (
                               <div className="flex items-center space-x-2">
-                                <span className="text-lg">{activities[0]?.icon || '💭'}</span>
-                                <span className="font-medium">{activities[0]?.name || 'Unknown'}</span>
+                                <span className="text-lg">{finalActivities[0]?.icon || '💭'}</span>
+                                <span className="font-medium">{finalActivities[0]?.name || 'Unknown'}</span>
                               </div>
                             )}
                           </div>
@@ -422,6 +443,18 @@ export default function Timeline({ onNavigate }: TimelineProps) {
             ))
         )}
       </div>
+
+      {/* Map View Modal */}
+      {showMapView && (
+        <MapViewLeaflet
+          encounters={filteredEncounters}
+          onClose={() => setShowMapView(false)}
+          onViewEncounter={(encounterId) => {
+            // Navigate to encounter details - assuming we have an encounter details page
+            onNavigate(`encounter-${encounterId}`);
+          }}
+        />
+      )}
     </div>
   );
 }

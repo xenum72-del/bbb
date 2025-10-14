@@ -143,10 +143,189 @@ export function getBackupSize(backupData: BackupData): { size: number; sizeForma
   };
 }
 
+// Get auto backup settings from Azure config
+function getAutoBackupSettings() {
+  const saved = localStorage.getItem('azure-backup-config');
+  if (!saved) {
+    return { enabled: false, retentionCount: 10, container: 'auto-backups' };
+  }
+  
+  try {
+    const config = JSON.parse(saved);
+    return {
+      enabled: config.autoBackupEnabled || false,
+      retentionCount: config.autoBackupRetention || 10,
+      container: config.autoBackupContainer || config.containerName || 'auto-backups'
+    };
+  } catch {
+    return { enabled: false, retentionCount: 10, container: 'auto-backups' };
+  }
+}
+
+// Check if we should show manual backup prompt
+export function shouldShowBackupPrompt(): boolean {
+  const autoSettings = getAutoBackupSettings();
+  const azureConfigured = isAzureConfigured();
+  
+  console.log('shouldShowBackupPrompt check:', {
+    autoEnabled: autoSettings.enabled,
+    azureConfigured,
+    shouldShow: !(autoSettings.enabled && azureConfigured)
+  });
+  
+  // If auto backup is enabled and Azure is configured, don't show manual prompt
+  if (autoSettings.enabled && azureConfigured) {
+    return false;
+  }
+  
+  // Otherwise, show the manual backup prompt
+  return true;
+}
+
+// Check if Azure backup is configured
+export function isAzureConfigured(): boolean {
+  const saved = localStorage.getItem('azure-backup-config');
+  if (!saved) return false;
+  
+  try {
+    const config = JSON.parse(saved);
+    return config.enabled && config.storageAccount && config.sasToken && config.containerName;
+  } catch {
+    return false;
+  }
+}
+
+// Get Azure service if configured
+async function getAzureService(): Promise<import('../utils/azureStorage').AzureStorageService | null> {
+  if (!isAzureConfigured()) return null;
+  
+  const saved = localStorage.getItem('azure-backup-config');
+  if (!saved) return null;
+  
+  try {
+    const config = JSON.parse(saved);
+    const { AzureStorageService } = await import('../utils/azureStorage');
+    const userId = localStorage.getItem('azure-user-id') || 'user_' + Math.random().toString(36).substr(2, 16);
+    if (!localStorage.getItem('azure-user-id')) {
+      localStorage.setItem('azure-user-id', userId);
+    }
+    return new AzureStorageService(config, userId);
+  } catch {
+    return null;
+  }
+}
+
+// Check network connectivity to Azure
+async function isOnline(): Promise<boolean> {
+  if (!navigator.onLine) return false;
+  
+  try {
+    // Check connectivity by testing the actual Azure blob endpoint
+    const saved = localStorage.getItem('azure-backup-config');
+    if (!saved) return false;
+    
+    const config = JSON.parse(saved);
+    if (!config.storageAccount) {
+      return false; // Can't test Azure connectivity without storage account
+    }
+    
+    const azureUrl = `https://${config.storageAccount}.blob.core.windows.net/`;
+    await fetch(azureUrl, {
+      method: 'HEAD',
+      mode: 'cors',
+      cache: 'no-cache',
+      signal: AbortSignal.timeout(5000) // 5 second timeout
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Automatic Azure backup with rolling retention (data only, no photos)
+export async function triggerAutoAzureBackup(): Promise<void> {
+  const autoSettings = getAutoBackupSettings();
+  
+  if (!autoSettings.enabled || !isAzureConfigured() || !(await isOnline())) {
+    return; // Silently skip if not enabled, not configured, or offline
+  }
+
+  try {
+    const service = await getAzureService();
+    if (!service) return;
+
+    // Get Azure backup settings to use dedicated container for auto backups
+    const config = JSON.parse(localStorage.getItem('azure-backup-config') || '{}');
+    const autoBackupContainer = autoSettings.container;
+    
+    // Create a special Azure service instance for auto backups if different container
+    let autoService = service;
+    if (autoBackupContainer !== config.containerName) {
+      const { AzureStorageService } = await import('../utils/azureStorage');
+      const userId = localStorage.getItem('azure-user-id') || 'user_' + Math.random().toString(36).substr(2, 16);
+      autoService = new AzureStorageService({
+        ...config,
+        containerName: autoBackupContainer
+      }, userId);
+    }
+
+    // Create backup without photos (faster/smaller)
+    const timestamp = Date.now();
+    const backupId = `auto_${timestamp}.json`;
+    
+    // Create data-only backup
+    const backupData = await createBackup(false); // false = no photos
+    
+    // Upload to Azure (async, non-blocking)
+    const jsonString = JSON.stringify(backupData, null, 2);
+    await autoService.uploadBlob(backupId, jsonString);
+
+    // Implement rolling retention: keep only configured number of newest backups
+    const existingBackups = await autoService.listBackups();
+    const autoBackups = existingBackups
+      .filter(backup => backup.backupId.startsWith('auto_'))
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    // Delete oldest backups if we have more than the retention count
+    if (autoBackups.length > autoSettings.retentionCount) {
+      const backupsToDelete = autoBackups.slice(autoSettings.retentionCount);
+      for (const backup of backupsToDelete) {
+        try {
+          await autoService.deleteBackup(backup.backupId);
+        } catch (error) {
+          console.warn('Failed to delete old backup:', backup.backupId, error);
+        }
+      }
+    }
+
+    console.log('✅ Automatic Azure backup completed:', backupId);
+  } catch (error) {
+    console.warn('Automatic Azure backup failed (silently):', error);
+    // Fail silently to not interrupt user workflow
+  }
+}
+
 export async function showBackupPrompt(): Promise<void> {
+  const azureConfigured = isAzureConfigured();
+  
   return new Promise((resolve) => {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    
+    const azureButtons = azureConfigured ? `
+      <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <h4 class="font-medium text-blue-900 dark:text-blue-100 mb-2">☁️ Azure Cloud Backup</h4>
+        <div class="space-y-2">
+          <button id="azure-backup" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            🌐 Save to Azure Cloud
+          </button>
+        </div>
+      </div>
+      <div class="mb-3">
+        <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">📁 Local Backup</h4>
+      </div>
+    ` : '<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">📁 Local Backup</h4>';
+
     modal.innerHTML = `
       <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
         <h3 class="text-lg font-semibold mb-4">💾 Save Backup?</h3>
@@ -155,12 +334,15 @@ export async function showBackupPrompt(): Promise<void> {
         </p>
         
         <div class="space-y-3">
-          <button id="backup-with-photos" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            📸 Full Backup (with photos)
-          </button>
-          <button id="backup-no-photos" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-            ⚡ Quick Backup (no photos)
-          </button>
+          ${azureButtons}
+          <div class="space-y-2">
+            <button id="backup-with-photos" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              📸 Full Backup (with photos)
+            </button>
+            <button id="backup-no-photos" class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+              ⚡ Quick Backup (no photos)
+            </button>
+          </div>
           <button id="backup-skip" class="w-full px-4 py-2 border border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             Skip for now
           </button>
@@ -170,6 +352,7 @@ export async function showBackupPrompt(): Promise<void> {
 
     document.body.appendChild(modal);
 
+    const azureBtn = modal.querySelector('#azure-backup') as HTMLButtonElement;
     const withPhotos = modal.querySelector('#backup-with-photos') as HTMLButtonElement;
     const noPhotos = modal.querySelector('#backup-no-photos') as HTMLButtonElement;
     const skip = modal.querySelector('#backup-skip') as HTMLButtonElement;
@@ -178,6 +361,27 @@ export async function showBackupPrompt(): Promise<void> {
       document.body.removeChild(modal);
       resolve();
     };
+
+    // Azure backup handler
+    if (azureBtn) {
+      azureBtn.addEventListener('click', async () => {
+        try {
+          azureBtn.disabled = true;
+          azureBtn.textContent = '☁️ Uploading...';
+          
+          const service = await getAzureService();
+          if (!service) {
+            throw new Error('Azure service not available');
+          }
+          
+          const backupId = await service.createBackup();
+          alert('✅ Azure backup saved successfully!\nBackup ID: ' + backupId.split('_backup_')[1].split('.json')[0]);
+        } catch (error) {
+          alert('❌ Azure backup failed: ' + (error as Error).message);
+        }
+        cleanup();
+      });
+    }
 
     withPhotos?.addEventListener('click', async () => {
       try {

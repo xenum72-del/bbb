@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   server: {
     headers: {
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.mapbox.com wss:; media-src 'self'; object-src 'none'; child-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' https://api.mapbox.com https://*.table.core.windows.net https://*.blob.core.windows.net https://*.supabase.co https://*.tile.openstreetmap.org wss:; media-src 'self'; object-src 'none'; child-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
       'X-Frame-Options': 'DENY',
       'X-Content-Type-Options': 'nosniff', 
       'Referrer-Policy': 'strict-origin-when-cross-origin',

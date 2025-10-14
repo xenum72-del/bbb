@@ -1,4 +1,4 @@
-import { GAY_ACTIVITIES } from '../db/schema';
+import { useInteractionTypes } from '../hooks/useDatabase';
 
 interface ActivitiesSelectProps {
   selectedActivities: number[];
@@ -17,16 +17,18 @@ export default function ActivitiesSelect({
   required = false,
   className = ''
 }: ActivitiesSelectProps) {
-  const handleActivityToggle = (activityIndex: number) => {
-    const isSelected = selectedActivities.includes(activityIndex);
+  const interactionTypes = useInteractionTypes();
+
+  const handleActivityToggle = (activityId: number) => {
+    const isSelected = selectedActivities.includes(activityId);
     if (isSelected) {
-      onActivitiesChange(selectedActivities.filter(id => id !== activityIndex));
+      onActivitiesChange(selectedActivities.filter(id => id !== activityId));
     } else {
-      onActivitiesChange([...selectedActivities, activityIndex]);
+      onActivitiesChange([...selectedActivities, activityId]);
     }
   };
 
-  const filteredActivities = GAY_ACTIVITIES.filter(activity =>
+  const filteredActivities = interactionTypes.filter(activity =>
     searchQuery === '' ||
     activity.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -52,15 +54,13 @@ export default function ActivitiesSelect({
       />
 
       {/* Activities Grid */}
-      <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border rounded p-2 bg-gray-50 dark:bg-gray-800">
+      <div className="grid grid-cols-1 gap-2 max-h-80 overflow-y-auto border rounded p-2 bg-gray-50 dark:bg-gray-800">
         {filteredActivities.map((activity) => {
-          // Find the actual index in the full GAY_ACTIVITIES array
-          const actualIndex = GAY_ACTIVITIES.findIndex(a => a.name === activity.name);
-          const isSelected = selectedActivities.includes(actualIndex);
+          const isSelected = selectedActivities.includes(activity.id!);
           
           return (
             <label
-              key={actualIndex}
+              key={activity.id}
               className={`flex items-center space-x-3 p-2 rounded cursor-pointer transition-colors ${
                 isSelected
                   ? 'bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-600'
@@ -70,7 +70,7 @@ export default function ActivitiesSelect({
               <input
                 type="checkbox"
                 checked={isSelected}
-                onChange={() => handleActivityToggle(actualIndex)}
+                onChange={() => handleActivityToggle(activity.id!)}
                 className="rounded text-blue-600"
               />
               <span className="text-lg">{activity.icon}</span>
