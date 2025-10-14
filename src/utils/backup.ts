@@ -281,21 +281,25 @@ export async function triggerAutoAzureBackup(): Promise<void> {
     await autoService.uploadBlob(backupId, jsonString);
 
     // Implement rolling retention: keep only configured number of newest backups
-    const existingBackups = await autoService.listBackups();
-    const autoBackups = existingBackups
-      .filter(backup => backup.backupId.startsWith('auto_'))
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    try {
+      const existingBackups = await autoService.listBackups();
+      const autoBackups = existingBackups
+        .filter(backup => backup.backupId.startsWith('auto_'))
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-    // Delete oldest backups if we have more than the retention count
-    if (autoBackups.length > autoSettings.retentionCount) {
-      const backupsToDelete = autoBackups.slice(autoSettings.retentionCount);
-      for (const backup of backupsToDelete) {
-        try {
-          await autoService.deleteBackup(backup.backupId);
-        } catch (error) {
-          console.warn('Failed to delete old backup:', backup.backupId, error);
+      // Delete oldest backups if we have more than the retention count
+      if (autoBackups.length > autoSettings.retentionCount) {
+        const backupsToDelete = autoBackups.slice(autoSettings.retentionCount);
+        for (const backup of backupsToDelete) {
+          try {
+            await autoService.deleteBackup(backup.backupId);
+          } catch (error) {
+            console.warn('Failed to delete old backup:', backup.backupId, error);
+          }
         }
       }
+    } catch (error) {
+      console.warn('Failed to clean up old auto-backups (continuing anyway):', error);
     }
 
     console.log('✅ Automatic Azure backup completed:', backupId);
