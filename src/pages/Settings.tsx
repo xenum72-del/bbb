@@ -815,53 +815,55 @@ export default function Settings({ onNavigate }: SettingsProps) {
               </div>
             </button>
 
-            {/* Developer-only sample data feature */}
+            {/* Developer-only features */}
             {isDeveloperMode && (
-              <button
-                onClick={async () => {
-                  if (confirm('This will replace all current data with 221 realistic sample encounters and 65 friends. Are you sure?')) {
-                    try {
-                      await generateRealisticSampleData();
-                      alert('✅ Successfully generated 221 realistic encounters and 65 friends!\n\n📍 Locations: Central/Eastern Europe, India, Los Angeles\n⏱️ Duration: 15-90 minutes\n💰 Very few paid (mostly massage)\n⭐ Average rating: >4 stars\n🎯 All activities match proper IDs');
-                      window.location.reload(); // Refresh to show new data
-                    } catch (error) {
-                      console.error('Sample data generation failed:', error);
-                      alert('❌ Failed to generate sample data. Check console for details.');
+              <>
+                <button
+                  onClick={async () => {
+                    if (confirm('This will replace all current data with 221 realistic sample encounters and 65 friends. Are you sure?')) {
+                      try {
+                        await generateRealisticSampleData();
+                        alert('✅ Successfully generated 221 realistic encounters and 65 friends!\n\n📍 Locations: Central/Eastern Europe, India, Los Angeles\n⏱️ Duration: 15-90 minutes\n💰 Very few paid (mostly massage)\n⭐ Average rating: >4 stars\n🎯 All activities match proper IDs');
+                        window.location.reload(); // Refresh to show new data
+                      } catch (error) {
+                        console.error('Sample data generation failed:', error);
+                        alert('❌ Failed to generate sample data. Check console for details.');
+                      }
                     }
-                  }
-                }}
-                className="w-full p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
+                  }}
+                  className="w-full p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800 dark:text-white">🔧 Generate Sample Data</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">221 realistic encounters + 65 friends (developer only)</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold text-gray-800 dark:text-white">🔧 Generate Sample Data</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">221 realistic encounters + 65 friends (developer only)</div>
-                  </div>
-                </div>
-              </button>
-            )}
+                </button>
 
-            <button
-              onClick={() => onNavigate('tests')}
-              className="w-full p-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border border-purple-200 dark:border-purple-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-800 dark:text-white">Run Data Tests</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Comprehensive data integrity validation</div>
-                </div>
-              </div>
-            </button>
+                <button
+                  onClick={() => onNavigate('tests')}
+                  className="w-full p-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border border-purple-200 dark:border-purple-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800 dark:text-white">🔧 Run Data Tests</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Comprehensive data integrity validation (developer only)</div>
+                    </div>
+                  </div>
+                </button>
+              </>
+            )}
 
             <button
               onClick={handleClearData}
