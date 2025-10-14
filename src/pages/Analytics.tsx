@@ -1,7 +1,8 @@
-import { useEncounters, useSettings } from '../hooks/useDatabase';
+import { useEncounters, useSettings, useActiveFriends, useInteractionTypes } from '../hooks/useDatabase';
 import { calculateAllFriendScores } from '../utils/scoring';
 import { useState, useEffect } from 'react';
 import type { FriendScore } from '../utils/scoring';
+import StarRating from '../components/StarRating';
 
 interface AnalyticsProps {
   onNavigate: (page: string) => void;
@@ -10,6 +11,8 @@ interface AnalyticsProps {
 export default function Analytics({ onNavigate }: AnalyticsProps) {
   const encounters = useEncounters();
   const settings = useSettings();
+  const friends = useActiveFriends();
+  const interactionTypes = useInteractionTypes();
   const [friendScores, setFriendScores] = useState<FriendScore[]>([]);
 
   useEffect(() => {
@@ -78,6 +81,65 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
     return acc;
   }, {} as Record<string, number>);
 
+  // Age distribution of friends
+  const ageDistribution = friends.reduce((acc, friend) => {
+    if (friend.age) {
+      const ageGroup = friend.age < 25 ? '18-24' : 
+                     friend.age < 30 ? '25-29' :
+                     friend.age < 35 ? '30-34' :
+                     friend.age < 40 ? '35-39' :
+                     friend.age < 45 ? '40-44' : '45+';
+      acc[ageGroup] = (acc[ageGroup] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Duration distribution of encounters
+  const durationDistribution = encounters.reduce((acc, encounter) => {
+    if (encounter.durationMinutes) {
+      const durationGroup = encounter.durationMinutes < 30 ? 'Quick (<30min)' :
+                           encounter.durationMinutes < 60 ? 'Standard (30-60min)' :
+                           encounter.durationMinutes < 120 ? 'Extended (1-2h)' :
+                           encounter.durationMinutes < 180 ? 'Marathon (2-3h)' : 'Epic (3h+)';
+      acc[durationGroup] = (acc[durationGroup] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Top 5 countries (extract from location)
+  const countryStats = encounters.reduce((acc, encounter) => {
+    if (encounter.location?.place) {
+      // Extract country from location string (assumes format includes country)
+      const locationParts = encounter.location.place.split(',');
+      const country = locationParts[locationParts.length - 1]?.trim();
+      if (country) {
+        acc[country] = (acc[country] || 0) + 1;
+      }
+    }
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const topCountries = Object.entries(countryStats)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 5);
+
+  // Top 10 activities
+  const activityStats = encounters.reduce((acc, encounter) => {
+    if (encounter.activitiesPerformed) {
+      encounter.activitiesPerformed.forEach(activityId => {
+        const activity = interactionTypes.find(type => type.id === activityId);
+        if (activity) {
+          acc[activity.name] = (acc[activity.name] || 0) + 1;
+        }
+      });
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  const topActivities = Object.entries(activityStats)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 10);
+
 
 
   const getScoreColor = (score: number): string => {
@@ -95,8 +157,11 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">🔥 Your Legendary Sex Life</h2>
+    <div className="p-6 space-y-8 relative">
+      <div className="p-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 dark:border-gray-700/40">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm mb-2">🔥 Your Legendary Sex Life</h2>
+        <p className="text-gray-600 dark:text-gray-400">Deep insights into your connections</p>
+      </div>
 
       {/* Personal Sex Stats Overview */}
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -111,13 +176,21 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
           <div className="text-xs opacity-75 mt-1">Building an empire!</div>
         </div>
         <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-4 rounded-lg">
-          <div className="text-2xl font-bold">{averageRating.toFixed(1)}⭐</div>
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-2xl font-bold">{averageRating.toFixed(1)}</span>
+            <StarRating rating={averageRating} size="lg" />
+          </div>
           <div className="text-sm opacity-90">🔥 Your Average Rating</div>
           <div className="text-xs opacity-75 mt-1">You know how to pick 'em!</div>
         </div>
         <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white p-4 rounded-lg">
           <div className="text-2xl font-bold">{topRatedEncounters.length}</div>
-          <div className="text-sm opacity-90">⭐ Amazing Experiences</div>
+          <div className="text-sm opacity-90 flex items-center justify-center gap-1">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            Amazing Experiences
+          </div>
           <div className="text-xs opacity-75 mt-1">4+ star encounters!</div>
         </div>
       </div>
@@ -308,109 +381,187 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
         </div>
       </div>
 
-      {/* Your Newest Additions */}
-      {friendScores.length > 10 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">🆕 Your Newest Additions (Last 10)</h3>
-          <div className="bg-white dark:bg-gray-800 rounded-lg">
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {[...friendScores]
-                .sort((a, b) => new Date(b.friend.createdAt).getTime() - new Date(a.friend.createdAt).getTime())
-                .slice(0, 10)
-                .map((friendScore, index) => {
-                  const daysSinceAdded = Math.floor((Date.now() - new Date(friendScore.friend.createdAt).getTime()) / (1000 * 60 * 60 * 24));
-                  return (
-                    <div key={friendScore.friend.id} className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center font-bold text-blue-600">
-                            #{index + 1}
-                          </div>
-                          <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
-                            {friendScore.friend.avatarUrl ? (
-                              <img
-                                src={friendScore.friend.avatarUrl}
-                                alt={friendScore.friend.name}
-                                className="w-10 h-10 rounded-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-blue-600">{friendScore.friend.name.charAt(0).toUpperCase()}</span>
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-medium flex items-center space-x-2">
-                              <span>{friendScore.friend.name}</span>
-                              {daysSinceAdded <= 7 && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Fresh! 🔥</span>}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {friendScore.encounterCount} encounters
-                            </div>
-                            <div className="text-xs text-blue-600 font-medium">
-                              Added {daysSinceAdded === 0 ? 'today' : 
-                                     daysSinceAdded === 1 ? 'yesterday' : 
-                                     daysSinceAdded <= 7 ? `${daysSinceAdded} days ago` :
-                                     daysSinceAdded <= 30 ? `${Math.floor(daysSinceAdded/7)} weeks ago` :
-                                     `${Math.floor(daysSinceAdded/30)} months ago`}
-                              {daysSinceAdded <= 3 && ' 🆕'}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div 
-                            className="text-lg font-bold"
-                            style={{ color: getScoreColor(friendScore.score) }}
-                          >
-                            {(friendScore.score * 100).toFixed(0)}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {getScoreLabel(friendScore.score)}
-                          </div>
-                          <div className="text-xs text-blue-600 mt-1">
-                            {friendScore.encounterCount === 0 ? '🎯 Ready to connect!' : 
-                             friendScore.encounterCount <= 2 ? '🔥 Getting started!' : 
-                             '⭐ Building chemistry!'}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Quick stats for new friends */}
-                      <div className="mt-3 grid grid-cols-4 gap-2 text-xs">
-                        <div className="text-center">
-                          <div className="font-medium text-blue-600">
-                            {(friendScore.frequency * 100).toFixed(0)}
-                          </div>
-                          <div className="text-gray-500">Frequency</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-green-600">
-                            {(friendScore.recency * 100).toFixed(0)}
-                          </div>
-                          <div className="text-gray-500">Recency</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-yellow-600">
-                            {(friendScore.quality * 100).toFixed(0)}
-                          </div>
-                          <div className="text-gray-500">Quality</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-purple-600">
-                            {(friendScore.mutuality * 100).toFixed(0)}
-                          </div>
-                          <div className="text-gray-500">Mutual</div>
-                        </div>
+      {/* Age Distribution of Friends */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          👥 Age Distribution of Friends
+        </h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+          <div className="space-y-3">
+            {Object.entries(ageDistribution)
+              .sort(([a], [b]) => {
+                const order = ['18-24', '25-29', '30-34', '35-39', '40-44', '45+'];
+                return order.indexOf(a) - order.indexOf(b);
+              })
+              .map(([ageGroup, count]) => {
+                const percentage = friends.length > 0 ? (count / friends.length) * 100 : 0;
+                const barColor = ageGroup === '18-24' ? 'bg-green-500' :
+                               ageGroup === '25-29' ? 'bg-blue-500' :
+                               ageGroup === '30-34' ? 'bg-purple-500' :
+                               ageGroup === '35-39' ? 'bg-orange-500' :
+                               ageGroup === '40-44' ? 'bg-red-500' : 'bg-gray-500';
+                
+                return (
+                  <div key={ageGroup} className="flex items-center space-x-3">
+                    <div className="w-16 text-sm font-medium">{ageGroup}</div>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                      <div
+                        className={`${barColor} h-6 rounded-full transition-all duration-500 ease-out`}
+                        style={{ width: `${Math.max(percentage, 0)}%` }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xs font-medium text-white drop-shadow-sm">
+                          {percentage > 5 ? `${percentage.toFixed(1)}%` : ''}
+                        </span>
                       </div>
                     </div>
-                  );
-                })}
-            </div>
+                    <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                      {count}
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Duration Distribution of Encounters */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          ⏱️ Encounter Duration Distribution
+        </h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+          <div className="space-y-3">
+            {Object.entries(durationDistribution)
+              .sort(([a], [b]) => {
+                const order = ['Quick (<30min)', 'Standard (30-60min)', 'Extended (1-2h)', 'Marathon (2-3h)', 'Epic (3h+)'];
+                return order.indexOf(a) - order.indexOf(b);
+              })
+              .map(([duration, count]) => {
+                const percentage = encounters.length > 0 ? (count / encounters.length) * 100 : 0;
+                const barColor = duration.includes('Quick') ? 'bg-red-500' :
+                               duration.includes('Standard') ? 'bg-blue-500' :
+                               duration.includes('Extended') ? 'bg-green-500' :
+                               duration.includes('Marathon') ? 'bg-purple-500' : 'bg-orange-500';
+                
+                return (
+                  <div key={duration} className="flex items-center space-x-3">
+                    <div className="w-24 text-sm font-medium">{duration}</div>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                      <div
+                        className={`${barColor} h-6 rounded-full transition-all duration-500 ease-out`}
+                        style={{ width: `${Math.max(percentage, 0)}%` }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xs font-medium text-white drop-shadow-sm">
+                          {percentage > 5 ? `${percentage.toFixed(1)}%` : ''}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                      {count}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      </div>
+
+      {/* Top 5 Countries */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          🌍 Top 5 Countries
+        </h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+          {topCountries.length === 0 ? (
+            <div className="text-center text-gray-500 py-4">
+              No location data available
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {topCountries.map(([country, count], index) => {
+                const percentage = encounters.length > 0 ? (count / encounters.length) * 100 : 0;
+                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                
+                return (
+                  <div key={country} className="flex items-center space-x-3">
+                    <div className="w-8 text-lg">{medals[index]}</div>
+                    <div className="w-24 text-sm font-medium truncate">{country}</div>
+                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-6 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${Math.max(percentage, 0)}%` }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xs font-medium text-white drop-shadow-sm">
+                          {percentage > 5 ? `${percentage.toFixed(1)}%` : ''}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                      {count}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Top 10 Activities */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          🔥 Top 10 Activities
+        </h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+          {topActivities.length === 0 ? (
+            <div className="text-center text-gray-500 py-4">
+              No activity data available
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {topActivities.map(([activity, count], index) => {
+                const activityType = interactionTypes.find(type => type.name === activity);
+                const percentage = encounters.length > 0 ? (count / encounters.length) * 100 : 0;
+                
+                return (
+                  <div key={activity} className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" 
+                         style={{ backgroundColor: activityType?.color || '#6B7280', color: 'white' }}>
+                      #{index + 1}
+                    </div>
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: activityType?.color || '#6B7280' }}></div>
+                    <div className="flex-1 text-sm font-medium">{activity}</div>
+                    <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-4 relative overflow-hidden">
+                      <div
+                        className="h-4 rounded-full transition-all duration-500 ease-out"
+                        style={{ 
+                          width: `${Math.max(percentage, 0)}%`,
+                          backgroundColor: activityType?.color || '#6B7280'
+                        }}
+                      />
+                    </div>
+                    <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium text-right">
+                      {count}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Rating Distribution */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3">⭐ Your Performance Ratings</h3>
+        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          Your Performance Ratings
+        </h3>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
           <div className="space-y-3">
             {ratingDistribution.reverse().map(({ rating, count }) => {
@@ -423,8 +574,11 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
               
               return (
                 <div key={rating} className="flex items-center space-x-3">
-                  <div className="w-12 text-sm font-medium">
-                    {rating} ⭐
+                  <div className="w-12 text-sm font-medium flex items-center gap-1">
+                    <span>{rating}</span>
+                    <svg className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
                   </div>
                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
                     <div

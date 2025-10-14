@@ -265,8 +265,8 @@ export default function MapViewLeaflet({ onClose, encounters, onViewEncounter }:
     : [40.7128, -74.0060]; // NYC default
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-6xl h-5/6 flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-2 pt-8 overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-6xl max-h-[90vh] h-[600px] flex flex-col my-4">
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-xl font-bold">Encounter Map</h2>
@@ -284,11 +284,11 @@ export default function MapViewLeaflet({ onClose, encounters, onViewEncounter }:
         </div>
 
         {/* Map Container */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-h-0">
           <MapContainer
             center={initialCenter}
             zoom={5}
-            style={{ height: '100%', width: '100%' }}
+            style={{ height: '100%', width: '100%', minHeight: '400px' }}
             zoomControl={true}
             scrollWheelZoom={true}
             touchZoom={true}
@@ -427,7 +427,7 @@ export default function MapViewLeaflet({ onClose, encounters, onViewEncounter }:
 
         {/* Selected Cluster Details (Bottom Panel) */}
         {selectedCluster && selectedCluster.count > 1 && (
-          <div className="p-4 border-t max-h-48 overflow-y-auto bg-gray-50 dark:bg-gray-700">
+          <div className="p-4 border-t max-h-32 overflow-y-auto bg-gray-50 dark:bg-gray-700 flex-shrink-0">
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-bold text-lg">
                 Cluster ({selectedCluster.count} encounters)
@@ -472,7 +472,7 @@ export default function MapViewLeaflet({ onClose, encounters, onViewEncounter }:
 
         {/* Selected Encounter Details (Bottom Panel) */}
         {selectedEncounter && (
-          <div className="p-4 border-t max-h-48 overflow-y-auto bg-gray-50 dark:bg-gray-700">
+          <div className="p-4 border-t max-h-32 overflow-y-auto bg-gray-50 dark:bg-gray-700 flex-shrink-0">
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-bold text-lg">Encounter Details</h3>
               <button

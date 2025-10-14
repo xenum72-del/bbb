@@ -182,63 +182,62 @@ export class AzureStorageService {
   /**
    * List all backups by scanning blob storage
    */
-  async listBackups(): Promise<BackupMetadata[]> {
+  /**
+   * List blobs in the container, optionally filtered by prefix
+   */
+  async listBlobs(prefix?: string): Promise<string[]> {
     try {
-      // Properly encode the prefix parameter
-      const encodedPrefix = encodeURIComponent(`${this.userId}_backup_`);
-      const url = `${this.blobBaseUrl}/${this.config.containerName}?restype=container&comp=list&prefix=${encodedPrefix}&${this.getSasTokenForUrl()}`;
-      
-      console.log('Listing backups with URL:', url.replace(this.getSasTokenForUrl(), '[SAS_TOKEN_HIDDEN]'));
-      
+      let url = `${this.blobBaseUrl}/${this.config.containerName}?restype=container&comp=list&${this.getSasTokenForUrl()}`;
+      if (prefix) {
+        url += `&prefix=${encodeURIComponent(prefix)}`;
+      }
+
+      console.log('🔍 listBlobs URL:', url.substring(0, 150) + '...');
+      console.log('🔍 listBlobs prefix:', prefix);
+
       const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'x-ms-version': '2020-04-08'
-        }
+        method: 'GET'
       });
 
+      console.log('📊 listBlobs response status:', response.status, response.statusText);
+
       if (!response.ok) {
-        throw new Error(`Failed to list backups: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to list blobs: ${response.statusText}`);
       }
 
       const xmlText = await response.text();
+      console.log('📄 listBlobs XML response (first 500 chars):', xmlText.substring(0, 500));
+
+      // Parse XML response to extract blob names
       const parser = new DOMParser();
-      const doc = parser.parseFromString(xmlText, 'text/xml');
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
       
-      const blobs = doc.querySelectorAll('Blob');
-      const backups: BackupMetadata[] = [];
+      const blobs = xmlDoc.querySelectorAll('Blob > Name');
+      console.log('🔍 Found blob Name elements:', blobs.length);
       
-      for (const blob of blobs) {
-        const nameElement = blob.querySelector('Name');
-        const sizeElement = blob.querySelector('Properties Content-Length');
-        
-        if (nameElement) {
-          const blobName = nameElement.textContent || '';
-          // Extract timestamp from blob name: userId_backup_timestamp.json
-          const match = blobName.match(/_backup_(\d+)\.json$/);
-          if (match) {
-            const timestamp = parseInt(match[1]);
-            const sizeBytes = sizeElement ? parseInt(sizeElement.textContent || '0') : 0;
-            
-            backups.push({
-              backupId: blobName,
-              timestamp: new Date(timestamp).toISOString(),
-              friendsCount: 0, // We don't know this without downloading
-              encountersCount: 0,
-              interactionTypesCount: 0,
-              settingsCount: 0,
-              appVersion: 'unknown',
-              size: sizeBytes
-            });
-          }
+      const blobNames: string[] = [];
+      
+      blobs.forEach((blob, index) => {
+        const name = blob.textContent;
+        console.log(`📁 Blob ${index + 1}:`, name);
+        if (name) {
+          blobNames.push(name);
         }
-      }
-      
-      return backups.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      });
+
+      console.log('✅ Final listBlobs result:', blobNames);
+      return blobNames;
     } catch (error) {
-      console.error('Error listing backups:', error);
+      console.error('❌ listBlobs error:', error);
       return [];
     }
+  }
+
+  /**
+   * List all backups (legacy method for compatibility)
+   */
+  async listBackups(): Promise<string[]> {
+    return this.listBlobs();
   }
 
   async restoreFromBackup(

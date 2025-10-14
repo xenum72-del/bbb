@@ -14,6 +14,7 @@ import {
 } from '../utils/security';
 import { useAnalytics } from '../utils/analytics';
 import AzureBackup from '../components/AzureBackup';
+import { generateRealisticSampleData } from '../db/sampleData';
 
 
 interface SettingsProps {
@@ -402,54 +403,100 @@ export default function Settings({ onNavigate }: SettingsProps) {
   const isWeightValid = Math.abs(totalWeight - 1.0) < 0.001;
 
   return (
-    <div className="p-4 space-y-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <div className="space-y-6">
-        <div className="flex items-center mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-white text-2xl">⚙️</span>
+    <div className="p-4 space-y-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5 dark:opacity-3">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
+          backgroundSize: '20px 20px'
+        }}></div>
+      </div>
+      
+      {/* Floating orbs for depth */}
+      <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute top-1/3 right-10 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-teal-600/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
+      <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-to-br from-pink-400/20 to-rose-600/20 rounded-full blur-2xl animate-pulse delay-2000"></div>
+      <div className="absolute top-2/3 right-1/4 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-orange-600/20 rounded-full blur-xl animate-pulse delay-3000"></div>
+      
+      <div className="space-y-6 relative z-10">
+        <div className="flex items-center mb-8 p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 dark:border-gray-700/30">
+          <div className="relative">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 via-purple-600 to-purple-700 rounded-3xl flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-300">
+              <svg className="w-8 h-8 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full shadow-lg animate-pulse"></div>
           </div>
-          <div className="ml-4">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">Settings</h2>
-            <p className="text-gray-600 dark:text-gray-400">Customize your experience</p>
+          <div className="ml-6">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">Settings</h2>
+            <p className="text-gray-600 dark:text-gray-400 text-lg mt-1">Customize your experience</p>
           </div>
         </div>
 
         {/* Friend Scoring Algorithm */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-              <span className="text-white text-xl">🎯</span>
+        <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.01] transition-all duration-500 overflow-hidden">
+          {/* Card glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-emerald-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          
+          <div className="flex items-center space-x-4 mb-6 relative z-10">
+            <div className="relative">
+              <div className="w-14 h-14 bg-gradient-to-br from-green-500 via-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
             </div>
             <div>
-              <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">
                 Friend Scoring Algorithm
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Adjust how friend rankings are calculated</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">Adjust how friend rankings are calculated</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 gap-6 mb-4">
             {Object.entries(localSettings.scoringWeights).map(([key, value]) => (
-              <div key={key} className="space-y-2">
+              <div key={key} className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium capitalize">{key}</label>
-                  <span className="text-sm text-gray-500">{(value * 100).toFixed(0)}%</span>
+                  <label className="text-sm font-semibold capitalize text-gray-700 dark:text-gray-300">{key}</label>
+                  <span className="text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-lg">
+                    {(value * 100).toFixed(0)}%
+                  </span>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={value}
-                  onChange={(e) => setLocalSettings(s => ({
-                    ...s,
-                    scoringWeights: {
-                      ...s.scoringWeights,
-                      [key]: parseFloat(e.target.value)
-                    }
-                  }))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={value}
+                    onChange={(e) => setLocalSettings(s => ({
+                      ...s,
+                      scoringWeights: {
+                        ...s.scoringWeights,
+                        [key]: parseFloat(e.target.value)
+                      }
+                    }))}
+                    className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                    style={{
+                      background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${value * 100}%, #E5E7EB ${value * 100}%, #E5E7EB 100%)`,
+                    }}
+                  />
+                  <div 
+                    className="absolute top-1/2 transform -translate-y-1/2 w-5 h-5 bg-blue-600 border-2 border-white rounded-full shadow-lg pointer-events-none transition-all duration-200"
+                    style={{ left: `calc(${value * 100}% - 10px)` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span>0%</span>
+                  <span>25%</span>
+                  <span>50%</span>
+                  <span>75%</span>
+                  <span>100%</span>
+                </div>
               </div>
             ))}
           </div>
@@ -467,8 +514,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
-                <span className="text-white text-xl">🏷️</span>
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
               </div>
               <div>
                 <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
@@ -490,23 +539,29 @@ export default function Settings({ onNavigate }: SettingsProps) {
         </div>
 
         {/* Security Settings */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-600 rounded-xl flex items-center justify-center">
-              <span className="text-white text-xl">🔒</span>
+        <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.01] transition-all duration-500 overflow-hidden">
+          {/* Card glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-orange-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          
+          <div className="flex items-center space-x-4 mb-6 relative z-10">
+            <div className="relative">
+              <div className="w-14 h-14 bg-gradient-to-br from-red-500 via-red-600 to-orange-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform duration-300">
+                <span className="text-white text-2xl drop-shadow-sm">🔒</span>
+              </div>
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
             </div>
             <div>
-              <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">
                 Security & Privacy
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Protect your intimate data with PIN or biometrics</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">Protect your intimate data with PIN or biometrics</p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6 relative z-10">
             {/* PIN Section */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-              <div className="flex items-center justify-between mb-3">
+            <div className="p-6 bg-gradient-to-br from-gray-50/80 to-white/80 dark:from-gray-700/80 dark:to-gray-600/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-600/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   <h4 className="font-medium">PIN Protection</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -539,25 +594,25 @@ export default function Settings({ onNavigate }: SettingsProps) {
               </div>
 
               {showPinSetup && (
-                <div className="space-y-3 border-t pt-3">
+                <div className="space-y-4 border-t border-gray-200 dark:border-gray-600 pt-4">
                   <input
                     type="password"
                     placeholder="Enter 4+ digit PIN"
                     value={newPin}
                     onChange={(e) => setNewPin(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-inner hover:shadow-lg focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
                   />
                   <input
                     type="password"
                     placeholder="Confirm PIN"
                     value={confirmPin}
                     onChange={(e) => setConfirmPin(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-inner hover:shadow-lg focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
                   />
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-3">
                     <button
                       onClick={handlePinSetup}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium shadow-lg hover:from-blue-600 hover:to-blue-700 hover:scale-105 transition-all duration-300"
                     >
                       Save PIN
                     </button>
@@ -567,7 +622,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
                         setNewPin('');
                         setConfirmPin('');
                       }}
-                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                      className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl font-medium shadow-lg hover:from-gray-600 hover:to-gray-700 hover:scale-105 transition-all duration-300"
                     >
                       Cancel
                     </button>
@@ -577,7 +632,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
             </div>
 
             {/* Biometrics Section */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+            <div className="p-6 bg-gradient-to-br from-gray-50/80 to-white/80 dark:from-gray-700/80 dark:to-gray-600/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-600/50 shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">Biometric Authentication</h4>
@@ -587,10 +642,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 </div>
                 <button
                   onClick={handleBiometricsToggle}
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  className={`px-6 py-3 text-sm font-medium rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-300 ${
                     securitySettings.biometricsEnabled
-                      ? 'bg-green-500 text-white hover:bg-green-600'
-                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-300'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-green-500/30'
+                      : 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-700 hover:from-gray-400 hover:to-gray-500 dark:from-gray-600 dark:to-gray-700 dark:text-gray-300 dark:hover:from-gray-500 dark:hover:to-gray-600 shadow-gray-400/30'
                   }`}
                 >
                   {securitySettings.biometricsEnabled ? 'Enabled' : 'Enable'}
@@ -599,7 +654,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
             </div>
 
             {/* Auto-lock Section */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+            <div className="p-6 bg-gradient-to-br from-gray-50/80 to-white/80 dark:from-gray-700/80 dark:to-gray-600/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-600/50 shadow-lg hover:shadow-xl transition-all duration-300">
               <div>
                 <h4 className="font-medium mb-3">Auto-lock Timer</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
@@ -608,7 +663,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 <select
                   value={securitySettings.autoLockMinutes}
                   onChange={(e) => handleAutoLockChange(Number(e.target.value))}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600"
+                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-inner hover:shadow-lg focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
                 >
                   <option value={1}>1 minute</option>
                   <option value={5}>5 minutes</option>
@@ -636,23 +691,31 @@ export default function Settings({ onNavigate }: SettingsProps) {
         </div>
 
         {/* Analytics Settings */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <span className="text-white text-xl">📊</span>
+        <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.01] transition-all duration-500 overflow-hidden">
+          {/* Card glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          
+          <div className="flex items-center space-x-4 mb-6 relative z-10">
+            <div className="relative">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
             </div>
             <div>
-              <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">
                 Anonymous Usage Analytics
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Help improve the app with completely anonymous data</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">Help improve the app with completely anonymous data</p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6 relative z-10">
             {/* Analytics Toggle */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-              <div className="flex items-center justify-between mb-3">
+            <div className="p-6 bg-gradient-to-br from-gray-50/80 to-white/80 dark:from-gray-700/80 dark:to-gray-600/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-600/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   <h4 className="font-medium">Enable Anonymous Analytics</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -661,10 +724,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 </div>
                 <button
                   onClick={handleAnalyticsToggle}
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  className={`px-6 py-3 text-sm font-medium rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-300 ${
                     analyticsStatus.enabled
-                      ? 'bg-green-500 text-white hover:bg-green-600'
-                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-300'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-green-500/30'
+                      : 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-700 hover:from-gray-400 hover:to-gray-500 dark:from-gray-600 dark:to-gray-700 dark:text-gray-300 dark:hover:from-gray-500 dark:hover:to-gray-600 shadow-gray-400/30'
                   }`}
                 >
                   {analyticsStatus.enabled ? 'Enabled' : 'Disabled'}
@@ -708,27 +771,37 @@ export default function Settings({ onNavigate }: SettingsProps) {
 
 
         {/* Data Management */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-              <span className="text-white text-xl">💾</span>
+        <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.01] transition-all duration-500 overflow-hidden">
+          {/* Card glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          
+          <div className="flex items-center space-x-4 mb-6 relative z-10">
+            <div className="relative">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+              </div>
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
             </div>
             <div>
-              <h3 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">
                 Data Management
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Backup and manage your data</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">Backup and manage your data</p>
             </div>
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-4 relative z-10">
             <button
               onClick={() => onNavigate('help')}
               className="w-full p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">📖</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
                 </div>
                 <div>
                   <div className="font-semibold text-gray-800 dark:text-white">Help & Guide</div>
@@ -748,8 +821,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
               className="w-full p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">{isiOS() ? '📱' : '📤'}</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                  </svg>
                 </div>
                 <div>
                   <div className="font-semibold text-gray-800 dark:text-white">
@@ -767,8 +842,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
               className="w-full p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">📥</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
                 </div>
                 <div>
                   <div className="font-semibold text-gray-800 dark:text-white">Import Data</div>
@@ -782,8 +859,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
               className="w-full p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">☁️</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                  </svg>
                 </div>
                 <div>
                   <div className="font-semibold text-gray-800 dark:text-white">Azure Backup & Restore</div>
@@ -792,15 +871,43 @@ export default function Settings({ onNavigate }: SettingsProps) {
               </div>
             </button>
 
-
+            <button
+              onClick={async () => {
+                if (confirm('This will replace all current data with 221 realistic sample encounters and 65 friends. Are you sure?')) {
+                  try {
+                    await generateRealisticSampleData();
+                    alert('✅ Successfully generated 221 realistic encounters and 65 friends!\n\n📍 Locations: Central/Eastern Europe, India, Los Angeles\n⏱️ Duration: 15-90 minutes\n💰 Very few paid (mostly massage)\n⭐ Average rating: >4 stars\n🎯 All activities match proper IDs');
+                    window.location.reload(); // Refresh to show new data
+                  } catch (error) {
+                    console.error('Sample data generation failed:', error);
+                    alert('❌ Failed to generate sample data. Check console for details.');
+                  }
+                }
+              }}
+              className="w-full p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-800 dark:text-white">Generate Sample Data</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">221 realistic encounters + 65 friends (replaces current data)</div>
+                </div>
+              </div>
+            </button>
 
             <button
               onClick={() => onNavigate('tests')}
               className="w-full p-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 border border-purple-200 dark:border-purple-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">🧪</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                 </div>
                 <div>
                   <div className="font-semibold text-gray-800 dark:text-white">Run Data Tests</div>
@@ -814,8 +921,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
               className="w-full p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200 dark:border-red-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm">🗑️</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                 </div>
                 <div>
                   <div className="font-semibold text-red-700 dark:text-red-400">Clear All Data</div>
@@ -837,7 +946,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 : 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {isWeightValid ? '💾 Save Settings' : 'Fix Weights First (must total 100%)'}
+            {isWeightValid ? 'Save Settings' : 'Fix Weights First (must total 100%)'}
           </button>
         </div>
       </div>
@@ -864,7 +973,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
                   onClick={handleExportData}
                   className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 rounded-xl font-semibold transition-all duration-200"
                 >
-                  📱 Export to Downloads
+                  <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                  </svg>
+                  Export to Downloads
                 </button>
                 
                 <button

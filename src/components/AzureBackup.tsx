@@ -1,21 +1,12 @@
 import { useState, useEffect } from 'react';
-import { AzureStorageService, type AzureConfig, type BackupMetadata, type MigrationProgress } from '../utils/azureStorage';
+import { AzureStorageService, type AzureConfig, type MigrationProgress } from '../utils/azureStorage';
 
 interface AzureBackupProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-// Helper function to format file size
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
+
 
 export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
   const [config, setConfig] = useState<AzureConfig>({
@@ -32,7 +23,7 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
   
   const [connectionStatus, setConnectionStatus] = useState<'offline' | 'connecting' | 'connected' | 'error'>('offline');
   const [service, setService] = useState<AzureStorageService | null>(null);
-  const [backups, setBackups] = useState<BackupMetadata[]>([]);
+  const [backups, setBackups] = useState<string[]>([]);
   const [progress, setProgress] = useState<MigrationProgress | null>(null);
   const [isOperating, setIsOperating] = useState(false);
 
@@ -483,34 +474,41 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
                     {backups.length === 0 ? (
                       <p className="text-gray-500 text-sm text-center py-4">No backups found</p>
                     ) : (
-                      backups.map((backup) => (
-                        <div key={backup.backupId} className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-700">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-medium text-sm">
-                                {new Date(backup.timestamp).toLocaleString()}
+                      backups.map((backup) => {
+                        // Parse backup filename for display info
+                        const backupName = backup.replace('.json', '');
+                        const datePart = backupName.match(/\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/);
+                        const displayDate = datePart ? new Date(datePart[0].replace(/-/g, ':').replace('T', ' ')).toLocaleString() : backupName;
+                        
+                        return (
+                          <div key={backup} className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-700">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium text-sm">
+                                  {displayDate}
+                                </div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400">
+                                  {backup}
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-600 dark:text-gray-400">
-                                {backup.size ? formatFileSize(backup.size) : 'Unknown size'}
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => restoreBackup(backup)}
+                                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                                >
+                                  Restore
+                                </button>
+                                <button
+                                  onClick={() => deleteBackup(backup)}
+                                  className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                                >
+                                  Delete
+                                </button>
                               </div>
-                            </div>
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => restoreBackup(backup.backupId)}
-                                className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-                              >
-                                Restore
-                              </button>
-                              <button
-                                onClick={() => deleteBackup(backup.backupId)}
-                                className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
-                              >
-                                Delete
-                              </button>
                             </div>
                           </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>

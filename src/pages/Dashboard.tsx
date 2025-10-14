@@ -2,6 +2,7 @@ import { useEncounters, useActiveFriends, useSettings } from '../hooks/useDataba
 import { calculateAllFriendScores } from '../utils/scoring';
 import { useState, useEffect } from 'react';
 import type { FriendScore } from '../utils/scoring';
+import StarRating from '../components/StarRating';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
@@ -35,68 +36,80 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     : '0';
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-8 relative">
       {/* Quick Add Button */}
-      <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-3xl p-6 shadow-lg border border-white/50">
-        <div className="flex items-center justify-between mb-4">
+      <div className="group relative bg-gradient-to-br from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500 overflow-hidden">
+        {/* Card glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        
+        <div className="flex items-center justify-between mb-6 relative z-10">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">Quick Add</h2>
-            <p className="text-sm text-gray-600 mt-1">Log a new encounter</p>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">Quick Add</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Log a new encounter</p>
           </div>
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-white text-xl">✨</span>
+          <div className="relative">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform duration-300">
+              <span className="text-white text-2xl drop-shadow-sm">✨</span>
+            </div>
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
           </div>
         </div>
         <button
           onClick={() => onNavigate('add')}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-300"
+          className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-5 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center relative z-10 border border-white/20"
         >
-          ➕ Log New Encounter
+          <svg className="w-6 h-6 mr-3 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Log New Encounter
         </button>
       </div>
 
       {/* Summary Stats */}
-            {/* Summary Stats */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-3xl shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300">
-          <div className="flex items-center justify-between">
+      <div className="grid grid-cols-2 gap-6">
+        <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-emerald-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              <div className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent drop-shadow-sm">
                 {thisWeekEncounters.length}
               </div>
-              <div className="text-sm font-semibold text-gray-600 mt-1">This Week</div>
+              <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-2">This Week</div>
             </div>
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center">
-              <span className="text-white text-lg">📈</span>
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 via-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+              <span className="text-white text-xl drop-shadow-sm">📈</span>
             </div>
           </div>
         </div>
-        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-3xl shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-300">
-          <div className="flex items-center justify-between">
+        <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-orange-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative z-10 text-center">
             <div>
-              <div className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-                {averageRating}⭐
+              <div className="mb-2">
+                <span className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent drop-shadow-sm">{averageRating}</span>
               </div>
-              <div className="text-sm font-semibold text-gray-600 mt-1">Avg Rating</div>
-            </div>
-            <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center">
-              <span className="text-white text-lg">⭐</span>
+              <div className="flex justify-center mb-2">
+                <StarRating rating={parseFloat(averageRating)} size="md" />
+              </div>
+              <div className="text-sm font-semibold text-gray-600 dark:text-gray-400">Avg Rating</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Top Friends */}
-      {/* Top Friends */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/50">
-        <div className="flex justify-between items-center mb-6">
+      <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.01] transition-all duration-500 overflow-hidden">
+        {/* Card glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        
+        <div className="flex justify-between items-center mb-8 relative z-10">
           <div>
-            <h3 className="text-xl font-bold text-gray-800">Top Friends</h3>
-            <p className="text-sm text-gray-600 mt-1">Your closest connections</p>
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">Top Friends</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Your closest connections</p>
           </div>
           <button
             onClick={() => onNavigate('analytics')}
-            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
+            className="px-6 py-3 bg-gradient-to-r from-blue-100/80 to-indigo-100/80 dark:from-blue-900/30 dark:to-indigo-900/30 hover:from-blue-200/80 hover:to-indigo-200/80 dark:hover:from-blue-800/40 dark:hover:to-indigo-800/40 text-blue-700 dark:text-blue-300 rounded-2xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-lg backdrop-blur-sm border border-blue-200/50 dark:border-blue-700/50"
           >
             View All →
           </button>
@@ -105,7 +118,9 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           {topFriends.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-gray-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">👥</span>
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
               </div>
               <p className="text-gray-600 font-medium">No friends yet!</p>
               <button
@@ -202,8 +217,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xl mb-1">
-                      {'⭐'.repeat(encounter.rating)}
+                    <div className="mb-1">
+                      <StarRating rating={encounter.rating} size="md" />
                     </div>
                     <div className="text-xs text-gray-500 capitalize">
                       {encounter.beneficiary}
