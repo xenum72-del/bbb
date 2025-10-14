@@ -48,6 +48,27 @@ export class AzureStorageService {
     this.config = config;
     this.userId = userId;
     this.blobBaseUrl = `https://${config.storageAccount}.blob.core.windows.net`;
+    
+    // Validate SAS token format
+    this.validateConfig();
+  }
+  
+  private validateConfig(): void {
+    if (!this.config.sasToken) {
+      throw new Error('SAS token is required');
+    }
+    
+    // Just do basic format validation - check if it looks like a query string
+    const hasEqualsSign = this.config.sasToken.includes('=');
+    
+    if (!hasEqualsSign) {
+      throw new Error('SAS token format appears invalid. Should contain key=value pairs.');
+    }
+    
+    // Check if SAS token starts with ? (if not, add it)
+    if (!this.config.sasToken.startsWith('?')) {
+      this.config.sasToken = '?' + this.config.sasToken;
+    }
   }
 
   /**
@@ -55,8 +76,9 @@ export class AzureStorageService {
    */
   async testConnection(): Promise<boolean> {
     try {
-      // Test blob storage connection by listing containers
-      const url = `${this.blobBaseUrl}?comp=list&${this.config.sasToken}`;
+      // Test blob storage connection by trying to list blobs in the specific container
+      // This requires less permissions than listing all containers
+      const url = `${this.blobBaseUrl}/${this.config.containerName}?restype=container&comp=list&${this.config.sasToken}`;
       
       const response = await fetch(url, {
         method: 'GET',
@@ -65,10 +87,32 @@ export class AzureStorageService {
         }
       });
       
-      return response.ok;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Azure connection test failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: url.replace(this.config.sasToken, '[SAS_TOKEN_HIDDEN]'),
+          error: errorText
+        });
+        
+        // Throw specific error for better user feedback
+        if (response.status === 404) {
+          throw new Error(`Container '${this.config.containerName}' not found. Create it in Azure Portal first.`);
+        } else if (response.status === 403) {
+          throw new Error('SAS token lacks required permissions. Generate new token with read/write/list permissions.');
+        } else if (response.status === 401) {
+          throw new Error('SAS token is invalid or expired. Generate a new token.');
+        } else {
+          throw new Error(`Azure error ${response.status}: ${errorText}`);
+        }
+      }
+      
+      console.log('Azure connection test successful');
+      return true;
     } catch (error) {
       console.error('Azure connection test failed:', error);
-      return false;
+      throw error; // Re-throw to show specific error message
     }
   }
 
