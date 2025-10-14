@@ -85,7 +85,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
       setTapTimeout(null);
       
       // Show confirmation
-      alert('🔧 Developer mode activated! Sample data feature is now visible.');
+      alert('🔧 Developer mode activated! Developer tools are now visible.');
     }
   };
   

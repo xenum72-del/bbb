@@ -234,6 +234,73 @@ export default function Help({ onNavigate }: HelpProps) {
         </div>
       </HelpSection>
 
+      {/* Settings & Customization */}
+      <HelpSection id="settings" title="Settings & Customization" icon="⚙️">
+        <div className="space-y-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
+            <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">🎛️ Fully Customizable Experience</h4>
+            <p className="text-blue-700 dark:text-blue-300 text-sm">
+              Tailor the app to your specific preferences and workflow with comprehensive settings
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-bold text-lg mb-3">🧮 Friend Scoring Algorithm</h4>
+              <div className="space-y-2 text-sm">
+                <p><strong>Frequency Weight (35%):</strong> How often you connect with each person</p>
+                <p><strong>Recency Weight (25%):</strong> How recent your last interaction was</p>
+                <p><strong>Quality Weight (30%):</strong> Average rating of your encounters</p>
+                <p><strong>Mutuality Weight (10%):</strong> Balance of who initiates encounters</p>
+                <p><strong>Custom Weights:</strong> Adjust all percentages to match your priorities (must total 100%)</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-lg mb-3">🔒 Security & Privacy Controls</h4>
+              <div className="space-y-2 text-sm">
+                <p><strong>PIN Protection:</strong> 4+ digit PIN with secure hashing</p>
+                <p><strong>Biometric Auth:</strong> Face ID, Touch ID, or fingerprint support</p>
+                <p><strong>Auto-Lock Timer:</strong> Automatic locking (1 minute to 1 hour or never)</p>
+                <p><strong>Instant Lock:</strong> Manual lock button for immediate privacy</p>
+                <p><strong>Session Management:</strong> Secure authentication state handling</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-lg mb-3">📊 Anonymous Analytics (Optional)</h4>
+              <div className="space-y-2 text-sm">
+                <p><strong>Usage Patterns:</strong> Anonymous app interaction tracking</p>
+                <p><strong>Performance Metrics:</strong> Error rates and app performance data</p>
+                <p><strong>Feature Usage:</strong> Which features are used most (no personal details)</p>
+                <p><strong>Complete Privacy:</strong> Zero personal data, names, or encounter details shared</p>
+                <p><strong>Opt-In Only:</strong> Disabled by default, you control everything</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-lg mb-3">🎨 Interaction Types Management</h4>
+              <div className="space-y-2 text-sm">
+                <p><strong>Custom Categories:</strong> Create your own interaction types with icons</p>
+                <p><strong>Default Selection:</strong> Set your most common interaction as default</p>
+                <p><strong>Icon Library:</strong> Extensive emoji selection for visual organization</p>
+                <p><strong>Usage Tracking:</strong> See which types you use most frequently</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-lg mb-3">💾 Data Management Tools</h4>
+              <div className="space-y-2 text-sm">
+                <p><strong>Export Options:</strong> JSON export with complete data portability</p>
+                <p><strong>Import System:</strong> Restore from backups with merge or replace options</p>
+                <p><strong>Azure Backup:</strong> Enterprise-grade cloud backup integration</p>
+                <p><strong>Complete Control:</strong> Your data, your rules, always</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </HelpSection>
+
       {/* Understanding Dashboard */}
       <HelpSection id="dashboard" title="Understanding Your Dashboard" icon="📊">
         <div className="space-y-4">
@@ -413,7 +480,7 @@ export default function Help({ onNavigate }: HelpProps) {
               <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800 mt-3">
                 <h5 className="font-bold text-green-800 dark:text-green-200 mb-1">🔧 Setup Instructions:</h5>
                 <div className="text-green-700 dark:text-green-300 text-xs space-y-1">
-                  <p><strong>1.</strong> Go to Settings → Azure Backup</p>
+                  <p><strong>1.</strong> Go to Settings → Azure Backup & Restore</p>
                   <p><strong>2.</strong> Enter your Azure Storage Account name</p>
                   <p><strong>3.</strong> Create a container in Azure Portal (e.g., "backups")</p>
                   <p><strong>4.</strong> Generate a SAS token with read/write/list permissions</p>
@@ -427,41 +494,43 @@ export default function Help({ onNavigate }: HelpProps) {
               <div className="space-y-2 text-sm">
                 <p><strong>Complete Data:</strong> Every detail with full structure</p>
                 <p><strong>Re-importable:</strong> Perfect for switching to a new gayphone</p>
-                <p><strong>File Size:</strong> Usually 1-5MB (your sex life is efficient)</p>
-                <p><strong>Use Case:</strong> Device migration, manual backups</p>
+                <p><strong>File Size:</strong> Usually 1-5MB (your sex life is legendary)</p>
+                <p><strong>Use Case:</strong> Device migration, manual backups, data portability</p>
+                <p><strong>iPhone Optimized:</strong> Share directly to Files app for iCloud storage</p>
               </div>
             </div>
 
             <div>
-              <h4 className="font-bold text-lg mb-3">📊 CSV Export (For the Excel Queens)</h4>
+              <h4 className="font-bold text-lg mb-3">� Data Import & Restore</h4>
               <div className="space-y-2 text-sm">
-                <p><strong>Spreadsheet Ready:</strong> Open in Numbers, Excel, Google Sheets</p>
-                <p><strong>Analysis Friendly:</strong> Create your own charts and pivot tables</p>
-                <p><strong>Shareable:</strong> Send to your therapist or data analyst bestie</p>
-                <p><strong>Use Case:</strong> External analysis, relationship counseling data</p>
+                <p><strong>JSON Import:</strong> Restore from exported backups with full data integrity</p>
+                <p><strong>Merge or Replace:</strong> Choose to merge with existing data or start fresh</p>
+                <p><strong>Format Validation:</strong> Automatic validation of backup file structure</p>
+                <p><strong>Safe Migration:</strong> Perfect for device upgrades and data transfers</p>
               </div>
             </div>
 
             <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl">
-              <h4 className="font-bold mb-3">� The UPDATED Gay Backup Strategy</h4>
+              <h4 className="font-bold mb-3">🏳️‍🌈 The Gay Backup Strategy</h4>
               <div className="space-y-1 text-sm">
-                <p><strong>Daily:</strong> Use Azure cloud backup after each session</p>
+                <p><strong>Daily:</strong> Use Azure cloud backup after legendary sessions</p>
                 <p><strong>Weekly:</strong> Export JSON backup to secure local storage</p>
-                <p><strong>Monthly:</strong> CSV export for your personal analytics</p>
-                <p><strong>Before Travel:</strong> Create Azure backup (accessible anywhere)</p>
-                <p><strong>Before Phone Upgrade:</strong> Azure backup + JSON export (double safety)</p>
-                <p><strong>Pro Tip:</strong> Azure backups include timestamps and file sizes</p>
+                <p><strong>Before Travel:</strong> Create Azure backup (accessible worldwide)</p>
+                <p><strong>Before Phone Upgrade:</strong> Azure backup + JSON export (maximum safety)</p>
+                <p><strong>After Major Updates:</strong> Full backup before trying new features</p>
+                <p><strong>Pro Tip:</strong> Azure backups include timestamps and file sizes for easy identification</p>
               </div>
             </div>
 
             <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
-              <h4 className="font-bold text-purple-800 dark:text-purple-200 mb-2">� Why Azure Cloud Backup?</h4>
+              <h4 className="font-bold text-purple-800 dark:text-purple-200 mb-2">☁️ Why Azure Cloud Backup?</h4>
               <div className="text-purple-700 dark:text-purple-300 text-sm space-y-1">
                 <p>• <strong>Enterprise Security:</strong> Same infrastructure used by Fortune 500 companies</p>
-                <p>• <strong>Global Access:</strong> Your backups available worldwide</p>
-                <p>• <strong>Redundancy:</strong> Microsoft handles all the infrastructure</p>
-                <p>• <strong>Privacy:</strong> Your data, your container, your control</p>
-                <p>• <strong>Cost Effective:</strong> Pay only for what you store (usually pennies)</p>
+                <p>• <strong>Global Access:</strong> Your backups available worldwide with internet</p>
+                <p>• <strong>Redundancy:</strong> Microsoft handles all the infrastructure and reliability</p>
+                <p>• <strong>Privacy:</strong> Your data, your container, your complete control</p>
+                <p>• <strong>Cost Effective:</strong> Pay only for storage used (usually pennies per month)</p>
+                <p>• <strong>Professional Grade:</strong> Enterprise-class backup solution for your personal data</p>
               </div>
             </div>
           </div>
