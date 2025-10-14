@@ -130,16 +130,8 @@
 [edge_handlers]
   directory = "netlify/edge-handlers"
 
-# Plugin configuration
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
-  
-  [plugins.inputs.audits]
-    performance = true
-    accessibility = true
-    best_practices = true
-    seo = true
-    pwa = true
+# Plugin configuration removed - Lighthouse plugin had security vulnerabilities
+# You can run Lighthouse manually in Chrome DevTools if needed
 
 # Optional: Custom domain configuration (uncomment when you have a domain)
 # [context.production]
