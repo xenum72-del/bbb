@@ -153,9 +153,9 @@ function getAutoBackupSettings() {
   try {
     const config = JSON.parse(saved);
     return {
-      enabled: config.autoBackupEnabled || false,
-      retentionCount: config.autoBackupRetention || 10,
-      container: config.autoBackupContainer || config.containerName || 'auto-backups'
+    enabled: config.autoBackupEnabled || false,
+    retentionCount: config.autoBackupRetention || 10,
+    container: config.autoBackupContainer || config.containerName || 'backups'
     };
   } catch {
     return { enabled: false, retentionCount: 10, container: 'auto-backups' };
@@ -215,40 +215,36 @@ async function getAzureService(): Promise<import('../utils/azureStorage').AzureS
   }
 }
 
-// Check network connectivity to Azure
+// Simple online check (doesn't require Azure credentials)
 async function isOnline(): Promise<boolean> {
-  if (!navigator.onLine) return false;
-  
-  try {
-    // Check connectivity by testing the actual Azure blob endpoint
-    const saved = localStorage.getItem('azure-backup-config');
-    if (!saved) return false;
-    
-    const config = JSON.parse(saved);
-    if (!config.storageAccount) {
-      return false; // Can't test Azure connectivity without storage account
-    }
-    
-    const azureUrl = `https://${config.storageAccount}.blob.core.windows.net/`;
-    await fetch(azureUrl, {
-      method: 'HEAD',
-      mode: 'cors',
-      cache: 'no-cache',
-      signal: AbortSignal.timeout(5000) // 5 second timeout
-    });
-    return true;
-  } catch {
-    return false;
-  }
+  // Just trust the browser's built-in connectivity detection
+  // This avoids external API calls and privacy concerns
+  return navigator.onLine;
 }
 
 // Automatic Azure backup with rolling retention (data only, no photos)
 export async function triggerAutoAzureBackup(): Promise<void> {
+  console.log('🔄 triggerAutoAzureBackup called');
   const autoSettings = getAutoBackupSettings();
+  console.log('📋 Auto settings:', autoSettings);
   
-  if (!autoSettings.enabled || !isAzureConfigured() || !(await isOnline())) {
-    return; // Silently skip if not enabled, not configured, or offline
+  if (!autoSettings.enabled) {
+    console.log('❌ Auto backup not enabled, skipping');
+    return;
   }
+  
+  if (!isAzureConfigured()) {
+    console.log('❌ Azure not configured, skipping');
+    return;
+  }
+  
+  const online = await isOnline();
+  if (!online) {
+    console.log('❌ Not online, skipping');
+    return;
+  }
+  
+  console.log('✅ All checks passed, proceeding with auto backup');
 
   try {
     const service = await getAzureService();
@@ -260,13 +256,18 @@ export async function triggerAutoAzureBackup(): Promise<void> {
     
     // Create a special Azure service instance for auto backups if different container
     let autoService = service;
+    console.log('🗂️ Main container:', config.containerName);
+    console.log('🗂️ Auto backup container:', autoBackupContainer);
     if (autoBackupContainer !== config.containerName) {
+      console.log('🔄 Creating separate service for auto backup container');
       const { AzureStorageService } = await import('../utils/azureStorage');
       const userId = localStorage.getItem('azure-user-id') || 'user_' + Math.random().toString(36).substr(2, 16);
       autoService = new AzureStorageService({
         ...config,
         containerName: autoBackupContainer
       }, userId);
+    } else {
+      console.log('✅ Using same container for auto backups');
     }
 
     // Create backup without photos (faster/smaller)
@@ -281,25 +282,34 @@ export async function triggerAutoAzureBackup(): Promise<void> {
     await autoService.uploadBlob(backupId, jsonString);
 
     // Implement rolling retention: keep only configured number of newest backups
+    console.log('🧹 Starting backup cleanup, retention count:', autoSettings.retentionCount);
+    console.log('🗂️ Auto backup container:', config.autoBackupContainer || config.containerName);
     try {
-      const existingBackups = await autoService.listBackups();
-      const autoBackups = existingBackups
-        .filter(backup => backup.backupId.startsWith('auto_'))
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      console.log('📋 Listing existing auto backups...');
+      const autoBackups = await autoService.listBlobs('auto_');
+      console.log('🤖 Found', autoBackups.length, 'auto backups:', autoBackups);
 
       // Delete oldest backups if we have more than the retention count
       if (autoBackups.length > autoSettings.retentionCount) {
-        const backupsToDelete = autoBackups.slice(autoSettings.retentionCount);
-        for (const backup of backupsToDelete) {
+        // Sort by name (which includes timestamp) to get oldest first
+        const sortedBackups = autoBackups.sort();
+        const backupsToDelete = sortedBackups.slice(0, autoBackups.length - autoSettings.retentionCount);
+        console.log('🗑️ Need to delete', backupsToDelete.length, 'old backups:', backupsToDelete);
+        
+        for (const backupId of backupsToDelete) {
           try {
-            await autoService.deleteBackup(backup.backupId);
+            console.log('🗑️ Deleting backup:', backupId);
+            await autoService.deleteBackup(backupId);
+            console.log('✅ Deleted backup:', backupId);
           } catch (error) {
-            console.warn('Failed to delete old backup:', backup.backupId, error);
+            console.warn('❌ Failed to delete old backup:', backupId, error);
           }
         }
+      } else {
+        console.log('✅ No cleanup needed, within retention limit');
       }
     } catch (error) {
-      console.warn('Failed to clean up old auto-backups (continuing anyway):', error);
+      console.warn('⚠️ Failed to clean up old auto-backups (continuing anyway):', error);
     }
 
     console.log('✅ Automatic Azure backup completed:', backupId);
