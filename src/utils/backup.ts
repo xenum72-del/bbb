@@ -1,12 +1,14 @@
 import { db } from '../db/schema';
 
+import type { Friend, Encounter, InteractionType, Settings } from '../db/schema';
+
 export interface BackupData {
   version: string;
   timestamp: string;
-  friends: any[];
-  encounters: any[];
-  interactionTypes: any[];
-  settings: any[];
+  friends: Friend[];
+  encounters: Encounter[];
+  interactionTypes: InteractionType[];
+  settings: Settings[];
   includesPhotos: boolean;
 }
 

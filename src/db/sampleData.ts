@@ -1,6 +1,8 @@
 import { db } from './schema';
 import type { Friend, Encounter } from './schema';
 
+
+
 // Configuration for realistic sample data
 const SAMPLE_CONFIG = {
   FRIENDS_COUNT: 65,           // Enough friends to create realistic encounters
@@ -125,7 +127,7 @@ const REALISTIC_LOCATIONS = {
 };
 
 // Generate realistic friend data
-function generateRealisticFriend(_index: number): Omit<Friend, 'id' | 'createdAt' | 'updatedAt'> {
+function generateRealisticFriend(): Omit<Friend, 'id' | 'createdAt' | 'updatedAt'> {
   // Choose region randomly but with some distribution
   const regionRandom = Math.random();
   let region: 'centralEurope' | 'india' | 'american';
@@ -176,15 +178,15 @@ function generateRealisticFriend(_index: number): Omit<Friend, 'id' | 'createdAt
     age,
     height: `${5 + Math.floor(Math.random() * 2)}'${Math.floor(Math.random() * 12)}"`,
     weight: `${140 + Math.floor(Math.random() * 60)} lbs`,
-    bodyType: ['Slim', 'Athletic', 'Average', 'Muscular'][Math.floor(Math.random() * 4)] as any,
+    bodyType: ['Slim', 'Athletic', 'Average', 'Muscular'][Math.floor(Math.random() * 4)] as 'Slim' | 'Athletic' | 'Average' | 'Muscular',
     ethnicity: region === 'centralEurope' ? 'European' : 
                region === 'india' ? 'South Asian' : 
                ['White', 'Hispanic', 'Mixed Race'][Math.floor(Math.random() * 3)],
-    sexualRole: ['Top', 'Bottom', 'Versatile', 'Vers Top', 'Vers Bottom'][Math.floor(Math.random() * 5)] as any,
+    sexualRole: ['Top', 'Bottom', 'Versatile', 'Vers Top', 'Vers Bottom'][Math.floor(Math.random() * 5)] as 'Top' | 'Bottom' | 'Versatile' | 'Vers Top' | 'Vers Bottom',
     dickSize: `${5.5 + Math.random() * 2}".slice(0, 3)} inches`,
     dickType: Math.random() > 0.5 ? 'Cut' : 'Uncut',
-    relationshipStatus: ['Single', 'Open Relationship', 'Complicated'][Math.floor(Math.random() * 3)] as any,
-    hivStatus: ['Negative', 'Unknown'][Math.floor(Math.random() * 2)] as any,
+    relationshipStatus: ['Single', 'Open Relationship', 'Complicated'][Math.floor(Math.random() * 3)] as 'Single' | 'Open Relationship' | 'Complicated',
+    hivStatus: ['Negative', 'Unknown'][Math.floor(Math.random() * 2)] as 'Negative' | 'Unknown',
     onPrep: Math.random() > 0.6,
     location: `${location.place}, ${Math.floor(Math.random() * 15) + 1}km away`,
     canHost: Math.random() > 0.4,
@@ -199,7 +201,7 @@ function generateRealisticFriend(_index: number): Omit<Friend, 'id' | 'createdAt
 }
 
 // Generate realistic encounter data
-async function generateRealisticEncounter(friendIds: number[], _index: number): Promise<Omit<Encounter, 'id' | 'createdAt' | 'updatedAt'>> {
+async function generateRealisticEncounter(friendIds: number[]): Promise<Omit<Encounter, 'id' | 'createdAt' | 'updatedAt'>> {
   // Get all available activities from database
   const availableActivities = await db.interactionTypes.toArray();
   
@@ -262,7 +264,7 @@ async function generateRealisticEncounter(friendIds: number[], _index: number): 
       amountAsked,
       amountGiven,
       currency: 'USD',
-      paymentMethod: paymentMethod as any,
+      paymentMethod: paymentMethod as 'cash' | 'venmo' | 'cashapp' | 'paypal',
       paymentNotes,
       condomUsed: false,
       exchangedContacts: true,
@@ -293,7 +295,7 @@ async function generateRealisticEncounter(friendIds: number[], _index: number): 
       isAnonymous: Math.random() < 0.1, // 10% anonymous
       typeId: selectedActivity.id!,
       activitiesPerformed,
-      beneficiary: ['me', 'friend', 'both'][Math.floor(Math.random() * 3)] as any,
+      beneficiary: ['me', 'friend', 'both'][Math.floor(Math.random() * 3)] as 'me' | 'friend' | 'both',
       location: REALISTIC_LOCATIONS.centralEurope.concat(REALISTIC_LOCATIONS.india, REALISTIC_LOCATIONS.losAngeles)[Math.floor(Math.random() * 23)],
       notes: [
         'Amazing chemistry and great conversation.',
@@ -331,7 +333,7 @@ export async function generateRealisticSampleData(): Promise<void> {
     const friendsData: Omit<Friend, 'id' | 'createdAt' | 'updatedAt'>[] = [];
     
     for (let i = 0; i < SAMPLE_CONFIG.FRIENDS_COUNT; i++) {
-      friendsData.push(generateRealisticFriend(i));
+      friendsData.push(generateRealisticFriend());
     }
     
     // Add friends to database and get their IDs
@@ -352,7 +354,7 @@ export async function generateRealisticSampleData(): Promise<void> {
     const encountersData: Omit<Encounter, 'id' | 'createdAt' | 'updatedAt'>[] = [];
     
     for (let i = 0; i < SAMPLE_CONFIG.ENCOUNTERS_COUNT; i++) {
-      const encounterData = await generateRealisticEncounter(friendIds, i);
+      const encounterData = await generateRealisticEncounter(friendIds);
       encountersData.push(encounterData);
     }
     
