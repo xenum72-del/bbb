@@ -16,6 +16,8 @@ import { useAnalytics } from '../utils/analytics';
 import AzureBackup from '../components/AzureBackup';
 import { generateRealisticSampleData } from '../db/sampleData';
 
+// Developer mode - activated by tapping Settings title 7 times within 3 seconds
+
 
 interface SettingsProps {
   onNavigate: (page: string) => void;
@@ -52,23 +54,43 @@ export default function Settings({ onNavigate }: SettingsProps) {
   
   // Azure Backup state
   const [showAzureBackup, setShowAzureBackup] = useState(false);
+
+  // Developer mode state
+  const [tapCount, setTapCount] = useState(0);
+  const [tapTimeout, setTapTimeout] = useState<number | null>(null);
+  const [isDeveloperMode, setIsDeveloperMode] = useState(false);
+
+  // Developer mode activation function
+  const handleTitleTap = () => {
+    const newCount = tapCount + 1;
+    setTapCount(newCount);
+
+    // Clear existing timeout
+    if (tapTimeout) {
+      clearTimeout(tapTimeout);
+    }
+
+    // Reset counter after 3 seconds
+    const timeout = setTimeout(() => {
+      setTapCount(0);
+      setTapTimeout(null);
+    }, 3000);
+    setTapTimeout(timeout);
+
+    // Activate developer mode after 7 taps
+    if (newCount === 7) {
+      setIsDeveloperMode(true);
+      setTapCount(0);
+      if (tapTimeout) clearTimeout(tapTimeout);
+      setTapTimeout(null);
+      
+      // Show confirmation
+      alert('🔧 Developer mode activated! Sample data feature is now visible.');
+    }
+  };
   
 
-  
-  // Azure Storage state - temporarily commented out
-  // const [azureConfig, setAzureConfig] = useState<AzureConfig>({
-  //   storageAccount: '',
-  //   storageKey: '',
-  //   containerName: 'photos',
-  //   tableName: 'theloaddown',
-  //   region: 'eastus',
-  //   enabled: false
-  // });
-  // const [azureConnectionStatus, setAzureConnectionStatus] = useState<'offline' | 'connecting' | 'connected' | 'error'>('offline');
-  // const [azureService, setAzureService] = useState<AzureStorageService | null>(null);
-  // const [migrationProgress, setMigrationProgress] = useState<MigrationProgress | null>(null);
-  // const [showMigrationModal, setShowMigrationModal] = useState(false);
-  // const [showDemo, setShowDemo] = useState(false);
+
 
   useEffect(() => {
     if (settings) {
@@ -163,93 +185,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
     setAnalyticsStatus(getStatus());
   };
 
-  // Azure Storage functions - temporarily commented out
-  // const handleTestConnection = async () => {
-  //   if (!azureConfig.storageAccount || !azureConfig.storageKey) {
-  //     alert('Please enter storage account and key');
-  //     return;
-  //   }
 
-  //   setAzureConnectionStatus('connecting');
-    
-  //   try {
-  //     const service = new AzureStorageService(azureConfig, 'user123'); // TODO: use actual user ID
-  //     const isConnected = await service.testConnection();
-      
-  //     if (isConnected) {
-  //       setAzureService(service);
-  //       setAzureConnectionStatus('connected');
-  //       alert('Connection successful!');
-  //     } else {
-  //       setAzureConnectionStatus('error');
-  //       alert('Connection failed. Please check your credentials.');
-  //     }
-  //   } catch (error) {
-  //     setAzureConnectionStatus('error');
-  //     alert('Connection error: ' + (error as Error).message);
-  //   }
-  // };
-
-  // const handleMigrateToAzure = async () => {
-  //   if (!azureService) {
-  //     alert('Please test connection first');
-  //     return;
-  //   }
-
-  //   if (!confirm('This will upload all your data to Azure. Continue?')) {
-  //     return;
-  //   }
-
-  //   setShowMigrationModal(true);
-    
-  //   try {
-  //     // Get local data
-  //     const friends = await db.friends.toArray();
-  //     const encounters = await db.encounters.toArray();
-  //     const interactionTypes = await db.interactionTypes.toArray();
-  //     const settings = await db.settings.toArray();
-
-  //     await azureService.migrateToAzure(
-  //       { friends, encounters, interactionTypes, settings },
-  //       (progress: MigrationProgress) => {
-  //         setMigrationProgress(progress);
-  //       }
-  //     );
-      
-  //     alert('Migration to Azure completed successfully!');
-  //   } catch (error) {
-  //     alert('Migration failed: ' + (error as Error).message);
-  //   } finally {
-  //     setShowMigrationModal(false);
-  //     setMigrationProgress(null);
-  //   }
-  // };
-
-  // const handleMigrateFromAzure = async () => {
-  //   if (!azureService) {
-  //     alert('Please test connection first');
-  //     return;
-  //   }
-
-  //   if (!confirm('This will download data from Azure and merge with local data. Continue?')) {
-  //     return;
-  //   }
-
-  //   setShowMigrationModal(true);
-    
-  //   try {
-  //     await azureService.migrateFromAzure((progress: MigrationProgress) => {
-  //       setMigrationProgress(progress);
-  //     });
-      
-  //     alert('Migration from Azure completed successfully!');
-  //   } catch (error) {
-  //     alert('Migration failed: ' + (error as Error).message);
-  //   } finally {
-  //     setShowMigrationModal(false);
-  //     setMigrationProgress(null);
-  //   }
-  // };
 
   const handleSaveSettings = async () => {
     try {
@@ -429,9 +365,17 @@ export default function Settings({ onNavigate }: SettingsProps) {
             </div>
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full shadow-lg animate-pulse"></div>
           </div>
-          <div className="ml-6">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">Settings</h2>
-            <p className="text-gray-600 dark:text-gray-400 text-lg mt-1">Customize your experience</p>
+          <div className="ml-6" onClick={handleTitleTap} style={{ cursor: 'default', userSelect: 'none' }}>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">
+              Settings
+              {tapCount > 0 && tapCount < 7 && (
+                <span className="text-xs ml-2 opacity-50">({tapCount}/7)</span>
+              )}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 text-lg mt-1">
+              Customize your experience
+              {isDeveloperMode && <span className="text-xs ml-2 text-orange-500">🔧 Dev Mode</span>}
+            </p>
           </div>
         </div>
 
@@ -871,33 +815,36 @@ export default function Settings({ onNavigate }: SettingsProps) {
               </div>
             </button>
 
-            <button
-              onClick={async () => {
-                if (confirm('This will replace all current data with 221 realistic sample encounters and 65 friends. Are you sure?')) {
-                  try {
-                    await generateRealisticSampleData();
-                    alert('✅ Successfully generated 221 realistic encounters and 65 friends!\n\n📍 Locations: Central/Eastern Europe, India, Los Angeles\n⏱️ Duration: 15-90 minutes\n💰 Very few paid (mostly massage)\n⭐ Average rating: >4 stars\n🎯 All activities match proper IDs');
-                    window.location.reload(); // Refresh to show new data
-                  } catch (error) {
-                    console.error('Sample data generation failed:', error);
-                    alert('❌ Failed to generate sample data. Check console for details.');
+            {/* Developer-only sample data feature */}
+            {isDeveloperMode && (
+              <button
+                onClick={async () => {
+                  if (confirm('This will replace all current data with 221 realistic sample encounters and 65 friends. Are you sure?')) {
+                    try {
+                      await generateRealisticSampleData();
+                      alert('✅ Successfully generated 221 realistic encounters and 65 friends!\n\n📍 Locations: Central/Eastern Europe, India, Los Angeles\n⏱️ Duration: 15-90 minutes\n💰 Very few paid (mostly massage)\n⭐ Average rating: >4 stars\n🎯 All activities match proper IDs');
+                      window.location.reload(); // Refresh to show new data
+                    } catch (error) {
+                      console.error('Sample data generation failed:', error);
+                      alert('❌ Failed to generate sample data. Check console for details.');
+                    }
                   }
-                }
-              }}
-              className="w-full p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                  </svg>
+                }}
+                className="w-full p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-800 dark:text-white">🔧 Generate Sample Data</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">221 realistic encounters + 65 friends (developer only)</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-semibold text-gray-800 dark:text-white">Generate Sample Data</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">221 realistic encounters + 65 friends (replaces current data)</div>
-                </div>
-              </div>
-            </button>
+              </button>
+            )}
 
             <button
               onClick={() => onNavigate('tests')}
