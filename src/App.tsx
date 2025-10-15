@@ -20,6 +20,10 @@ function App() {
     const saved = localStorage.getItem('darkMode')
     return saved ? JSON.parse(saved) : false
   })
+  const [isGayMode, setIsGayMode] = useState(() => {
+    const saved = localStorage.getItem('gayMode')
+    return saved ? JSON.parse(saved) : false
+  })
   const [isUnlocked, setIsUnlocked] = useState(false)
   const [needsUnlock, setNeedsUnlock] = useState(true)
   
@@ -93,6 +97,16 @@ function App() {
     }
   }, [isDarkMode])
 
+  // Gay mode effect 🏳️‍🌈
+  useEffect(() => {
+    localStorage.setItem('gayMode', JSON.stringify(isGayMode))
+    if (isGayMode) {
+      document.documentElement.classList.add('gay-mode')
+    } else {
+      document.documentElement.classList.remove('gay-mode')
+    }
+  }, [isGayMode])
+
   const navigate = (page: string) => {
     setCurrentPage(page as Page);
   };
@@ -112,13 +126,15 @@ function App() {
     
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard onNavigate={navigate} />
+        return <Dashboard onNavigate={navigate} isDarkMode={isDarkMode} isGayMode={isGayMode} />
       case 'timeline':
         return <Timeline onNavigate={navigate} />
       case 'friends':
         return <Friends onNavigate={navigate} />
+      case 'friends-add':
+        return <Friends onNavigate={navigate} showAddFormInitially={true} />
       case 'analytics':
-        return <Analytics onNavigate={navigate} />
+        return <Analytics onNavigate={navigate} isDarkMode={isDarkMode} isGayMode={isGayMode} />
       case 'settings':
         return <Settings onNavigate={navigate} />
       case 'help':
@@ -128,7 +144,7 @@ function App() {
       case 'tests':
         return <TestRunner />
       default:
-        return <Dashboard onNavigate={navigate} />
+        return <Dashboard onNavigate={navigate} isDarkMode={isDarkMode} isGayMode={isGayMode} />
     }
   }
 
@@ -138,7 +154,13 @@ function App() {
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 relative overflow-hidden ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'}`}>
+    <div className={`min-h-screen transition-colors duration-300 relative overflow-hidden ${
+      isGayMode 
+        ? 'bg-gradient-to-br from-pink-200 via-purple-200 via-blue-200 via-cyan-200 to-yellow-200' 
+        : isDarkMode 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+          : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'
+    }`}>
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5 dark:opacity-3">
         <div className="absolute inset-0" style={{
@@ -147,33 +169,94 @@ function App() {
         }}></div>
       </div>
       
-      {/* Floating orbs for depth */}
-      <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute top-1/3 right-10 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-teal-600/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-      <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-to-br from-pink-400/20 to-rose-600/20 rounded-full blur-2xl animate-pulse delay-2000"></div>
-      <div className="absolute top-2/3 right-1/4 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-orange-600/20 rounded-full blur-xl animate-pulse delay-3000"></div>
       
       {/* Main App Container */}
-      <div className={`max-w-md mx-auto min-h-screen shadow-2xl relative transition-colors duration-300 backdrop-blur-xl border-x border-white/20 dark:border-gray-700/30 ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'}`}>
+      <div className={`max-w-md mx-auto min-h-screen shadow-2xl relative transition-colors duration-300 backdrop-blur-xl border-x ${
+        isGayMode 
+          ? 'bg-gradient-to-b from-pink-50/90 via-purple-50/90 to-cyan-50/90 border-pink-300/30' 
+          : isDarkMode 
+            ? 'bg-gray-800/80 border-gray-700/30' 
+            : 'bg-white/80 border-white/20'
+      }`}>
+        {/* Static orbs - no animations for better performance */}
+        
+        <div className={`absolute top-20 left-4 w-12 h-12 rounded-full blur-lg ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-red-500/30 to-pink-600/30' 
+            : 'bg-gradient-to-br from-blue-400/15 to-purple-600/15'
+        }`}></div>
+        <div className={`absolute top-40 right-4 w-10 h-10 rounded-full blur-md ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-yellow-500/30 to-orange-600/30' 
+            : 'bg-gradient-to-br from-emerald-400/15 to-teal-600/15'
+        }`}></div>
+        <div className={`absolute top-60 left-6 w-8 h-8 rounded-full blur-sm ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-purple-500/30 to-indigo-600/30' 
+            : 'bg-gradient-to-br from-pink-400/15 to-rose-600/15'
+        }`}></div>
+        <div className={`absolute top-80 right-6 w-14 h-14 rounded-full blur-lg ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-green-500/25 to-cyan-600/25' 
+            : 'bg-gradient-to-br from-amber-400/12 to-orange-600/12'
+        }`}></div>
+        
+        {isGayMode && (
+          <>
+            {/* Pride rainbow orbs - only visible in gay mode */}
+            <div className="absolute top-32 right-8 w-6 h-6 bg-gradient-to-br from-cyan-500/25 to-blue-600/25 rounded-full blur-sm"></div>
+            <div className="absolute top-72 left-8 w-16 h-16 bg-gradient-to-br from-pink-400/30 to-rose-600/30 rounded-full blur-xl"></div>
+            <div className="absolute top-52 left-2 w-7 h-7 bg-gradient-to-br from-lime-500/25 to-green-600/25 rounded-full blur-sm"></div>
+            
+            {/* Additional pride orbs */}
+            <div className="absolute top-16 right-12 w-9 h-9 bg-gradient-to-br from-violet-500/30 to-purple-600/30 rounded-full blur-md"></div>
+            <div className="absolute top-36 left-12 w-5 h-5 bg-gradient-to-br from-orange-500/25 to-red-600/25 rounded-full blur-sm"></div>
+            <div className="absolute top-64 right-2 w-11 h-11 bg-gradient-to-br from-indigo-500/30 to-blue-700/30 rounded-full blur-lg"></div>
+            <div className="absolute top-24 left-16 w-4 h-4 bg-gradient-to-br from-emerald-500/25 to-teal-600/25 rounded-full blur-sm"></div>
+            <div className="absolute top-48 right-16 w-8 h-8 bg-gradient-to-br from-rose-500/30 to-pink-700/30 rounded-full blur-md"></div>
+            <div className="absolute top-56 left-10 w-6 h-6 bg-gradient-to-br from-amber-500/25 to-yellow-600/25 rounded-full blur-sm"></div>
+            <div className="absolute top-76 right-10 w-13 h-13 bg-gradient-to-br from-fuchsia-500/30 to-purple-700/30 rounded-full blur-lg"></div>
+            <div className="absolute top-28 left-20 w-3 h-3 bg-gradient-to-br from-sky-500/25 to-blue-600/25 rounded-full blur-sm"></div>
+            <div className="absolute top-44 right-20 w-10 h-10 bg-gradient-to-br from-red-500/30 to-orange-600/30 rounded-full blur-md"></div>
+            <div className="absolute top-68 left-14 w-7 h-7 bg-gradient-to-br from-green-500/25 to-emerald-600/25 rounded-full blur-sm"></div>
+            <div className="absolute top-84 right-14 w-12 h-12 bg-gradient-to-br from-purple-500/30 to-indigo-700/30 rounded-full blur-lg"></div>
+            <div className="absolute top-12 left-6 w-5 h-5 bg-gradient-to-br from-pink-500/25 to-rose-600/25 rounded-full blur-sm"></div>
+          </>
+        )}
         {/* Header */}
         <header className={`sticky top-0 z-40 border-b backdrop-blur-xl shadow-lg transition-colors duration-300 ${
-          isDarkMode 
-            ? 'bg-gray-800/90 border-gray-700/50' 
-            : 'bg-white/90 border-gray-200/50'
+          isGayMode
+            ? 'bg-gradient-to-r from-pink-100/95 via-purple-100/95 to-cyan-100/95 border-pink-200/50'
+            : isDarkMode 
+              ? 'bg-gray-800/90 border-gray-700/50' 
+              : 'bg-white/90 border-gray-200/50'
         }`}>
           <div className="flex justify-between items-center px-6 py-4">
-            <h1 className={`text-xl font-bold bg-gradient-to-r ${isDarkMode ? 'from-white via-gray-100 to-gray-300' : 'from-gray-900 via-gray-800 to-gray-600'} bg-clip-text text-transparent drop-shadow-sm`}>
-              The Load Down
+            <h1 className={`text-xl font-bold bg-gradient-to-r ${
+              isGayMode 
+                ? 'from-pink-600 via-purple-600 to-cyan-600' 
+                : isDarkMode 
+                  ? 'from-white via-gray-100 to-gray-300' 
+                  : 'from-gray-900 via-gray-800 to-gray-600'
+            } bg-clip-text text-transparent drop-shadow-sm`}>
+              The Load Down {isGayMode ? '🏳️‍🌈' : ''}
             </h1>
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setIsDarkMode(!isDarkMode)}
+                onClick={() => {
+                  // Don't allow dark mode while gay mode is active
+                  if (!isGayMode) {
+                    setIsDarkMode(!isDarkMode);
+                  }
+                }}
                 className={`p-3 rounded-2xl shadow-lg backdrop-blur-sm border transition-all duration-300 transform hover:scale-105 ${
-                  isDarkMode 
-                    ? 'hover:bg-gray-700/80 text-gray-300 bg-gray-800/60 border-gray-600/50' 
-                    : 'hover:bg-gray-100/80 text-gray-600 bg-white/60 border-gray-200/50'
+                  isGayMode
+                    ? 'opacity-50 cursor-not-allowed bg-gray-200/60 text-gray-400 border-gray-300/50'
+                    : isDarkMode 
+                      ? 'hover:bg-gray-700/80 text-gray-300 bg-gray-800/60 border-gray-600/50' 
+                      : 'hover:bg-gray-100/80 text-gray-600 bg-white/60 border-gray-200/50'
                 }`}
-                title="Toggle Dark Mode"
+                title={isGayMode ? "Dark mode disabled in Gay Mode 🏳️‍🌈" : "Toggle Dark Mode"}
               >
                 {isDarkMode ? (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,6 +267,26 @@ function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                   </svg>
                 )}
+              </button>
+              <button
+                onClick={() => {
+                  const newGayMode = !isGayMode;
+                  setIsGayMode(newGayMode);
+                  // Gay mode should always use light mode for better pride color visibility
+                  if (newGayMode && isDarkMode) {
+                    setIsDarkMode(false);
+                  }
+                }}
+                className={`p-3 rounded-2xl shadow-lg backdrop-blur-sm border transition-all duration-300 transform hover:scale-105 ${
+                  isGayMode
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-pink-400/50 shadow-pink-500/30'
+                    : isDarkMode 
+                      ? 'hover:bg-gray-700/80 text-gray-300 bg-gray-800/60 border-gray-600/50' 
+                      : 'hover:bg-gray-100/80 text-gray-600 bg-white/60 border-gray-200/50'
+                }`}
+                title="Toggle Gay Mode 🏳️‍🌈"
+              >
+                {isGayMode ? '🏳️‍🌈' : '💖'}
               </button>
               <button
                 onClick={() => setCurrentPage('settings')}
@@ -210,9 +313,11 @@ function App() {
 
       {/* Fixed Bottom Navigation - Outside main container */}
       <nav className={`fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md backdrop-blur-3xl border-t border-x shadow-2xl rounded-t-3xl transition-colors duration-300 z-50 ${
-        isDarkMode 
-          ? 'bg-gray-800 border-gray-700' 
-          : 'bg-white border-gray-200'
+        isGayMode
+          ? 'bg-gradient-to-r from-pink-100/95 via-purple-100/95 to-cyan-100/95 border-pink-200'
+          : isDarkMode 
+            ? 'bg-gray-800 border-gray-700' 
+            : 'bg-white border-gray-200'
       }`}>
         <div className="flex justify-around items-center px-6 py-3 pt-4">
           <button
@@ -222,8 +327,12 @@ function App() {
             }}
             className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 shadow-md backdrop-blur-sm ${
               currentPage === 'dashboard' 
-                ? 'text-blue-600 bg-blue-50/80 dark:bg-blue-900/30 scale-105 shadow-blue-500/30 border border-blue-200/50 dark:border-blue-700/50' 
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-700/50 active:scale-95 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50'
+                ? isGayMode
+                  ? 'text-white bg-gradient-to-r from-pink-500 to-purple-600 scale-105 shadow-pink-500/30 border border-pink-400/50' 
+                  : 'text-blue-600 bg-blue-50/80 dark:bg-blue-900/30 scale-105 shadow-blue-500/30 border border-blue-200/50 dark:border-blue-700/50'
+                : isGayMode
+                  ? 'text-purple-600 hover:text-white dark:text-purple-400 dark:hover:text-white hover:bg-gradient-to-r hover:from-pink-400 hover:to-purple-500 active:scale-95 border border-transparent hover:border-pink-300/50'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-700/50 active:scale-95 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50'
             }`}
           >
             <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,8 +345,12 @@ function App() {
             onClick={() => setCurrentPage('timeline')}
             className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 shadow-md backdrop-blur-sm ${
               currentPage === 'timeline' 
-                ? 'text-blue-600 bg-blue-50/80 dark:bg-blue-900/30 scale-105 shadow-blue-500/30 border border-blue-200/50 dark:border-blue-700/50' 
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-700/50 active:scale-95 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50'
+                ? isGayMode
+                  ? 'text-white bg-gradient-to-r from-orange-500 to-red-600 scale-105 shadow-orange-500/30 border border-orange-400/50' 
+                  : 'text-blue-600 bg-blue-50/80 dark:bg-blue-900/30 scale-105 shadow-blue-500/30 border border-blue-200/50 dark:border-blue-700/50'
+                : isGayMode
+                  ? 'text-orange-600 hover:text-white dark:text-orange-400 dark:hover:text-white hover:bg-gradient-to-r hover:from-orange-400 hover:to-red-500 active:scale-95 border border-transparent hover:border-orange-300/50'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-700/50 active:scale-95 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50'
             }`}
           >
             <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,8 +363,12 @@ function App() {
             onClick={() => setCurrentPage('friends')}
             className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 shadow-md backdrop-blur-sm ${
               currentPage === 'friends' 
-                ? 'text-blue-600 bg-blue-50/80 dark:bg-blue-900/30 scale-105 shadow-blue-500/30 border border-blue-200/50 dark:border-blue-700/50' 
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-700/50 active:scale-95 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50'
+                ? isGayMode
+                  ? 'text-white bg-gradient-to-r from-green-500 to-teal-600 scale-105 shadow-green-500/30 border border-green-400/50' 
+                  : 'text-blue-600 bg-blue-50/80 dark:bg-blue-900/30 scale-105 shadow-blue-500/30 border border-blue-200/50 dark:border-blue-700/50'
+                : isGayMode
+                  ? 'text-green-600 hover:text-white dark:text-green-400 dark:hover:text-white hover:bg-gradient-to-r hover:from-green-400 hover:to-teal-500 active:scale-95 border border-transparent hover:border-green-300/50'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-700/50 active:scale-95 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50'
             }`}
           >
             <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,8 +381,12 @@ function App() {
             onClick={() => setCurrentPage('analytics')}
             className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 shadow-md backdrop-blur-sm ${
               currentPage === 'analytics' 
-                ? 'text-blue-600 bg-blue-50/80 dark:bg-blue-900/30 scale-105 shadow-blue-500/30 border border-blue-200/50 dark:border-blue-700/50' 
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-700/50 active:scale-95 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50'
+                ? isGayMode
+                  ? 'text-white bg-gradient-to-r from-blue-500 to-cyan-600 scale-105 shadow-blue-500/30 border border-blue-400/50' 
+                  : 'text-blue-600 bg-blue-50/80 dark:bg-blue-900/30 scale-105 shadow-blue-500/30 border border-blue-200/50 dark:border-blue-700/50'
+                : isGayMode
+                  ? 'text-blue-600 hover:text-white dark:text-blue-400 dark:hover:text-white hover:bg-gradient-to-r hover:from-blue-400 hover:to-cyan-500 active:scale-95 border border-transparent hover:border-blue-300/50'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-700/50 active:scale-95 border border-transparent hover:border-gray-200/50 dark:hover:border-gray-600/50'
             }`}
           >
             <svg className="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
