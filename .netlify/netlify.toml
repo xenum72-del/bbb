@@ -1,7 +1,8 @@
-headersOrigin = "config"
-redirectsOrigin = "config"
 functionsDirectory = "/Users/stefan/AI/bbb/encounter-ledger/netlify/functions"
 functionsDirectoryOrigin = "config"
+headersOrigin = "config"
+redirectsOrigin = "config"
+plugins = []
 
 [forms]
 settings = true
@@ -13,19 +14,6 @@ directory = "netlify/edge-handlers"
 
 [functions."*"]
 node_bundler = "esbuild"
-
-[[plugins]]
-origin = "config"
-package = "@netlify/plugin-lighthouse"
-
-[plugins.inputs]
-
-[plugins.inputs.audits]
-performance = true
-accessibility = true
-best_practices = true
-seo = true
-pwa = true
 
 [build]
 publish = "/Users/stefan/AI/bbb/encounter-ledger/dist"
