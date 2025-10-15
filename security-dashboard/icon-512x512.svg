@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="25%" stop-color="#a855f7"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="75%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="heart512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#fdf2f8"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <filter id="shadow512" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="4" dy="8" stdDeviation="8" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle with pride gradient -->
+  <circle cx="256" cy="256" r="240" fill="url(#bg512)" filter="url(#shadow512)"/>
+  
+  <!-- Inner circle for contrast -->
+  <circle cx="256" cy="256" r="208" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+  
+  <!-- Main heart icon -->
+  <path d="M256 380 L190 314 C154 278 154 222 190 186 C208 168 232 168 248 186 L256 194 L264 186 C280 168 304 168 322 186 C358 222 358 278 322 314 Z" 
+        fill="url(#heart512)" filter="url(#shadow512)"/>
+  
+  <!-- Sparkle accents -->
+  <g fill="rgba(255,255,255,0.9)">
+    <path d="M160 130 L166 150 L186 156 L166 162 L160 182 L154 162 L134 156 L154 150 Z"/>
+    <path d="M350 120 L354 136 L370 140 L354 144 L350 160 L346 144 L330 140 L346 136 Z"/>
+    <path d="M380 230 L383 242 L395 245 L383 248 L380 260 L377 248 L365 245 L377 242 Z"/>
+    <path d="M120 320 L124 336 L140 340 L124 344 L120 360 L116 344 L100 340 L116 336 Z"/>
+    <path d="M400 340 L402 348 L410 350 L402 352 L400 360 L398 352 L390 350 L398 348 Z"/>
+    <path d="M90 180 L92 188 L100 190 L92 192 L90 200 L88 192 L80 190 L88 188 Z"/>
+  </g>
+  
+  <!-- App name -->
+  <text x="256" y="440" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" 
+        font-size="42" font-weight="700" fill="rgba(255,255,255,0.9)">The Load Down</text>
+</svg>

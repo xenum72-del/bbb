@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="25%" stop-color="#a855f7"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="75%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="heart" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#fdf2f8"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+  
+  <!-- Background circle with pride gradient -->
+  <circle cx="96" cy="96" r="88" fill="url(#bg)" filter="url(#shadow)"/>
+  
+  <!-- Inner circle for contrast -->
+  <circle cx="96" cy="96" r="76" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+  
+  <!-- Main heart icon -->
+  <path d="M96 140 L70 114 C58 102 58 82 70 70 C76 64 84 64 90 70 L96 76 L102 70 C108 64 116 64 122 70 C134 82 134 102 122 114 Z" 
+        fill="url(#heart)" filter="url(#shadow)"/>
+  
+  <!-- Sparkle accents -->
+  <g fill="rgba(255,255,255,0.9)">
+    <path d="M60 50 L62 58 L70 60 L62 62 L60 70 L58 62 L50 60 L58 58 Z"/>
+    <path d="M130 45 L131 50 L136 51 L131 52 L130 57 L129 52 L124 51 L129 50 Z"/>
+    <path d="M140 85 L141 89 L145 90 L141 91 L140 95 L139 91 L135 90 L139 89 Z"/>
+    <path d="M45 120 L46 124 L50 125 L46 126 L45 130 L44 126 L40 125 L44 124 Z"/>
+  </g>
+  
+  <!-- App name initials -->
+  <text x="96" y="165" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" 
+        font-size="16" font-weight="700" fill="rgba(255,255,255,0.9)">TLD</text>
+</svg>

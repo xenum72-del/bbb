@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-10-14T23:35:02.739Z",
+  "timestamp": "2025-10-15T01:28:36.358Z",
   "summary": {
     "testsCompleted": 5,
     "overallSafety": {
@@ -22,15 +22,15 @@
     "hasPWAManifest": false
   },
   "performance": {
-    "loadTime": 0,
-    "domContentLoaded": 0.09999999999126885,
-    "firstPaint": 424
+    "loadTime": 0.10000000000582077,
+    "domContentLoaded": 0,
+    "firstPaint": 440
   },
   "accessibility": {
     "imagesWithoutAlt": 0,
     "buttonsWithoutAriaLabel": 2,
     "totalImages": 0,
-    "totalButtons": 11
+    "totalButtons": 13
   },
   "inclusivity": {
     "foundGayPositiveWords": 1,
