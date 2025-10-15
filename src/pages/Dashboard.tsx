@@ -6,9 +6,11 @@ import StarRating from '../components/StarRating';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
+  isDarkMode: boolean;
+  isGayMode: boolean;
 }
 
-export default function Dashboard({ onNavigate }: DashboardProps) {
+export default function Dashboard({ onNavigate, isDarkMode: _, isGayMode }: DashboardProps) {
   const encounters = useEncounters(10); // Last 10 encounters
   const friends = useActiveFriends();
   const settings = useSettings();
@@ -37,37 +39,89 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   return (
     <div className="p-6 space-y-8 relative">
-      {/* Quick Add Button */}
-      <div className="group relative bg-gradient-to-br from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500 overflow-hidden">
-        {/* Card glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        
-        <div className="flex items-center justify-between mb-6 relative z-10">
-          <div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">Quick Add</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Log a new encounter</p>
-          </div>
-          <div className="relative">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform duration-300">
-              <span className="text-white text-2xl drop-shadow-sm">✨</span>
-            </div>
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-          </div>
+      {/* Quick Add Section */}
+      <div className={`relative backdrop-blur-xl rounded-2xl p-6 shadow-lg border ${
+        isGayMode 
+          ? 'bg-gradient-to-br from-pink-50/80 to-purple-50/80 border-pink-200/50' 
+          : 'bg-white/70 dark:bg-gray-800/70 border-gray-200/50 dark:border-gray-700/50'
+      }`}>
+        <div className="mb-4">
+          <h2 className={`text-lg font-semibold ${
+            isGayMode 
+              ? 'text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-purple-600' 
+              : 'text-gray-800 dark:text-gray-200'
+          }`}>Quick Actions</h2>
+          <p className={`text-sm ${
+            isGayMode 
+              ? 'text-purple-600' 
+              : 'text-gray-600 dark:text-gray-400'
+          }`}>Add new content</p>
         </div>
-        <button
-          onClick={() => onNavigate('add')}
-          className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-5 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center relative z-10 border border-white/20"
-        >
-          <svg className="w-6 h-6 mr-3 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Log New Encounter
-        </button>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => onNavigate('add')}
+            className={`group relative rounded-xl p-4 border transition-all duration-200 hover:shadow-md ${
+              isGayMode
+                ? 'bg-gradient-to-br from-pink-50 to-purple-100 hover:from-pink-100 hover:to-purple-200 border-pink-200/50 hover:border-pink-300/50'
+                : 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-800/30 dark:hover:to-indigo-800/30 border-blue-200/50 dark:border-blue-700/30'
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200 ${
+                isGayMode ? 'bg-gradient-to-r from-pink-500 to-purple-600' : 'bg-blue-500'
+              }`}>
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <div className={`font-medium text-sm ${
+                  isGayMode ? 'text-purple-800' : 'text-gray-800 dark:text-gray-200'
+                }`}>New Encounter</div>
+                <div className={`text-xs ${
+                  isGayMode ? 'text-purple-600' : 'text-gray-500 dark:text-gray-400'
+                }`}>Log activity</div>
+              </div>
+            </div>
+          </button>
+          
+          <button
+            onClick={() => onNavigate('friends-add')}
+            className={`group relative rounded-xl p-4 border transition-all duration-200 hover:shadow-md ${
+              isGayMode
+                ? 'bg-gradient-to-br from-green-50 to-teal-100 hover:from-green-100 hover:to-teal-200 border-green-200/50 hover:border-green-300/50'
+                : 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-800/30 dark:hover:to-emerald-800/30 border-green-200/50 dark:border-green-700/30'
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200 ${
+                isGayMode ? 'bg-gradient-to-r from-green-500 to-teal-600' : 'bg-green-500'
+              }`}>
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <div className={`font-medium text-sm ${
+                  isGayMode ? 'text-green-800' : 'text-gray-800 dark:text-gray-200'
+                }`}>New Friend</div>
+                <div className={`text-xs ${
+                  isGayMode ? 'text-green-600' : 'text-gray-500 dark:text-gray-400'
+                }`}>Add contact</div>
+              </div>
+            </div>
+          </button>
+        </div>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-2 gap-6">
-        <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden">
+        <div className={`group relative backdrop-blur-xl p-8 rounded-3xl shadow-2xl border hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-pink-50/90 to-purple-100/90 border-pink-200/40' 
+            : 'bg-white/90 dark:bg-gray-800/90 border-white/40 dark:border-gray-700/40'
+        }`}>
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-emerald-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="flex items-center justify-between relative z-10">
             <div>
@@ -81,7 +135,11 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             </div>
           </div>
         </div>
-        <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden">
+        <div className={`group relative backdrop-blur-xl p-8 rounded-3xl shadow-2xl border hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-orange-50/90 to-yellow-100/90 border-orange-200/40' 
+            : 'bg-white/90 dark:bg-gray-800/90 border-white/40 dark:border-gray-700/40'
+        }`}>
           <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-orange-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative z-10 text-center">
             <div>
@@ -108,7 +166,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             <p className="text-gray-600 dark:text-gray-400 mt-1">Your closest connections</p>
           </div>
           <button
-            onClick={() => onNavigate('analytics')}
+            onClick={() => onNavigate('friends')}
             className="px-6 py-3 bg-gradient-to-r from-blue-100/80 to-indigo-100/80 dark:from-blue-900/30 dark:to-indigo-900/30 hover:from-blue-200/80 hover:to-indigo-200/80 dark:hover:from-blue-800/40 dark:hover:to-indigo-800/40 text-blue-700 dark:text-blue-300 rounded-2xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-lg backdrop-blur-sm border border-blue-200/50 dark:border-blue-700/50"
           >
             View All →
@@ -134,7 +192,11 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             topFriends.map((friendScore, index) => (
               <div
                 key={friendScore.friend.id}
-                className="flex items-center justify-between p-4 bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-102"
+                className={`flex items-center justify-between p-4 rounded-2xl shadow-md border hover:shadow-lg transition-all duration-300 hover:scale-102 ${
+                  isGayMode
+                    ? 'bg-gradient-to-r from-pink-50 to-purple-50 border-pink-200'
+                    : 'bg-gradient-to-r from-white to-gray-50 dark:from-gray-700 dark:to-gray-600 border-gray-100 dark:border-gray-600'
+                }`}
               >
                 <div className="flex items-center space-x-4">
                   <div className="relative">
@@ -158,8 +220,16 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                     </div>
                   </div>
                   <div>
-                    <div className="font-bold text-gray-800">{friendScore.friend.name}</div>
-                    <div className="text-sm text-gray-500">
+                    <div className={`font-bold ${
+                      isGayMode 
+                        ? 'text-purple-800' 
+                        : 'text-gray-800 dark:text-gray-200'
+                    }`}>{friendScore.friend.name}</div>
+                    <div className={`text-sm ${
+                      isGayMode 
+                        ? 'text-purple-600' 
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`}>
                       {friendScore.encounterCount} encounters
                     </div>
                   </div>
@@ -168,7 +238,11 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                   <div className="text-lg font-bold" style={{ color: getScoreColor(friendScore.score) }}>
                     {(friendScore.score * 100).toFixed(0)}
                   </div>
-                  <div className="text-xs text-gray-500 font-medium">
+                  <div className={`text-xs font-medium ${
+                    isGayMode 
+                      ? 'text-purple-600' 
+                      : 'text-gray-500 dark:text-gray-400'
+                  }`}>
                     Score
                   </div>
                 </div>
@@ -177,24 +251,34 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           )}
         </div>
       </div>      {/* Recent Encounters */}
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-800">Recent Encounters</h3>
+      <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.01] transition-all duration-500 overflow-hidden">
+        {/* Card glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-red-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        
+        <div className="flex justify-between items-center mb-8 relative z-10">
+          <div>
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">Recent Encounters</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Your latest activities</p>
+          </div>
           <button
             onClick={() => onNavigate('timeline')}
-            className="text-blue-600 text-sm font-semibold hover:text-blue-700 transition-colors"
+            className="px-6 py-3 bg-gradient-to-r from-red-100/80 to-orange-100/80 dark:from-red-900/30 dark:to-orange-900/30 hover:from-red-200/80 hover:to-orange-200/80 dark:hover:from-red-800/40 dark:hover:to-orange-800/40 text-red-700 dark:text-red-300 rounded-2xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-lg backdrop-blur-sm border border-red-200/50 dark:border-red-700/50 whitespace-nowrap"
           >
             View All →
           </button>
         </div>
         <div className="space-y-3">
           {encounters.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-xl border border-gray-200">
-              <div className="text-4xl mb-3">📝</div>
-              <p className="text-lg font-medium mb-2">No encounters yet!</p>
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">No encounters yet!</p>
               <button
                 onClick={() => onNavigate('add')}
-                className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+                className="mt-4 px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-2xl font-semibold hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg"
               >
                 Log your first encounter →
               </button>
@@ -203,26 +287,33 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             encounters.slice(0, 5).map(encounter => (
               <div
                 key={encounter.id}
-                className="p-4 bg-white border border-gray-200 rounded-xl shadow-sm"
+                className="flex items-center justify-between p-4 bg-gradient-to-r from-white to-gray-50 dark:from-gray-700/50 dark:to-gray-800/50 rounded-2xl shadow-md border border-gray-100 dark:border-gray-600/30 hover:shadow-lg transition-all duration-300 hover:scale-102"
               >
-                <div className="flex justify-between items-start">
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
+                      <span className="text-lg text-white font-bold">
+                        {encounter.isAnonymous ? '?' : encounter.participants.length}
+                      </span>
+                    </div>
+                  </div>
                   <div>
-                    <div className="font-semibold text-gray-800 mb-1">
+                    <div className="font-bold text-gray-800 dark:text-gray-200">
                       {encounter.isAnonymous ? 'Anonymous encounter' : 
                         `With ${encounter.participants.length} friend${encounter.participants.length > 1 ? 's' : ''}`
                       }
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {new Date(encounter.date).toLocaleDateString()}
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(encounter.date).toLocaleDateString()} • {encounter.beneficiary}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="mb-1">
-                      <StarRating rating={encounter.rating} size="md" />
-                    </div>
-                    <div className="text-xs text-gray-500 capitalize">
-                      {encounter.beneficiary}
-                    </div>
+                </div>
+                <div className="text-right">
+                  <div className="mb-1">
+                    <StarRating rating={encounter.rating} size="md" />
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    Rating
                   </div>
                 </div>
               </div>

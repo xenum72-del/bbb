@@ -8,6 +8,7 @@ import { showiOSBackupModal, isiOS } from '../utils/iosBackup';
 
 interface FriendsProps {
   onNavigate: (page: string) => void;
+  showAddFormInitially?: boolean;
 }
 
 const getInitialFormData = () => ({
@@ -46,9 +47,9 @@ const getInitialFormData = () => ({
   isVerified: false
 });
 
-export default function Friends({ onNavigate }: FriendsProps) {
+export default function Friends({ onNavigate, showAddFormInitially = false }: FriendsProps) {
   const friends = useActiveFriends();
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(showAddFormInitially);
   const [editingFriend, setEditingFriend] = useState<Friend | null>(null);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [formData, setFormData] = useState(getInitialFormData);
@@ -437,20 +438,7 @@ export default function Friends({ onNavigate }: FriendsProps) {
   }
 
   return (
-    <div className="p-4 space-y-6 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-3">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
-          backgroundSize: '20px 20px'
-        }}></div>
-      </div>
-      
-      {/* Floating orbs for depth */}
-      <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute top-1/3 right-10 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-teal-600/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-      <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-to-br from-pink-400/20 to-rose-600/20 rounded-full blur-2xl animate-pulse delay-2000"></div>
-      
+    <div className="p-4 space-y-6 min-h-screen relative">
       <div className="space-y-6 relative z-10">
       <div className="flex justify-between items-center p-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 dark:border-gray-700/40">
         <div>
@@ -459,10 +447,10 @@ export default function Friends({ onNavigate }: FriendsProps) {
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20 flex items-center"
+          className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-800/30 dark:hover:to-emerald-800/30 text-green-700 dark:text-green-300 px-4 py-2 rounded-xl font-medium text-sm border border-green-200/50 dark:border-green-700/30 transition-all duration-200 hover:shadow-md flex items-center"
         >
-          <svg className="w-6 h-6 mr-2 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
           Add Friend
         </button>
@@ -484,10 +472,10 @@ export default function Friends({ onNavigate }: FriendsProps) {
           </div>
           <button
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+            className={`px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 border ${
               showAdvancedFilters 
-                ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg' 
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 text-purple-700 dark:text-purple-300 border-purple-200/50 dark:border-purple-700/30 shadow-md' 
+                : 'bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 border-gray-200/50 dark:border-gray-600/30 hover:bg-gray-100 dark:hover:bg-gray-600/50 hover:shadow-sm'
             }`}
           >
             {showAdvancedFilters ? 'Hide Filters' : 'Show Filters'}
@@ -824,37 +812,144 @@ export default function Friends({ onNavigate }: FriendsProps) {
 
               <div>
                 <label className="block text-sm font-medium mb-1">Sexual Preferences</label>
-                <div className="border rounded bg-white dark:bg-gray-700 dark:border-gray-600 p-2 max-h-32 overflow-y-auto">
-                  <div className="grid grid-cols-2 gap-1 text-xs">
-                    {GAY_ACTIVITIES.slice(0, 20).map(activity => {
-                      const isSelected = formData.sexualPreferences.split(', ').filter(p => p.trim()).includes(activity.name);
-                      return (
-                        <label key={activity.name} className="flex items-center space-x-1 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={(e) => {
-                              const preferences = formData.sexualPreferences.split(', ').filter(p => p.trim());
-                              if (e.target.checked) {
-                                preferences.push(activity.name);
-                              } else {
-                                const index = preferences.indexOf(activity.name);
-                                if (index > -1) preferences.splice(index, 1);
-                              }
-                              setFormData(f => ({...f, sexualPreferences: preferences.join(', ')}));
-                            }}
-                            className="w-3 h-3"
-                          />
-                          <span className="text-xs">{activity.icon} {activity.name}</span>
-                        </label>
-                      );
-                    })}
+                <div className="border rounded bg-white dark:bg-gray-700 dark:border-gray-600 p-3">
+                  {/* Search within preferences */}
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      placeholder="🔍 Search activities..."
+                      className="w-full p-2 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
+                      onChange={(e) => {
+                        const searchTerm = e.target.value.toLowerCase();
+                        const checkboxes = document.querySelectorAll('.preference-checkbox');
+                        checkboxes.forEach((checkbox) => {
+                          const label = checkbox.parentElement;
+                          const text = label?.textContent?.toLowerCase() || '';
+                          const shouldShow = searchTerm === '' || text.includes(searchTerm);
+                          if (label) {
+                            (label as HTMLElement).style.display = shouldShow ? 'flex' : 'none';
+                          }
+                        });
+                      }}
+                    />
                   </div>
-                  {formData.sexualPreferences && (
-                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                      <div className="text-xs text-gray-500">Selected: {formData.sexualPreferences || 'None'}</div>
+                  
+                  {/* Full activities list in scrollable container */}
+                  <div className="max-h-48 overflow-y-auto border border-gray-100 dark:border-gray-600 rounded p-2">
+                    <div className="grid grid-cols-1 gap-1 text-xs">
+                      {GAY_ACTIVITIES.map(activity => {
+                        const isSelected = formData.sexualPreferences.split(', ').filter(p => p.trim()).includes(activity.name);
+                        return (
+                          <label key={activity.name} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 p-1 rounded">
+                            <input
+                              type="checkbox"
+                              className="preference-checkbox w-3 h-3 flex-shrink-0"
+                              checked={isSelected}
+                              onChange={(e) => {
+                                const preferences = formData.sexualPreferences.split(', ').filter(p => p.trim());
+                                if (e.target.checked) {
+                                  preferences.push(activity.name);
+                                } else {
+                                  const index = preferences.indexOf(activity.name);
+                                  if (index > -1) preferences.splice(index, 1);
+                                }
+                                setFormData(f => ({...f, sexualPreferences: preferences.join(', ')}));
+                              }}
+                            />
+                            <span className="text-xs flex-1" style={{ color: activity.color }}>
+                              {activity.icon} {activity.name}
+                            </span>
+                          </label>
+                        );
+                      })}
                     </div>
-                  )}
+                  </div>
+                  
+                  {/* Quick action buttons */}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(f => ({...f, sexualPreferences: ''}))}
+                      className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/40 text-red-700 dark:text-red-300 rounded"
+                    >
+                      Clear All
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const commonTopActivities = [
+                          'Anal (Topping)', 'Oral (Receiving)', 'Rimming (Receiving)', 'Handjob (Receiving)',
+                          'Kissing/Making Out', 'Body Contact/Massage', 'Cock Worship', 'Face Fucking',
+                          'Spanking (Giving)', 'Service Top', 'Deep Throat', 'Muscle Worship'
+                        ];
+                        setFormData(f => ({...f, sexualPreferences: commonTopActivities.join(', ')}));
+                      }}
+                      className="px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-800/40 text-blue-700 dark:text-blue-300 rounded"
+                    >
+                      🔝 Common for Tops
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const commonBottomActivities = [
+                          'Anal (Bottoming)', 'Oral (Giving)', 'Rimming (Giving)', 'Handjob (Giving)',
+                          'Kissing/Making Out', 'Body Contact/Massage', 'Ass Worship', 'Power Bottom',
+                          'Spanking (Receiving)', 'Prostate Massage', 'Body Worship', 'Fingering'
+                        ];
+                        setFormData(f => ({...f, sexualPreferences: commonBottomActivities.join(', ')}));
+                      }}
+                      className="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-800/40 text-green-700 dark:text-green-300 rounded"
+                    >
+                      🔻 Common for Bottoms
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const versActivities = [
+                          'Anal (Topping)', 'Anal (Bottoming)', 'Oral (Giving)', 'Oral (Receiving)', 
+                          'Kissing/Making Out', 'Mutual Masturbation', 'Rimming (Giving)', 'Rimming (Receiving)',
+                          'Body Contact/Massage', 'Handjob (Giving)', 'Handjob (Receiving)', '69', 'Flip Fucking'
+                        ];
+                        setFormData(f => ({...f, sexualPreferences: versActivities.join(', ')}));
+                      }}
+                      className="px-2 py-1 text-xs bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-800/40 text-amber-700 dark:text-amber-300 rounded"
+                    >
+                      ↕️ Versatile Common
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const kinkActivities = [
+                          'BDSM Dom', 'BDSM Sub', 'Bondage', 'Spanking (Giving)', 'Spanking (Receiving)',
+                          'Leather/Fetish', 'Role Play', 'Rough/Aggressive', 'Power Bottom', 'Daddy/Son Play'
+                        ];
+                        const current = formData.sexualPreferences.split(', ').filter(p => p.trim());
+                        const combined = [...new Set([...current, ...kinkActivities])];
+                        setFormData(f => ({...f, sexualPreferences: combined.join(', ')}));
+                      }}
+                      className="px-2 py-1 text-xs bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/30 dark:hover:bg-purple-800/40 text-purple-700 dark:text-purple-300 rounded"
+                    >
+                      ⛓️ + Kink
+                    </button>
+                  </div>
+                  
+                  {/* Selected count and preview */}
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      <span className="font-medium">
+                        {formData.sexualPreferences.split(', ').filter(p => p.trim()).length} selected
+                      </span>
+                      {formData.sexualPreferences && (
+                        <div className="mt-1 text-gray-500 dark:text-gray-500 max-h-16 overflow-y-auto">
+                          {formData.sexualPreferences}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 

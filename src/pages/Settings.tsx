@@ -38,7 +38,8 @@ export default function Settings({ onNavigate }: SettingsProps) {
     defaultTypeId: undefined as number | undefined,
     theme: 'system' as 'light' | 'dark' | 'system',
     notificationsEnabled: false,
-    reminderFrequency: 'none' as 'daily' | 'weekly' | 'none'
+    reminderFrequency: 'none' as 'daily' | 'weekly' | 'none',
+    enableOnlineGeocoding: false
   });
 
   const [showExport, setShowExport] = useState(false);
@@ -100,7 +101,8 @@ export default function Settings({ onNavigate }: SettingsProps) {
         defaultTypeId: settings.defaultTypeId,
         theme: settings.theme,
         notificationsEnabled: settings.notificationsEnabled,
-        reminderFrequency: settings.reminderFrequency
+        reminderFrequency: settings.reminderFrequency,
+        enableOnlineGeocoding: settings.enableOnlineGeocoding ?? false
       });
     }
   }, [settings]);
@@ -339,21 +341,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
   const isWeightValid = Math.abs(totalWeight - 1.0) < 0.001;
 
   return (
-    <div className="p-4 space-y-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-3">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
-          backgroundSize: '20px 20px'
-        }}></div>
-      </div>
-      
-      {/* Floating orbs for depth */}
-      <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute top-1/3 right-10 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-teal-600/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-      <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-to-br from-pink-400/20 to-rose-600/20 rounded-full blur-2xl animate-pulse delay-2000"></div>
-      <div className="absolute top-2/3 right-1/4 w-16 h-16 bg-gradient-to-br from-amber-400/20 to-orange-600/20 rounded-full blur-xl animate-pulse delay-3000"></div>
-      
+    <div className="p-4 space-y-4 min-h-screen relative">
       <div className="space-y-6 relative z-10">
         <div className="flex items-center mb-8 p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 dark:border-gray-700/30">
           <div className="relative">
@@ -712,7 +700,77 @@ export default function Settings({ onNavigate }: SettingsProps) {
           </div>
         </div>
 
+        {/* Location Search Settings */}
+        <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.01] transition-all duration-500 overflow-hidden">
+          {/* Card glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-green-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          
+          <div className="flex items-center space-x-4 mb-6 relative z-10">
+            <div className="relative">
+              <div className="w-14 h-14 bg-gradient-to-br from-teal-500 via-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-orange-400 to-red-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">
+                Location Search
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">Enable online location search and suggestions</p>
+            </div>
+          </div>
 
+          <div className="space-y-6 relative z-10">
+            {/* Location Search Toggle */}
+            <div className="p-6 bg-gradient-to-br from-gray-50/80 to-white/80 dark:from-gray-700/80 dark:to-gray-600/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-600/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h4 className="font-medium">Enable Online Location Search</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {localSettings.enableOnlineGeocoding ? 'Location suggestions enabled' : 'Manual location entry only (default)'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setLocalSettings(s => ({...s, enableOnlineGeocoding: !s.enableOnlineGeocoding}))}
+                  className={`px-6 py-3 text-sm font-medium rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-300 ${
+                    localSettings.enableOnlineGeocoding
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-green-500/30'
+                      : 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-700 hover:from-gray-400 hover:to-gray-500 dark:from-gray-600 dark:to-gray-700 dark:text-gray-300 dark:hover:from-gray-500 dark:hover:to-gray-600 shadow-gray-400/30'
+                  }`}
+                >
+                  {localSettings.enableOnlineGeocoding ? 'Enabled' : 'Disabled'}
+                </button>
+              </div>
+            </div>
+
+            {/* What Happens When Enabled */}
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">🌍 When Enabled</h4>
+              <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <p>✅ Auto-complete location suggestions as you type</p>
+                <p>✅ Search for places, addresses, and landmarks</p>
+                <p>✅ Reverse geocoding for "Use current location" button</p>
+                <p>✅ Uses OpenStreetMap Nominatim service (free)</p>
+              </div>
+            </div>
+
+            {/* Privacy Notice */}
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+              <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2">🔒 Privacy & Usage Information</h4>
+              <div className="text-sm text-amber-800 dark:text-amber-200 space-y-1">
+                <p>• Location searches are sent to OpenStreetMap's servers</p>
+                <p>• No personal data is transmitted with location queries</p>
+                <p>• Search queries are not stored or associated with your account</p>
+                <p>• Disabled by default to maximize privacy</p>
+                <p>• Search is rate-limited to prevent service overload</p>
+                <p>• Global search enabled (not restricted to specific countries)</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Data Management */}
         <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl p-8 shadow-2xl border border-white/40 dark:border-gray-700/40 hover:shadow-3xl hover:scale-[1.01] transition-all duration-500 overflow-hidden">

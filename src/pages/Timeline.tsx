@@ -223,20 +223,7 @@ export default function Timeline({ onNavigate }: TimelineProps) {
   }, [filteredEncounters, currentPage, ITEMS_PER_PAGE]);
 
   return (
-    <div className="p-4 space-y-6 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-3">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
-          backgroundSize: '20px 20px'
-        }}></div>
-      </div>
-      
-      {/* Floating orbs for depth */}
-      <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute top-1/3 right-10 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-teal-600/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-      <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-to-br from-pink-400/20 to-rose-600/20 rounded-full blur-2xl animate-pulse delay-2000"></div>
-      
+    <div className="p-4 space-y-6 min-h-screen relative">
       <div className="space-y-6 relative z-10">
       <div className="flex justify-between items-center p-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 dark:border-gray-700/40">
         <div>
