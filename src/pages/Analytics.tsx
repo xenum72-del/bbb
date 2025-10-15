@@ -6,9 +6,11 @@ import StarRating from '../components/StarRating';
 
 interface AnalyticsProps {
   onNavigate: (page: string) => void;
+  isDarkMode: boolean;
+  isGayMode: boolean;
 }
 
-export default function Analytics({ onNavigate }: AnalyticsProps) {
+export default function Analytics({ onNavigate, isDarkMode: _, isGayMode }: AnalyticsProps) {
   const encounters = useEncounters();
   const settings = useSettings();
   const friends = useActiveFriends();
@@ -157,83 +159,225 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
   };
 
   return (
-    <div className="p-6 space-y-8 relative">
-      <div className="p-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 dark:border-gray-700/40">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm mb-2">🔥 Your Legendary Sex Life</h2>
-        <p className="text-gray-600 dark:text-gray-400">Deep insights into your connections</p>
-      </div>
+    <div className="p-4 space-y-6 min-h-screen relative">
+      {/* Main content */}
+      <div className="space-y-6 relative z-10">
+        <div className="p-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 dark:border-gray-700/40">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm mb-2">🔥 Your Legendary Sex Life</h2>
+          <p className="text-gray-600 dark:text-gray-400">Deep insights into your connections</p>
+        </div>
 
       {/* Personal Sex Stats Overview */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-red-500 to-pink-600 text-white p-4 rounded-lg">
-          <div className="text-2xl font-bold">{encounters.length}</div>
-          <div className="text-sm opacity-90">🍆 Total Encounters</div>
-          <div className="text-xs opacity-75 mt-1">You're clearly popular! 😏</div>
-        </div>
-        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white p-4 rounded-lg">
-          <div className="text-2xl font-bold">{friendScores.length}</div>
-          <div className="text-sm opacity-90">👑 Guys in Your List</div>
-          <div className="text-xs opacity-75 mt-1">Building an empire!</div>
-        </div>
-        <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-4 rounded-lg">
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-2xl font-bold">{averageRating.toFixed(1)}</span>
-            <StarRating rating={averageRating} size="lg" />
+      <div className="grid grid-cols-2 gap-6 mb-6">
+        <div className={`group relative p-6 rounded-2xl shadow-2xl border hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-pink-50/90 to-rose-100/90 border-pink-200/50' 
+            : 'bg-white/90 dark:bg-gray-800/90 border-gray-200/50 dark:border-gray-700/50'
+        }`}>
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-pink-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative z-10">
+            <div className={`text-3xl font-bold drop-shadow-sm ${
+              isGayMode 
+                ? 'text-red-600' 
+                : 'text-red-600 dark:text-red-400'
+            }`}>{encounters.length}</div>
+            <div className={`text-sm font-medium ${
+              isGayMode 
+                ? 'text-pink-800' 
+                : 'text-gray-700 dark:text-gray-300'
+            }`}>🍆 Total Encounters</div>
+            <div className={`text-xs mt-1 ${
+              isGayMode 
+                ? 'text-pink-600' 
+                : 'text-gray-500 dark:text-gray-400'
+            }`}>You're clearly popular! 😏</div>
           </div>
-          <div className="text-sm opacity-90">🔥 Your Average Rating</div>
-          <div className="text-xs opacity-75 mt-1">You know how to pick 'em!</div>
         </div>
-        <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white p-4 rounded-lg">
-          <div className="text-2xl font-bold">{topRatedEncounters.length}</div>
-          <div className="text-sm opacity-90 flex items-center justify-center gap-1">
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            Amazing Experiences
+        <div className={`group relative p-6 rounded-2xl shadow-2xl border hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-purple-50/90 to-indigo-100/90 border-purple-200/50' 
+            : 'bg-white/90 dark:bg-gray-800/90 border-gray-200/50 dark:border-gray-700/50'
+        }`}>
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-indigo-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative z-10">
+            <div className={`text-3xl font-bold drop-shadow-sm ${
+              isGayMode 
+                ? 'text-purple-600' 
+                : 'text-purple-600 dark:text-purple-400'
+            }`}>{friendScores.length}</div>
+            <div className={`text-sm font-medium ${
+              isGayMode 
+                ? 'text-purple-800' 
+                : 'text-gray-700 dark:text-gray-300'
+            }`}>👑 Guys in Your List</div>
+            <div className={`text-xs mt-1 ${
+              isGayMode 
+                ? 'text-purple-600' 
+                : 'text-gray-500 dark:text-gray-400'
+            }`}>Building an empire!</div>
           </div>
-          <div className="text-xs opacity-75 mt-1">4+ star encounters!</div>
+        </div>
+        <div className={`group relative p-6 rounded-2xl shadow-2xl border hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-green-50/90 to-emerald-100/90 border-green-200/50' 
+            : 'bg-white/90 dark:bg-gray-800/90 border-gray-200/50 dark:border-gray-700/50'
+        }`}>
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-emerald-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-center gap-2">
+              <span className={`text-3xl font-bold drop-shadow-sm ${
+                isGayMode 
+                  ? 'text-green-600' 
+                  : 'text-green-600 dark:text-green-400'
+              }`}>{averageRating.toFixed(1)}</span>
+              <StarRating rating={averageRating} size="lg" />
+            </div>
+            <div className={`text-sm font-medium ${
+              isGayMode 
+                ? 'text-green-800' 
+                : 'text-gray-700 dark:text-gray-300'
+            }`}>🔥 Your Average Rating</div>
+            <div className={`text-xs mt-1 ${
+              isGayMode 
+                ? 'text-green-600' 
+                : 'text-gray-500 dark:text-gray-400'
+            }`}>You know how to pick 'em!</div>
+          </div>
+        </div>
+        <div className={`group relative p-6 rounded-2xl shadow-2xl border hover:shadow-3xl hover:scale-[1.03] transition-all duration-300 overflow-hidden ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-orange-50/90 to-red-100/90 border-orange-200/50' 
+            : 'bg-white/90 dark:bg-gray-800/90 border-gray-200/50 dark:border-gray-700/50'
+        }`}>
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-red-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative z-10">
+            <div className={`text-3xl font-bold drop-shadow-sm ${
+              isGayMode 
+                ? 'text-orange-600' 
+                : 'text-orange-600 dark:text-orange-400'
+            }`}>{topRatedEncounters.length}</div>
+            <div className={`text-sm font-medium flex items-center justify-center gap-1 ${
+              isGayMode 
+                ? 'text-orange-800' 
+                : 'text-gray-700 dark:text-gray-300'
+            }`}>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              Amazing Experiences
+            </div>
+            <div className={`text-xs mt-1 ${
+              isGayMode 
+                ? 'text-orange-600' 
+                : 'text-gray-500 dark:text-gray-400'
+            }`}>4+ star encounters!</div>
+          </div>
         </div>
       </div>
 
       {/* Exciting Personal Metrics */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-pink-500">
+        <div className={`p-4 rounded-lg border-l-4 border-pink-500 ${
+          isGayMode 
+            ? 'bg-pink-50/80 border-pink-300' 
+            : 'bg-white dark:bg-gray-800'
+        }`}>
           <div className="flex items-center space-x-2">
             <span className="text-2xl">😈</span>
             <div>
-              <div className="text-lg font-bold text-pink-600">{kinkiestEncounters.length}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Kinky AF Sessions</div>
-              <div className="text-xs text-gray-500">You're adventurous!</div>
+              <div className={`text-lg font-bold ${
+                isGayMode 
+                  ? 'text-pink-700' 
+                  : 'text-pink-600'
+              }`}>{kinkiestEncounters.length}</div>
+              <div className={`text-sm ${
+                isGayMode 
+                  ? 'text-pink-800' 
+                  : 'text-gray-600 dark:text-gray-300'
+              }`}>Kinky AF Sessions</div>
+              <div className={`text-xs ${
+                isGayMode 
+                  ? 'text-pink-600' 
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}>You're adventurous!</div>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-green-500">
+        <div className={`p-4 rounded-lg border-l-4 border-green-500 ${
+          isGayMode 
+            ? 'bg-green-50/80 border-green-300' 
+            : 'bg-white dark:bg-gray-800'
+        }`}>
           <div className="flex items-center space-x-2">
             <span className="text-2xl">🔁</span>
             <div>
-              <div className="text-lg font-bold text-green-600">{repeatableGuys.length}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Want You Again</div>
-              <div className="text-xs text-gray-500">Amazing in bed!</div>
+              <div className={`text-lg font-bold ${
+                isGayMode 
+                  ? 'text-green-700' 
+                  : 'text-green-600'
+              }`}>{repeatableGuys.length}</div>
+              <div className={`text-sm ${
+                isGayMode 
+                  ? 'text-green-800' 
+                  : 'text-gray-600 dark:text-gray-300'
+              }`}>Want You Again</div>
+              <div className={`text-xs ${
+                isGayMode 
+                  ? 'text-green-600' 
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}>Amazing in bed!</div>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-blue-500">
+        <div className={`p-4 rounded-lg border-l-4 border-blue-500 ${
+          isGayMode 
+            ? 'bg-blue-50/80 border-blue-300' 
+            : 'bg-white dark:bg-gray-800'
+        }`}>
           <div className="flex items-center space-x-2">
             <span className="text-2xl">⏰</span>
             <div>
-              <div className="text-lg font-bold text-blue-600">{totalHours}h</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Total Fun Time</div>
-              <div className="text-xs text-gray-500">Avg {avgDuration}min sessions</div>
+              <div className={`text-lg font-bold ${
+                isGayMode 
+                  ? 'text-blue-700' 
+                  : 'text-blue-600'
+              }`}>{totalHours}h</div>
+              <div className={`text-sm ${
+                isGayMode 
+                  ? 'text-blue-800' 
+                  : 'text-gray-600 dark:text-gray-300'
+              }`}>Total Fun Time</div>
+              <div className={`text-xs ${
+                isGayMode 
+                  ? 'text-blue-600' 
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}>Avg {avgDuration}min sessions</div>
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-emerald-500">
+        <div className={`p-4 rounded-lg border-l-4 border-emerald-500 ${
+          isGayMode 
+            ? 'bg-emerald-50/80 border-emerald-300' 
+            : 'bg-white dark:bg-gray-800'
+        }`}>
           <div className="flex items-center space-x-2">
             <span className="text-2xl">🛡️</span>
             <div>
-              <div className="text-lg font-bold text-emerald-600">{safePercentage}%</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Safe Encounters</div>
-              <div className="text-xs text-gray-500">Smart AND sexy!</div>
+              <div className={`text-lg font-bold ${
+                isGayMode 
+                  ? 'text-emerald-700' 
+                  : 'text-emerald-600'
+              }`}>{safePercentage}%</div>
+              <div className={`text-sm ${
+                isGayMode 
+                  ? 'text-emerald-800' 
+                  : 'text-gray-600 dark:text-gray-300'
+              }`}>Safe Encounters</div>
+              <div className={`text-xs ${
+                isGayMode 
+                  ? 'text-emerald-600' 
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}>Smart AND sexy!</div>
             </div>
           </div>
         </div>
@@ -244,33 +388,85 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-3">💰 MONEY MOVES</h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-4 rounded-lg">
-              <div className="text-2xl font-bold">${totalEarned.toFixed(2)}</div>
-              <div className="text-sm opacity-90">💸 You MADE</div>
-              <div className="text-xs opacity-75 mt-1">Worth every penny! 🔥</div>
-            </div>
-            <div className="bg-gradient-to-br from-purple-500 to-pink-600 text-white p-4 rounded-lg">
-              <div className="text-2xl font-bold">${totalSpent.toFixed(2)}</div>
-              <div className="text-sm opacity-90">💳 You Invested</div>
-              <div className="text-xs opacity-75 mt-1">In good times! 😈</div>
-            </div>
-            <div className={`p-4 rounded-lg text-white ${
-              netAmount >= 0 
-                ? 'bg-gradient-to-br from-yellow-500 to-orange-600' 
-                : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+            <div className={`p-4 rounded-lg border ${
+              isGayMode 
+                ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-green-200' 
+                : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
             }`}>
-              <div className="text-2xl font-bold">${Math.abs(netAmount).toFixed(2)}</div>
-              <div className="text-sm opacity-90">
+              <div className={`text-2xl font-bold ${
+                isGayMode ? 'text-green-700' : 'text-white'
+              }`}>${totalEarned.toFixed(2)}</div>
+              <div className={`text-sm ${
+                isGayMode ? 'text-green-800' : 'text-white opacity-90'
+              }`}>💸 You MADE</div>
+              <div className={`text-xs mt-1 ${
+                isGayMode ? 'text-green-600' : 'text-white opacity-75'
+              }`}>Worth every penny! 🔥</div>
+            </div>
+            <div className={`p-4 rounded-lg border ${
+              isGayMode 
+                ? 'bg-gradient-to-br from-purple-50 to-pink-100 border-purple-200' 
+                : 'bg-gradient-to-br from-purple-500 to-pink-600 text-white'
+            }`}>
+              <div className={`text-2xl font-bold ${
+                isGayMode ? 'text-purple-700' : 'text-white'
+              }`}>${totalSpent.toFixed(2)}</div>
+              <div className={`text-sm ${
+                isGayMode ? 'text-purple-800' : 'text-white opacity-90'
+              }`}>💳 You Invested</div>
+              <div className={`text-xs mt-1 ${
+                isGayMode ? 'text-purple-600' : 'text-white opacity-75'
+              }`}>In good times! 😈</div>
+            </div>
+            <div className={`p-4 rounded-lg border ${
+              isGayMode
+                ? (netAmount >= 0 
+                    ? 'bg-gradient-to-br from-yellow-50 to-orange-100 border-yellow-200' 
+                    : 'bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200')
+                : (netAmount >= 0 
+                    ? 'bg-gradient-to-br from-yellow-500 to-orange-600 text-white' 
+                    : 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white')
+            }`}>
+              <div className={`text-2xl font-bold ${
+                isGayMode 
+                  ? (netAmount >= 0 ? 'text-yellow-700' : 'text-blue-700')
+                  : 'text-white'
+              }`}>${Math.abs(netAmount).toFixed(2)}</div>
+              <div className={`text-sm ${
+                isGayMode 
+                  ? (netAmount >= 0 ? 'text-yellow-800' : 'text-blue-800')
+                  : 'text-white opacity-90'
+              }`}>
                 {netAmount >= 0 ? '🎯 NET PROFIT' : '🛍️ INVESTMENT'}
               </div>
-              <div className="text-xs opacity-75 mt-1">
+              <div className={`text-xs mt-1 ${
+                isGayMode 
+                  ? (netAmount >= 0 ? 'text-yellow-600' : 'text-blue-600')
+                  : 'text-white opacity-75'
+              }`}>
                 {netAmount >= 0 ? "You're making bank! 💅" : "Money well spent! 🥳"}
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-yellow-500">
-              <div className="text-2xl font-bold text-yellow-600">{paidEncounters.length}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">💰 Paid Sessions</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <div className={`p-4 rounded-lg border-l-4 border-yellow-500 ${
+              isGayMode 
+                ? 'bg-yellow-50/80 border-yellow-300' 
+                : 'bg-white dark:bg-gray-800'
+            }`}>
+              <div className={`text-2xl font-bold ${
+                isGayMode 
+                  ? 'text-yellow-700' 
+                  : 'text-yellow-600'
+              }`}>{paidEncounters.length}</div>
+              <div className={`text-sm ${
+                isGayMode 
+                  ? 'text-yellow-800' 
+                  : 'text-gray-600 dark:text-gray-300'
+              }`}>💰 Paid Sessions</div>
+              <div className={`text-xs mt-1 ${
+                isGayMode 
+                  ? 'text-yellow-600' 
+                  : 'text-gray-500 dark:text-gray-400'
+              }`}>
                 {((paidEncounters.length / encounters.length) * 100).toFixed(1)}% involved money
               </div>
             </div>
@@ -383,10 +579,16 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
 
       {/* Age Distribution of Friends */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+        <h3 className={`text-lg font-semibold mb-3 flex items-center gap-2 ${
+          isGayMode ? 'text-gray-800' : 'text-gray-900 dark:text-gray-100'
+        }`}>
           👥 Age Distribution of Friends
         </h3>
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+        <div className={`rounded-lg p-4 ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-white/90 to-gray-50/90' 
+            : 'bg-white dark:bg-gray-800'
+        }`}>
           <div className="space-y-3">
             {Object.entries(ageDistribution)
               .sort(([a], [b]) => {
@@ -403,19 +605,29 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
                 
                 return (
                   <div key={ageGroup} className="flex items-center space-x-3">
-                    <div className="w-16 text-sm font-medium">{ageGroup}</div>
-                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                    <div className={`w-16 text-sm font-medium ${
+                      isGayMode ? 'text-gray-800' : 'text-gray-700 dark:text-gray-300'
+                    }`}>{ageGroup}</div>
+                    <div className={`flex-1 rounded-full h-6 relative overflow-hidden ${
+                      isGayMode ? 'bg-gray-100' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
                       <div
                         className={`${barColor} h-6 rounded-full transition-all duration-500 ease-out`}
                         style={{ width: `${Math.max(percentage, 0)}%` }}
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-xs font-medium text-white drop-shadow-sm">
+                        <span className={`text-xs font-medium drop-shadow-sm ${
+                          percentage > 15 
+                            ? 'text-white' 
+                            : (isGayMode ? 'text-gray-800' : 'text-gray-800 dark:text-gray-200')
+                        }`}>
                           {percentage > 5 ? `${percentage.toFixed(1)}%` : ''}
                         </span>
                       </div>
                     </div>
-                    <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                    <div className={`w-12 text-sm font-medium ${
+                      isGayMode ? 'text-gray-800' : 'text-gray-600 dark:text-gray-300'
+                    }`}>
                       {count}
                     </div>
                   </div>
@@ -427,10 +639,16 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
 
       {/* Duration Distribution of Encounters */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+        <h3 className={`text-lg font-semibold mb-3 flex items-center gap-2 ${
+          isGayMode ? 'text-gray-800' : 'text-gray-900 dark:text-gray-100'
+        }`}>
           ⏱️ Encounter Duration Distribution
         </h3>
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+        <div className={`rounded-lg p-4 ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-white/90 to-gray-50/90' 
+            : 'bg-white dark:bg-gray-800'
+        }`}>
           <div className="space-y-3">
             {Object.entries(durationDistribution)
               .sort(([a], [b]) => {
@@ -446,19 +664,29 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
                 
                 return (
                   <div key={duration} className="flex items-center space-x-3">
-                    <div className="w-24 text-sm font-medium">{duration}</div>
-                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                    <div className={`w-24 text-sm font-medium ${
+                      isGayMode ? 'text-gray-800' : 'text-gray-700 dark:text-gray-300'
+                    }`}>{duration}</div>
+                    <div className={`flex-1 rounded-full h-6 relative overflow-hidden ${
+                      isGayMode ? 'bg-gray-100' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
                       <div
                         className={`${barColor} h-6 rounded-full transition-all duration-500 ease-out`}
                         style={{ width: `${Math.max(percentage, 0)}%` }}
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-xs font-medium text-white drop-shadow-sm">
+                        <span className={`text-xs font-medium drop-shadow-sm ${
+                          percentage > 15 
+                            ? 'text-white' 
+                            : (isGayMode ? 'text-gray-800' : 'text-gray-800 dark:text-gray-200')
+                        }`}>
                           {percentage > 5 ? `${percentage.toFixed(1)}%` : ''}
                         </span>
                       </div>
                     </div>
-                    <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                    <div className={`w-12 text-sm font-medium ${
+                      isGayMode ? 'text-gray-800' : 'text-gray-600 dark:text-gray-300'
+                    }`}>
                       {count}
                     </div>
                   </div>
@@ -470,12 +698,20 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
 
       {/* Top 5 Countries */}
       <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+        <h3 className={`text-lg font-semibold mb-3 flex items-center gap-2 ${
+          isGayMode ? 'text-gray-800' : 'text-gray-900 dark:text-gray-100'
+        }`}>
           🌍 Top 5 Countries
         </h3>
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+        <div className={`rounded-lg p-4 ${
+          isGayMode 
+            ? 'bg-gradient-to-br from-white/90 to-gray-50/90' 
+            : 'bg-white dark:bg-gray-800'
+        }`}>
           {topCountries.length === 0 ? (
-            <div className="text-center text-gray-500 py-4">
+            <div className={`text-center py-4 ${
+              isGayMode ? 'text-gray-600' : 'text-gray-500'
+            }`}>
               No location data available
             </div>
           ) : (
@@ -487,19 +723,29 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
                 return (
                   <div key={country} className="flex items-center space-x-3">
                     <div className="w-8 text-lg">{medals[index]}</div>
-                    <div className="w-24 text-sm font-medium truncate">{country}</div>
-                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                    <div className={`w-24 text-sm font-medium truncate ${
+                      isGayMode ? 'text-gray-800' : 'text-gray-700 dark:text-gray-300'
+                    }`}>{country}</div>
+                    <div className={`flex-1 rounded-full h-6 relative overflow-hidden ${
+                      isGayMode ? 'bg-gray-100' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}>
                       <div
                         className="bg-gradient-to-r from-blue-500 to-purple-600 h-6 rounded-full transition-all duration-500 ease-out"
                         style={{ width: `${Math.max(percentage, 0)}%` }}
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-xs font-medium text-white drop-shadow-sm">
+                        <span className={`text-xs font-medium drop-shadow-sm ${
+                          percentage > 15 
+                            ? 'text-white' 
+                            : (isGayMode ? 'text-gray-800' : 'text-gray-800 dark:text-gray-200')
+                        }`}>
                           {percentage > 5 ? `${percentage.toFixed(1)}%` : ''}
                         </span>
                       </div>
                     </div>
-                    <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                    <div className={`w-12 text-sm font-medium ${
+                      isGayMode ? 'text-gray-800' : 'text-gray-600 dark:text-gray-300'
+                    }`}>
                       {count}
                     </div>
                   </div>
@@ -666,6 +912,7 @@ export default function Analytics({ onNavigate }: AnalyticsProps) {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }
