@@ -146,6 +146,7 @@ export interface Settings {
   theme: 'light' | 'dark' | 'system';
   notificationsEnabled: boolean;
   reminderFrequency: 'daily' | 'weekly' | 'none';
+  enableOnlineGeocoding?: boolean;
 }
 
 // Final Activities List - Hardcoded, No Changes Allowed
@@ -327,7 +328,8 @@ class EncounterLedgerDB extends Dexie {
           defaultRating: 4,
           theme: 'system',
           notificationsEnabled: false,
-          reminderFrequency: 'none'
+          reminderFrequency: 'none',
+          enableOnlineGeocoding: false
         });
       }
     });
