@@ -321,7 +321,7 @@ jobs:
         npm install eslint-plugin-security --save-dev || echo "Security plugin install failed"
         
         # Run security analysis with CommonJS config
-        npx eslint src/ --config eslint.security.config.js --format json > eslint-security.json || echo "ESLint security scan completed"
+        npx eslint src/ --config eslint.security.config.cjs --format json > eslint-security.json || echo "ESLint security scan completed"
 
     - name: 📦 NPM Security Audit
       run: |
