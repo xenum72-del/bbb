@@ -296,7 +296,7 @@ jobs:
     - name: 🔍 ESLint Security Analysis
       run: |
         # Create security-focused ESLint config as CommonJS file
-        cat > eslint.security.config.js << 'EOF'
+        cat > eslint.security.config.cjs << 'EOF'
         module.exports = {
           extends: ["eslint:recommended", "@typescript-eslint/recommended"],
           plugins: ["security"],
