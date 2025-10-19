@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AzureStorageService, type AzureConfig, type MigrationProgress } from '../utils/azureStorage';
 import { shouldEncryptBackup } from '../utils/encryption';
+import { storePinForAutoBackups, hasPinForAutoBackups, getPinExpiryTime, clearStoredPin } from '../utils/pinManager';
 
 interface AzureBackupProps {
   isOpen: boolean;
@@ -131,6 +132,27 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
           throw new Error('PIN required for encrypted Azure backup. Please provide PIN.');
         }
         pin = userPin;
+        
+        // Ask if user wants to store PIN for auto-backups (if auto-backup is enabled)
+        if (config.autoBackupEnabled && !hasPinForAutoBackups()) {
+          const storeForAuto = confirm(
+            'Would you like to store your PIN securely in memory for automatic backups?\n\n' +
+            '• PIN will be encrypted and stored only in memory\n' +
+            '• Automatically expires after 30 minutes of inactivity\n' +
+            '• Cleared when you close the browser\n' +
+            '• Enables encrypted automatic backups\n\n' +
+            'Choose "OK" to store PIN, or "Cancel" to skip (auto-backups will be disabled)'
+          );
+          
+          if (storeForAuto) {
+            try {
+              await storePinForAutoBackups(pin);
+              console.log('🔒 PIN stored securely for auto-backups');
+            } catch (error) {
+              console.warn('Failed to store PIN for auto-backups:', error);
+            }
+          }
+        }
       }
       
       const backupId = await service.createBackup(
@@ -475,6 +497,39 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
                           <strong>ℹ️ Note:</strong> Auto backups are data-only (no photos) for faster uploads. 
                           Manual backups from below still include photos if you choose.
                         </div>
+                        
+                        {/* PIN Status for Auto-Backups */}
+                        {shouldEncryptBackup() && (
+                          <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-600">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium text-blue-900 dark:text-blue-100">
+                                  🔒 Auto-Backup Encryption Status
+                                </div>
+                                <div className="text-xs text-blue-700 dark:text-blue-300">
+                                  {hasPinForAutoBackups() 
+                                    ? `PIN stored securely (expires in ${getPinExpiryTime()} min)`
+                                    : 'No PIN stored - auto-backups will be skipped for security'
+                                  }
+                                </div>
+                              </div>
+                              {hasPinForAutoBackups() && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm('Clear stored PIN? Auto-backups will be disabled until next manual backup.')) {
+                                      clearStoredPin();
+                                      // Force re-render by updating a state
+                                      setConfig({...config});
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-900/40"
+                                >
+                                  Clear PIN
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

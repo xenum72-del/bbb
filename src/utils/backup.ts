@@ -1,5 +1,6 @@
 import { db } from '../db/schema';
 import { prepareBackupForExport, extractBackupFromExport, shouldEncryptBackup, type EncryptedBackup } from './encryption';
+import { getPinForAutoBackups } from './pinManager';
 
 import type { Friend, Encounter, InteractionType, Settings } from '../db/schema';
 
@@ -317,9 +318,27 @@ export async function triggerAutoAzureBackup(): Promise<void> {
     // Create data-only backup
     const backupData = await createBackup(false); // false = no photos
     
-    // For automatic backups, we skip encryption since we can't prompt for PIN
-    // Manual Azure backups through the UI will handle encryption properly
-    const uploadData = JSON.stringify(backupData, null, 2);
+    // Check if encryption is needed and if we have a stored PIN
+    const needsEncryption = shouldEncryptBackup();
+    let uploadData: string;
+    
+    if (needsEncryption) {
+      console.log('🔒 Auto-backup requires encryption, checking for stored PIN...');
+      const storedPin = await getPinForAutoBackups();
+      
+      if (storedPin) {
+        console.log('✅ Found stored PIN, creating encrypted auto-backup');
+        const encryptedBackup = await prepareBackupForExport(backupData, storedPin);
+        uploadData = JSON.stringify(encryptedBackup, null, 2);
+      } else {
+        console.log('❌ No stored PIN available, skipping auto-backup for security');
+        console.log('💡 Manual backup through UI will prompt for PIN and can also store it for future auto-backups');
+        return; // Skip auto-backup if encryption is required but no PIN is stored
+      }
+    } else {
+      console.log('📝 No encryption required, creating plain auto-backup');
+      uploadData = JSON.stringify(backupData, null, 2);
+    }
     
     // Upload to Azure (async, non-blocking)
     await autoService.uploadBlob(backupId, uploadData);
