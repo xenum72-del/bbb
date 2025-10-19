@@ -114,23 +114,33 @@ The Load Down implements **military-grade security** with multiple layers of pro
 
 ---
 
-## 🔒 Data Encryption
+## 🔒 Data Encryption & Backup Security
 
-### Export Encryption
+### Automatic Backup Encryption
 
-#### AES-256 Encryption
-- **Algorithm**: Advanced Encryption Standard with 256-bit keys
-- **Key Generation**: Cryptographically secure random keys
-- **Standard Compliance**: FIPS 140-2 certified encryption
-- **No Backdoors**: Pure cryptographic implementation
+#### PIN-Triggered Encryption
+```
+Activation: Automatic when PIN protection is enabled
+Coverage: ALL backup types (local, Azure, manual, automatic)
+Algorithm: AES-256-GCM with authenticated encryption
+Key Derivation: PBKDF2 with 100,000 iterations
+Security Level: Military-grade encryption standards
+```
 
-#### Encrypted Export Process
-1. **Data Collection**: Gather all user data for export
-2. **Compression**: Compress data for efficiency
-3. **Key Generation**: Generate random 256-bit encryption key
-4. **Encryption**: Encrypt compressed data with AES-256
-5. **Key Derivation**: Derive key from user password
-6. **File Creation**: Create encrypted export file
+#### How It Works
+1. **PIN Detection**: System checks if PIN protection is active
+2. **Salt Generation**: Creates unique 256-bit cryptographic salt
+3. **Key Derivation**: PBKDF2 transforms PIN + salt into 256-bit AES key
+4. **IV Generation**: Random 96-bit initialization vector per backup
+5. **Encryption**: AES-256-GCM encrypts data with authentication
+6. **Secure Storage**: Encrypted backup with embedded crypto metadata
+
+#### All Backups Protected
+- **✅ Local JSON Exports**: Encrypted with PIN when protection enabled
+- **✅ Azure Cloud Backups**: Client-side encryption before upload
+- **✅ Manual Backups**: PIN prompt for encryption confirmation
+- **✅ Automatic Backups**: Seamless encryption with configured PIN
+- **✅ Photo Backups**: Images encrypted within backup data
 
 ### Local Data Security
 

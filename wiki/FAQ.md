@@ -70,9 +70,11 @@ See the complete [Installation Guide](Installation) for detailed steps.
 ### Q: How do I backup my data?
 **A**: Multiple backup options available:
 - **Azure Cloud Backup** (Recommended): Enterprise-grade cloud storage
-- **JSON Export**: Local file export to iCloud Drive/Files app
-- **Manual Export**: Download JSON file to computer
+- **Local JSON Export**: Download backup file to device
+- **Manual Export**: Export specific data subsets
 - **Automatic Backup**: Optional auto-backup to Azure
+
+**🔒 Encryption Note**: When PIN protection is enabled, ALL backups are automatically encrypted with AES-256-GCM encryption using your PIN.
 
 See [Backup & Export Guide](Backup-Export) for complete instructions.
 
@@ -185,11 +187,21 @@ You can also create custom interaction types with your own icons and names.
 - **No In-App Purchases**: All features included
 - **No Hidden Costs**: Absolutely no charges ever
 
+### Q: Are my backups encrypted?
+**A**: YES! When PIN protection is enabled, ALL backups are automatically encrypted:
+- **PIN-Based Encryption**: AES-256-GCM military-grade encryption
+- **Local JSON Exports**: Encrypted on your device before saving
+- **Azure Cloud Backups**: Client-side encryption before upload 
+- **PBKDF2 Security**: 100,000 iterations protect against brute-force attacks
+- **Zero Knowledge**: Only you can decrypt backups with your PIN
+
+**If no PIN is set**: Backups are unencrypted but still protected by device/Azure security.
+
 ### Q: Are there any costs for backups?
 **A**: Backup costs depend on method:
-- **JSON Export**: Completely free (local files)
+- **Local JSON Export**: Completely free
 - **Azure Backup**: ~$0.10/month for typical usage
-- **iCloud Storage**: Uses your existing iCloud storage
+- **iCloud**: Uses your iCloud storage quota
 - **No Backup**: Free but risky (no data protection)
 
 ### Q: Why do you offer this for free?

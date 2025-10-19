@@ -270,15 +270,21 @@ Size: 2.3 MB
 
 ### Data Encryption
 
-#### In Transit
-- **HTTPS Only**: All communication encrypted with TLS 1.2+
-- **Certificate Validation**: Verifies Microsoft Azure certificates
-- **No Plaintext**: Data never transmitted unencrypted
+#### Client-Side Encryption (When PIN Enabled)
+- **PIN-Triggered**: All backups automatically encrypted when PIN protection configured
+- **AES-256-GCM**: Military-grade authenticated encryption on your device
+- **PBKDF2 Keys**: 100,000 iterations derive encryption keys from your PIN
+- **Zero Knowledge**: Azure never sees your unencrypted data
 
-#### At Rest
-- **AES-256**: Microsoft Azure encrypts all stored data
-- **Key Management**: Microsoft manages encryption keys
-- **Compliance**: Meets enterprise security standards
+#### Network Security
+- **HTTPS Only**: All uploads protected with TLS 1.3+ encryption
+- **Certificate Validation**: Verifies Microsoft Azure certificates  
+- **Double Protection**: Your encryption + Azure's transport security
+
+#### Azure Storage Security
+- **Server-Side Encryption**: Microsoft encrypts stored data with AES-256
+- **Key Management**: Microsoft handles infrastructure encryption keys
+- **Your Encryption**: Your PIN-based encryption provides additional protection layer
 
 ### Access Control
 
@@ -298,7 +304,8 @@ Size: 2.3 MB
 
 #### What We Store
 - **Your Data Only**: Only the data you explicitly backup
-- **Encrypted Format**: Data stored in encrypted JSON format
+- **Encrypted Format**: Data encrypted with your PIN before upload (if PIN enabled)
+- **Metadata Only**: Salt, IV, and encryption metadata (not sensitive)
 - **No Analytics**: No usage tracking or analytics on backup data
 - **No Sharing**: Zero sharing with third parties
 
