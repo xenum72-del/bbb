@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-10-19T21:22:10.795Z",
+  "timestamp": "2025-10-19T21:33:37.120Z",
   "summary": {
     "testsCompleted": 5,
     "overallSafety": {
@@ -23,7 +23,7 @@
   },
   "performance": {
     "loadTime": 0,
-    "domContentLoaded": 0.09999999997671694,
+    "domContentLoaded": 0,
     "firstPaint": 288
   },
   "accessibility": {
