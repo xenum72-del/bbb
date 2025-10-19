@@ -311,7 +311,7 @@ class EncounterLedgerDB extends Dexie {
       if (existingCount === 0) {
         await this.interactionTypes.bulkAdd(GAY_ACTIVITIES.map(activity => ({
           ...activity,
-          isDefault: true
+          isDefault: false // No special default types - all types are equal
         })));
       }
 

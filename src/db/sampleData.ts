@@ -200,10 +200,14 @@ function generateRealisticFriend(): Omit<Friend, 'id' | 'createdAt' | 'updatedAt
   };
 }
 
-// Generate realistic encounter data
+// Generate realistic encounter data using ONLY database IDs
 async function generateRealisticEncounter(friendIds: number[]): Promise<Omit<Encounter, 'id' | 'createdAt' | 'updatedAt'>> {
-  // Get all available activities from database
+  // Get all available activities from database - NO HARDCODED NAMES!
   const availableActivities = await db.interactionTypes.toArray();
+  
+  if (availableActivities.length === 0) {
+    throw new Error('No interaction types available - cannot generate encounters');
+  }
   
   // Duration between 15 and 90 minutes as requested
   const duration = 15 + Math.floor(Math.random() * 76);
@@ -215,108 +219,68 @@ async function generateRealisticEncounter(friendIds: number[]): Promise<Omit<Enc
   else if (ratingRandom < 0.4) rating = 4; // 30% good  
   else rating = 5; // 60% amazing (ensures average > 4)
   
-  // Very few paid encounters, mostly for massage as requested
-  const isPaid = Math.random() < SAMPLE_CONFIG.PAID_ENCOUNTER_RATE;
-  let paymentType: 'received' | 'given' | undefined;
-  let amountAsked: number | undefined;
-  let amountGiven: number | undefined;
-  let paymentMethod: string | undefined;
-  let paymentNotes: string | undefined;
+  // Use ONLY database IDs - randomly select from available activities
+  const primaryActivity = availableActivities[Math.floor(Math.random() * availableActivities.length)];
   
-  if (isPaid) {
-    paymentType = 'received'; // Always receiving payment
-    amountAsked = 80 + Math.floor(Math.random() * 120); // $80-200 for massage
-    amountGiven = amountAsked - Math.floor(Math.random() * 20); // Usually get close to asking price
-    paymentMethod = ['cash', 'venmo', 'cashapp'][Math.floor(Math.random() * 3)];
-    paymentNotes = 'Professional massage with happy ending';
-  }
+  // Add 1-3 activities per encounter using only available IDs
+  const numActivities = 1 + Math.floor(Math.random() * Math.min(3, availableActivities.length));
+  const activitiesPerformed: number[] = [primaryActivity.id!];
   
-  // Select realistic activities - ensure IDs match!
-  const commonActivityNames = [
-    'Oral (Giving)', 'Oral (Receiving)', 'Handjob (Giving)', 'Handjob (Receiving)',
-    'Kissing/Making Out', 'Body Contact/Massage', 'Mutual Masturbation'
-  ];
-  
-  if (isPaid) {
-    // For paid encounters, focus on massage-related activities
-    const massageActivities = availableActivities.filter(a => 
-      a.name.includes('Massage') || a.name === 'Handjob (Receiving)' || a.name === 'Body Contact/Massage'
-    );
-    const selectedActivity = massageActivities.length > 0 ? 
-      massageActivities[Math.floor(Math.random() * massageActivities.length)] :
-      availableActivities[0];
-    
-    return {
-      date: new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000), // Last 6 months
-      rating,
-      durationMinutes: duration,
-      participants: [friendIds[Math.floor(Math.random() * friendIds.length)]],
-      isAnonymous: false,
-      typeId: selectedActivity.id!,
-      activitiesPerformed: [selectedActivity.id!],
-      beneficiary: 'me',
-      location: REALISTIC_LOCATIONS.centralEurope.concat(REALISTIC_LOCATIONS.india, REALISTIC_LOCATIONS.losAngeles)[Math.floor(Math.random() * 23)],
-      notes: `Professional massage session. ${paymentNotes}`,
-      wouldRepeat: rating >= 4,
-      chemistry: rating,
-      isPaid,
-      paymentType,
-      amountAsked,
-      amountGiven,
-      currency: 'USD',
-      paymentMethod: paymentMethod as 'cash' | 'venmo' | 'cashapp' | 'paypal',
-      paymentNotes,
-      condomUsed: false,
-      exchangedContacts: true,
-      plannedMeetAgain: rating >= 4
-    };
-  } else {
-    // Regular encounters
-    const activityNames = commonActivityNames.concat(['Anal (Topping)', 'Anal (Bottoming)', 'Rimming (Giving)', 'Rimming (Receiving)']);
-    const selectedActivityName = activityNames[Math.floor(Math.random() * activityNames.length)];
-    const selectedActivity = availableActivities.find(a => a.name === selectedActivityName) || availableActivities[0];
-    
-    // Add 1-3 activities per encounter
-    const numActivities = 1 + Math.floor(Math.random() * 3);
-    const activitiesPerformed = [selectedActivity.id!];
-    
-    for (let i = 1; i < numActivities; i++) {
-      const additionalActivity = availableActivities[Math.floor(Math.random() * availableActivities.length)];
-      if (!activitiesPerformed.includes(additionalActivity.id!)) {
-        activitiesPerformed.push(additionalActivity.id!);
-      }
+  // Add additional random activities
+  for (let i = 1; i < numActivities; i++) {
+    const additionalActivity = availableActivities[Math.floor(Math.random() * availableActivities.length)];
+    if (!activitiesPerformed.includes(additionalActivity.id!)) {
+      activitiesPerformed.push(additionalActivity.id!);
     }
-    
-    return {
-      date: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000), // Last year
-      rating,
-      durationMinutes: duration,
-      participants: [friendIds[Math.floor(Math.random() * friendIds.length)]],
-      isAnonymous: Math.random() < 0.1, // 10% anonymous
-      typeId: selectedActivity.id!,
-      activitiesPerformed,
-      beneficiary: ['me', 'friend', 'both'][Math.floor(Math.random() * 3)] as 'me' | 'friend' | 'both',
-      location: REALISTIC_LOCATIONS.centralEurope.concat(REALISTIC_LOCATIONS.india, REALISTIC_LOCATIONS.losAngeles)[Math.floor(Math.random() * 23)],
-      notes: [
-        'Amazing chemistry and great conversation.',
-        'Really enjoyed our time together.',
-        'Perfect evening, would definitely repeat.',
-        'Great connection and lots of fun.',
-        'Exceeded expectations, wonderful experience.',
-        'Natural chemistry and comfortable atmosphere.',
-        'Memorable encounter, looking forward to next time.',
-        'Relaxed and enjoyable, exactly what I needed.',
-        'Fantastic time, we really clicked.',
-        'Beautiful experience with genuine connection.'
-      ][Math.floor(Math.random() * 10)],
-      wouldRepeat: rating >= 4,
-      chemistry: rating,
-      isPaid: false,
-      condomUsed: Math.random() > 0.3, // 70% use protection
-      exchangedContacts: Math.random() > 0.2,
-      plannedMeetAgain: rating >= 4 && Math.random() > 0.3
-    };
   }
+  
+  // Very few paid encounters
+  const isPaid = Math.random() < SAMPLE_CONFIG.PAID_ENCOUNTER_RATE;
+  
+  // Build encounter object
+  const encounter: Omit<Encounter, 'id' | 'createdAt' | 'updatedAt'> = {
+    date: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
+    rating,
+    durationMinutes: duration,
+    participants: [friendIds[Math.floor(Math.random() * friendIds.length)]],
+    isAnonymous: Math.random() < 0.1, // 10% anonymous
+    typeId: primaryActivity.id!,
+    activitiesPerformed,
+    beneficiary: ['me', 'friend', 'both'][Math.floor(Math.random() * 3)] as 'me' | 'friend' | 'both',
+    location: REALISTIC_LOCATIONS.centralEurope.concat(REALISTIC_LOCATIONS.india, REALISTIC_LOCATIONS.losAngeles)[Math.floor(Math.random() * 23)],
+    notes: [
+      'Amazing chemistry and great conversation.',
+      'Really enjoyed our time together.',
+      'Perfect evening, would definitely repeat.',
+      'Great connection and lots of fun.',
+      'Exceeded expectations, wonderful experience.',
+      'Natural chemistry and comfortable atmosphere.',
+      'Memorable encounter, looking forward to next time.',
+      'Relaxed and enjoyable, exactly what I needed.',
+      'Fantastic time, we really clicked.',
+      'Beautiful experience with genuine connection.'
+    ][Math.floor(Math.random() * 10)],
+    wouldRepeat: rating >= 4,
+    chemistry: rating,
+    isPaid: false,
+    condomUsed: Math.random() > 0.3, // 70% use protection
+    exchangedContacts: Math.random() > 0.2,
+    plannedMeetAgain: rating >= 4 && Math.random() > 0.3
+  };
+  
+  // Add payment data if paid
+  if (isPaid) {
+    encounter.isPaid = true;
+    encounter.paymentType = 'received';
+    encounter.amountAsked = 80 + Math.floor(Math.random() * 120);
+    encounter.amountGiven = encounter.amountAsked - Math.floor(Math.random() * 20);
+    encounter.currency = 'USD';
+    encounter.paymentMethod = ['cash', 'venmo', 'cashapp'][Math.floor(Math.random() * 3)] as 'cash' | 'venmo' | 'cashapp' | 'paypal';
+    encounter.paymentNotes = 'Professional massage with happy ending';
+    encounter.notes = `Professional massage session. ${encounter.paymentNotes}`;
+  }
+  
+  return encounter;
 }
 
 // Main function to generate all sample data
@@ -374,6 +338,94 @@ export async function generateRealisticSampleData(): Promise<void> {
     
   } catch (error) {
     console.error('❌ Error generating sample data:', error);
+    throw error;
+  }
+}
+
+// Function to update existing sample data when interaction types change
+export async function updateSampleDataForTypeChanges(deletedTypeId: number, replacementTypeId: number): Promise<void> {
+  console.log(`🔄 Updating sample data: replacing type ${deletedTypeId} with ${replacementTypeId}`);
+  
+  try {
+    // Update encounters that used the deleted type as their main type
+    const encountersToUpdate = await db.encounters.where('typeId').equals(deletedTypeId).toArray();
+    
+    for (const encounter of encountersToUpdate) {
+      await db.encounters.update(encounter.id!, {
+        typeId: replacementTypeId
+      });
+    }
+    
+    // Update encounters that included the deleted type in their activities
+    const allEncounters = await db.encounters.toArray();
+    
+    for (const encounter of allEncounters) {
+      if (encounter.activitiesPerformed?.includes(deletedTypeId)) {
+        const updatedActivities = encounter.activitiesPerformed.map(id => 
+          id === deletedTypeId ? replacementTypeId : id
+        );
+        
+        await db.encounters.update(encounter.id!, {
+          activitiesPerformed: updatedActivities
+        });
+      }
+    }
+    
+    console.log(`✅ Updated ${encountersToUpdate.length} encounters with new type mapping`);
+    
+  } catch (error) {
+    console.error('❌ Error updating sample data for type changes:', error);
+    throw error;
+  }
+}
+
+// Function to validate and fix any orphaned references in sample data
+export async function validateSampleDataIntegrity(): Promise<void> {
+  console.log('🔍 Validating sample data integrity...');
+  
+  try {
+    const availableTypeIds = new Set((await db.interactionTypes.toArray()).map(t => t.id!));
+    const allEncounters = await db.encounters.toArray();
+    
+    let fixedCount = 0;
+    
+    for (const encounter of allEncounters) {
+      let needsUpdate = false;
+      const updates: Partial<Encounter> = {};
+      
+      // Check main type ID
+      if (!availableTypeIds.has(encounter.typeId)) {
+        const firstAvailableType = await db.interactionTypes.orderBy('id').first();
+        if (firstAvailableType) {
+          updates.typeId = firstAvailableType.id!;
+          needsUpdate = true;
+        }
+      }
+      
+      // Check activities performed
+      if (encounter.activitiesPerformed) {
+        const validActivities = encounter.activitiesPerformed.filter(id => availableTypeIds.has(id));
+        if (validActivities.length !== encounter.activitiesPerformed.length) {
+          // If no valid activities remain, use the main type
+          updates.activitiesPerformed = validActivities.length > 0 ? validActivities : [updates.typeId || encounter.typeId];
+          needsUpdate = true;
+        }
+      }
+      
+      if (needsUpdate) {
+        await db.encounters.update(encounter.id!, updates);
+        fixedCount++;
+      }
+    }
+    
+    if (fixedCount > 0) {
+      console.log(`🔧 Fixed ${fixedCount} encounters with orphaned type references`);
+    } else {
+      console.log('✅ All sample data references are valid');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error validating sample data integrity:', error);
     throw error;
   }
 }

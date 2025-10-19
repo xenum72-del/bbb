@@ -421,7 +421,7 @@ async function generateTestEncounter(friendIds: number[], index: number): Promis
   }
   
   const primaryActivityRecord = availableActivities.find(a => a.name === primaryActivity);
-  const primaryActivityId = primaryActivityRecord?.id || 1; // Fallback to 1 if not found
+  const primaryActivityId = primaryActivityRecord?.id || availableActivities[0]?.id || 1; // Use first available or fallback
   
   // Variable number of activities - heavily randomized to reduce uniformity
   const activityChance = Math.random();
@@ -446,12 +446,11 @@ async function generateTestEncounter(friendIds: number[], index: number): Promis
     const activityPool = availableActivities.filter(a => !usedActivities.has(a.name));
     if (activityPool.length === 0) break;
     
-    const selectedActivity = activityPool[Math.floor(Math.random() * activityPool.length)].name;
-    const activityRecord = availableActivities.find(a => a.name === selectedActivity);
-    const activityId = activityRecord?.id || 1; // Fallback to 1 if not found
+    const selectedActivityRecord = activityPool[Math.floor(Math.random() * activityPool.length)];
+    const activityId = selectedActivityRecord?.id || availableActivities[0]?.id || 1; // Use actual ID
     
     activitiesPerformed.push(activityId);
-    usedActivities.add(selectedActivity);
+    usedActivities.add(selectedActivityRecord.name);
   }
   
   // Random participants (1-3 friends)
@@ -1101,7 +1100,12 @@ export async function createTestDataOnly(): Promise<void> {
 (window as any).runDataIntegrityTests = runDataIntegrityTests;
 (window as any).createTestDataOnly = createTestDataOnly;
 
+// Add sample data management functions to console
+import { validateSampleDataIntegrity } from '../db/sampleData';
+(window as any).validateSampleDataIntegrity = validateSampleDataIntegrity;
+
 console.log('🧪 Data integrity tests loaded!');
 console.log('• runDataIntegrityTests() - Full validation (cleans up)');
 console.log('• runDataIntegrityTests(true) - Full validation (keeps data)');
 console.log('• createTestDataOnly() - Just create test data');
+console.log('• validateSampleDataIntegrity() - Fix orphaned sample data references');
