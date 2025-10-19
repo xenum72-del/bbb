@@ -125,21 +125,39 @@ export default function Analytics({ onNavigate, isDarkMode: _, isGayMode }: Anal
     .sort(([,a], [,b]) => b - a)
     .slice(0, 5);
 
-  // Top 10 activities
-  const activityStats = encounters.reduce((acc, encounter) => {
-    if (encounter.activitiesPerformed) {
-      encounter.activitiesPerformed.forEach(activityId => {
-        const activity = interactionTypes.find(type => type.id === activityId);
-        if (activity) {
-          acc[activity.name] = (acc[activity.name] || 0) + 1;
-        }
-      });
+  // Comprehensive activity analytics - match InteractionTypeManager logic exactly
+  const activityStats: Record<string, { total: number; asMain: number; asSecondary: number }> = {};
+  
+  interactionTypes.forEach(type => {
+    if (!type.id) return;
+    
+    // Count encounters where this is the main type
+    const asMainCount = encounters.filter(e => e.typeId === type.id).length;
+    
+    // Count encounters where this appears in activitiesPerformed
+    const inActivitiesCount = encounters.filter(e => 
+      e.activitiesPerformed?.includes(type.id!)
+    ).length;
+    
+    // Calculate secondary: appears in activities but NOT as main type
+    const asSecondaryCount = encounters.filter(e => 
+      e.activitiesPerformed?.includes(type.id!) && e.typeId !== type.id
+    ).length;
+    
+    // Total appearances matches InteractionTypeManager: main + activities (with potential overlap)
+    const totalAppearances = asMainCount + inActivitiesCount;
+    
+    if (totalAppearances > 0) {
+      activityStats[type.name] = {
+        total: totalAppearances,
+        asMain: asMainCount,
+        asSecondary: asSecondaryCount
+      };
     }
-    return acc;
-  }, {} as Record<string, number>);
+  });
 
   const topActivities = Object.entries(activityStats)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([,a], [,b]) => b.total - a.total)
     .slice(0, 10);
 
 
@@ -767,30 +785,46 @@ export default function Analytics({ onNavigate, isDarkMode: _, isGayMode }: Anal
               No activity data available
             </div>
           ) : (
-            <div className="space-y-3">
-              {topActivities.map(([activity, count], index) => {
+            <div className="space-y-4">
+              {topActivities.map(([activity, stats], index) => {
                 const activityType = interactionTypes.find(type => type.name === activity);
-                const percentage = encounters.length > 0 ? (count / encounters.length) * 100 : 0;
+                const percentage = encounters.length > 0 ? (stats.total / encounters.length) * 100 : 0;
                 
                 return (
-                  <div key={activity} className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" 
-                         style={{ backgroundColor: activityType?.color || '#6B7280', color: 'white' }}>
-                      #{index + 1}
+                  <div key={activity} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" 
+                           style={{ backgroundColor: activityType?.color || '#6B7280', color: 'white' }}>
+                        #{index + 1}
+                      </div>
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: activityType?.color || '#6B7280' }}></div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">{activity}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Total: {stats.total} times
+                        </div>
+                      </div>
+                      <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-4 relative overflow-hidden">
+                        <div
+                          className="h-4 rounded-full transition-all duration-500 ease-out"
+                          style={{ 
+                            width: `${Math.max(percentage, 2)}%`,
+                            backgroundColor: activityType?.color || '#6B7280'
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: activityType?.color || '#6B7280' }}></div>
-                    <div className="flex-1 text-sm font-medium">{activity}</div>
-                    <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-4 relative overflow-hidden">
-                      <div
-                        className="h-4 rounded-full transition-all duration-500 ease-out"
-                        style={{ 
-                          width: `${Math.max(percentage, 0)}%`,
-                          backgroundColor: activityType?.color || '#6B7280'
-                        }}
-                      />
-                    </div>
-                    <div className="w-12 text-sm text-gray-600 dark:text-gray-300 font-medium text-right">
-                      {count}
+                    
+                    {/* Breakdown: Main vs Secondary */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center justify-between bg-white dark:bg-gray-600 rounded px-2 py-1">
+                        <span className="text-gray-600 dark:text-gray-300">As Main:</span>
+                        <span className="font-medium text-blue-600 dark:text-blue-400">{stats.asMain}</span>
+                      </div>
+                      <div className="flex items-center justify-between bg-white dark:bg-gray-600 rounded px-2 py-1">
+                        <span className="text-gray-600 dark:text-gray-300">As Secondary:</span>
+                        <span className="font-medium text-purple-600 dark:text-purple-400">{stats.asSecondary}</span>
+                      </div>
                     </div>
                   </div>
                 );
