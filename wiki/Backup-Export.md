@@ -25,12 +25,14 @@ The Azure Backup feature provides professional-level data protection using Micro
 
 #### **✨ Azure Backup Features**
 ```
-🔐 AES-256 Encryption: Military-grade data protection
+🔐 AES-256 Encryption: Military-grade data protection (PIN-based)
 📅 Date-Based Backups: Select specific backup dates to restore
 🗂️ Automatic Organization: Backups organized by date and time
 ⚡ Fast Upload/Download: Optimized for mobile networks
 🔄 Automatic Cleanup: Configurable retention policies
 📊 Progress Tracking: Real-time backup/restore progress
+🔒 Smart Encryption: Automatic encryption when PIN protection enabled
+📁 Backup Naming: Clear filenames with encryption status indication
 ```
 
 ### 🚀 Setting Up Azure Backup
@@ -74,9 +76,10 @@ Azure Portal Steps:
 1. Open Azure Backup interface
 2. Ensure connection status shows "Connected"
 3. Tap "Create Backup"
-4. Confirm backup creation
-5. Monitor progress bar (typically 30-60 seconds)
-6. Backup appears in backup list with timestamp
+4. Enter PIN if encryption is enabled (automatic prompt)
+5. Confirm backup creation
+6. Monitor progress bar (typically 30-60 seconds)
+7. Backup appears in backup list with timestamp and encryption status
 ```
 
 #### **Backup Contents**
@@ -89,8 +92,11 @@ Complete Data Export:
 ✅ Scoring algorithm weights
 ✅ App preferences and configurations
 
-Encrypted & Compressed:
-✅ AES-256 encryption applied before upload
+Security Features:
+✅ AES-256-GCM encryption (when PIN protection enabled)
+✅ Client-side encryption before upload
+✅ PBKDF2 key derivation with 100,000 iterations
+✅ Unique salt and IV per backup
 ✅ Data compressed to minimize upload time
 ✅ File integrity verification included
 ```
@@ -113,11 +119,12 @@ Settings → Azure Backup → Enable Auto Backup toggle
 #### **Restoration Process**
 ```
 1. Open Azure Backup interface
-2. Select backup from list (shows date/time)
+2. Select backup from list (shows date/time and encryption status)
 3. Tap "Restore" button
-4. CONFIRM: This replaces ALL current data
-5. Monitor progress (typically 60-120 seconds)
-6. App refresh required after restoration
+4. Enter PIN if backup is encrypted (automatic prompt)
+5. CONFIRM: This replaces ALL current data
+6. Monitor progress (typically 60-120 seconds)
+7. App refresh required after restoration
 ```
 
 #### **⚠️ Important Notes**
@@ -172,16 +179,18 @@ For complete data ownership and offline backup, you can export all your data as 
 iPhone/iPad Steps:
 1. Settings → Data Management
 2. Tap "Export Data" (or "Share Data" on iOS)
-3. Choose export location:
+3. Enter PIN if encryption is enabled (automatic prompt)
+4. Choose export location:
    - Files App → iCloud Drive (recommended)
    - Files App → On My iPhone
    - Share to other apps (AirDrop, email, etc.)
 
 File Details:
 📄 Format: JSON (JavaScript Object Notation)
-📅 Filename: the-load-down-backup-YYYY-MM-DD.json
+📅 Filename: the-load-down-backup-YYYY-MM-DD-[encrypted].json
 💾 Size: Typically 50KB - 5MB depending on data volume
-🔧 Readable: Can be opened in any text editor
+🔧 Readable: Plain JSON or encrypted format (based on PIN settings)
+🔒 Security: Encrypted with AES-256-GCM when PIN protection enabled
 ```
 
 #### **Export Contents**
@@ -209,11 +218,12 @@ Metadata Included:
 3. Select JSON backup file from:
    - Files App (iCloud Drive, local storage)
    - Other apps via Share Sheet
-4. Choose import mode:
+4. Enter PIN if backup is encrypted (automatic detection)
+5. Choose import mode:
    - Replace: Delete all data, import backup
    - Merge: Add backup data to existing data
-5. Confirm operation and wait for completion
-6. App refresh required after import
+6. Confirm operation and wait for completion
+7. App refresh required after import
 ```
 
 #### **Import Modes**
@@ -255,7 +265,7 @@ Error Handling:
 | Feature | Azure Backup | Local JSON Export |
 |---------|--------------|-------------------|
 | **Storage Location** | Microsoft Cloud | Your Device/iCloud |
-| **Encryption** | ✅ AES-256 | ❌ Plain text |
+| **Encryption** | ✅ AES-256 (PIN-based) | ✅ AES-256 (PIN-based) |
 | **Automatic Backups** | ✅ Configurable | ❌ Manual only |
 | **Version Management** | ✅ Multiple backups | ❌ Single file |
 | **Cross-Device Access** | ✅ From anywhere | ❌ Device-specific |
@@ -264,6 +274,7 @@ Error Handling:
 | **Data Portability** | 🟡 Requires Azure | ✅ Universal JSON |
 | **Privacy** | 🟡 Microsoft servers | ✅ Your control |
 | **Cost** | 🟢 Free tier available | 🟢 Free |
+| **Decryption Tools** | ✅ App built-in | ✅ External script available |
 
 ### 🎯 Recommendation
 
@@ -423,7 +434,7 @@ Data Protection:
 ```
 Local Storage:
 ✅ Stored in app sandbox (iOS security)
-⚠️ Plain text format (readable if device compromised)
+🔒 AES-256 encryption (when PIN protection enabled)
 ✅ Subject to device-level encryption (if enabled)
 ✅ iCloud encryption (if stored there)
 
@@ -431,6 +442,7 @@ Best Practices:
 🔒 Enable device screen lock/passcode
 🔒 Use device encryption features
 🔒 Store in secure cloud services (iCloud, etc.)
+🔒 Use external decryption tools for encrypted backups
 ❌ Avoid emailing or sharing via unsecured methods
 ```
 

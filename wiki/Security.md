@@ -142,6 +142,13 @@ Security Level: Military-grade encryption standards
 - **✅ Automatic Backups**: Seamless encryption with configured PIN
 - **✅ Photo Backups**: Images encrypted within backup data
 
+#### Backup Encryption Control
+Users can toggle backup encryption on/off in Settings → Security & Privacy:
+- **Enabled**: All backups encrypted with PIN (recommended)
+- **Disabled**: Backups saved as plain text (not recommended)
+- **Status Display**: Clear indication of encryption state
+- **PIN Required**: Must have PIN protection to enable encryption
+
 ### Local Data Security
 
 #### Browser Storage Security

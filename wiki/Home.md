@@ -31,7 +31,7 @@
 - **[Interaction Types](Interaction-Types)** - Activity categories and management
 
 ### ☁️ Data Management
-- **[Backup & Export](Backup-Export)** - Protecting your data
+- **[Backup & Export](Backup-Export)** - Protecting your data with encryption
 - **[Azure Cloud Backup](Azure-Backup)** - Enterprise-grade cloud storage
 - **[Device Migration](Device-Migration)** - Moving to a new phone
 - **[Data Import/Export](Data-Import-Export)** - JSON backup system
@@ -41,6 +41,7 @@
 - **[Sample Data Generation](Sample-Data)** - Testing with realistic data
 - **[Data Testing Suite](Data-Testing)** - Integrity validation tools
 - **[Anonymous Analytics](Anonymous-Analytics)** - Optional usage tracking
+- **[External Tools](External-Tools)** - Command-line utilities and scripts
 
 ### 🛠️ Technical Details
 - **[Architecture Overview](Architecture)** - Technical implementation
@@ -99,9 +100,11 @@
 
 ### 🔒 Security Features
 - **Multi-Layer Protection**: PIN + biometrics + auto-lock + session management
-- **AES-256 Encryption**: For exported backups and sensitive data
+- **AES-256 Encryption**: For all backups with PIN-based key derivation
+- **Automatic Encryption**: All backups encrypted when PIN protection enabled
 - **No External Dependencies**: Zero network requirements for core functionality
 - **Complete Privacy**: No accounts, no tracking, no external servers
+- **External Decryption**: Command-line tools for backup access outside app
 
 ### 🎯 iPhone Optimization
 - **PWA Excellence**: Native app experience without App Store
@@ -116,11 +119,13 @@
 - **Core Features**: 15+ major feature areas
 - **Pages**: 8 main application screens
 - **Data Types**: 4 primary data models (Friends, Encounters, Types, Settings)
-- **Interaction Types**: 13+ predefined categories with custom options
-- **Analytics Metrics**: 20+ statistical calculations
-- **Security Layers**: 5 protection mechanisms
-- **Backup Options**: 3 different backup/export methods
+- **Interaction Types**: 128 predefined categories with full management
+- **Analytics Metrics**: 20+ statistical calculations with consistent counting
+- **Security Layers**: 5 protection mechanisms with backup encryption
+- **Backup Options**: 3 different backup/export methods with encryption
 - **Customization Options**: 10+ user-configurable settings
+- **External Tools**: Command-line utilities for advanced data access
+- **Data Integrity**: Comprehensive validation and migration protection
 
 ---
 

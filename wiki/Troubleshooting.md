@@ -374,4 +374,194 @@
 
 ---
 
-*Next: [Performance Optimization](Performance) →*
+## 🆕 Recent Fixes & Improvements
+
+### Analytics Calculation Issues (Fixed)
+
+#### **Problem**: Analytics showing inconsistent activity counts
+**Example**: "Marathon activity shows 21 as main but 41 total appearances"
+
+#### **✅ Resolution** (October 2025):
+- **Root Cause**: Different calculation methods between Analytics and Type Manager
+- **Fix Applied**: Unified calculation logic across all components
+- **Result**: Analytics and Type Manager now show identical usage counts
+- **Verification**: Both count unique encounters (main + secondary activities)
+
+#### **If You Still See Issues**:
+```
+1. Refresh the page completely
+2. Check developer console for any errors
+3. Use validateSampleDataIntegrity() in developer mode
+4. Report persistent issues with specific examples
+```
+
+### Backup Encryption System (New Feature)
+
+#### **Recent Addition**: Automatic backup encryption when PIN protection is enabled
+
+#### **How It Works**:
+- **Automatic**: Encrypts all backups when PIN is set up
+- **Algorithm**: AES-256-GCM with PBKDF2 key derivation
+- **Coverage**: Local exports, Azure backups, manual and automatic backups
+- **Control**: Can be toggled in Settings → Security & Privacy
+
+#### **If Encryption Issues Occur**:
+```
+Problem: "PIN required for encrypted backup"
+Solution: 
+• Enter the PIN you used when creating the backup
+• Ensure you're using the correct PIN (not a new one)
+• Use external decryption script if needed (decrypt-backup.sh)
+
+Problem: "Backup decryption failed"
+Solution:
+• Verify PIN is exactly what was used during backup creation
+• Check if backup file is corrupted (re-download if from cloud)
+• Use external tools to validate backup format
+```
+
+### Data Integrity Improvements (Enhanced)
+
+#### **Sample Data System Overhaul**:
+- **Fixed**: Sample data now uses only database IDs (no hardcoded names)
+- **Added**: Automatic sample data migration when types are deleted
+- **Enhanced**: Data integrity validation and orphaned reference cleanup
+
+#### **Type Management Enhancements**:
+- **Removed**: Artificial "default type" restrictions - all types are now equal
+- **Added**: Safe type deletion with data migration protection
+- **Enhanced**: Search functionality in type manager
+- **Added**: Real-time usage counts for all interaction types
+
+#### **If You Experience Data Issues**:
+```
+Developer Mode Tools (tap Settings title 7 times):
+• validateSampleDataIntegrity() - Fix orphaned references
+• runDataIntegrityTests() - Comprehensive data validation
+• Check console for detailed error messages
+```
+
+### External Tools & Utilities (New)
+
+#### **decrypt-backup.sh Script**:
+- **Purpose**: Decrypt encrypted backup files outside the app
+- **Requirements**: bash, jq, Node.js
+- **Usage**: `./decrypt-backup.sh backup-encrypted.json`
+
+#### **Common Script Issues**:
+```
+Problem: "Command not found: jq"
+Solution: brew install jq
+
+Problem: "Command not found: node" 
+Solution: brew install node
+
+Problem: "Permission denied"
+Solution: chmod +x decrypt-backup.sh
+
+Problem: "Incorrect PIN"
+Solution: Verify PIN matches the one used when backup was created
+```
+
+---
+
+## 🔧 Advanced Developer Tools
+
+### Console Commands for Data Debugging
+
+#### **Available in Developer Mode**:
+```javascript
+// Fix sample data integrity issues
+await validateSampleDataIntegrity();
+
+// Create test data for development
+await createTestDataOnly();
+
+// Run comprehensive data integrity tests
+await runDataIntegrityTests();
+
+// Check for orphaned type references
+console.log('Checking data integrity...');
+```
+
+#### **Accessing Developer Mode**:
+1. Go to Settings page
+2. Tap "Settings" title 7 times quickly (within 3 seconds)
+3. Developer mode activation message appears
+4. Console functions become available
+5. Additional debugging features visible
+
+### Data Migration and Cleanup
+
+#### **When to Use Data Integrity Tools**:
+- After deleting interaction types
+- When analytics show inconsistent counts
+- Before major data exports or migrations
+- When debugging unusual app behavior
+
+#### **Safe Usage Guidelines**:
+```
+Best Practices:
+✅ Create backup before running integrity tools
+✅ Run tools during low-activity periods
+✅ Monitor console output for errors
+✅ Test app functionality after running tools
+
+Avoid:
+❌ Running multiple tools simultaneously
+❌ Interrupting integrity validation processes
+❌ Using tools without understanding their purpose
+```
+
+---
+
+## 🆘 When All Else Fails
+
+### Complete Reset Procedures
+
+#### **Nuclear Option - Fresh Start**:
+```
+Last Resort Steps:
+1. Export all data (Settings → Export Data)
+2. Take screenshots of important settings
+3. Clear all browser data for the app
+4. Reinstall app completely
+5. Import data from backup
+6. Reconfigure all settings
+```
+
+#### **Data Recovery After Reset**:
+```
+Recovery Order:
+1. Try Azure backup restore first (if configured)
+2. Use most recent JSON export second
+3. Import specific data sets if partial recovery needed
+4. Recreate essential data manually if backups unavailable
+```
+
+### Emergency Contact & Support
+
+#### **When You Need Help**:
+- **Data loss situations**: Try all backup/import options first
+- **Critical bugs**: Document exact steps to reproduce
+- **Security concerns**: Change PIN immediately, review access logs
+- **Performance issues**: Note device model, iOS version, data volume
+
+#### **Information to Gather Before Seeking Help**:
+```
+Helpful Details:
+📱 Device model and iOS version
+📊 Data volume (approximate number of friends/encounters)
+🔄 Recent actions taken before issue appeared
+📸 Screenshots or screen recordings of the problem
+🗃️ Whether backups are available and their dates
+```
+
+1. **Storage monitoring**: Keep device storage healthy (2GB+ free)
+2. **App updates**: Check for updates monthly
+3. **iOS updates**: Keep iOS reasonably current
+4. **Data grooming**: Archive very old data if performance suffers
+
+---
+
+*Next: [Performance Optimization](Performance) • Previous: [External Tools](External-Tools)*

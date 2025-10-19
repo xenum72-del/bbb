@@ -203,14 +203,22 @@ The default algorithm weighs:
    - Value **Mutuality** more if you prefer balanced relationships
 
 ### Customize Interaction Types
-1. **Settings** → View existing interaction types
-2. Note which ones you use most frequently
-3. Consider if you need custom categories for your lifestyle
+1. **Settings** → **Manage Types** → Access the Interaction Type Manager
+2. **Search** through 128 available activity types
+3. **Review usage counts** to see which types you use most
+4. **Delete unused types** to customize your activity list
+5. Consider organizing types around your actual experiences and preferences
 
 ### Set Privacy Preferences
 1. **Settings** → **Anonymous Usage Analytics**
 2. Choose whether to help improve the app (completely optional)
 3. Review what data would be shared (hint: ZERO personal info)
+
+### Configure Backup Encryption
+1. **Settings** → **Security & Privacy** → **Encrypt Backups**
+2. Enable backup encryption (recommended for maximum privacy)
+3. All future backups will be automatically encrypted with your PIN
+4. Consider setting up external decryption tools for emergency access
 
 ---
 
@@ -218,10 +226,10 @@ The default algorithm weighs:
 
 Congratulations! You've completed the basic setup. Your app is now:
 
-✅ **Secured** with PIN/biometric protection
+✅ **Secured** with PIN/biometric protection and backup encryption
 ✅ **Populated** with your first friend and encounter
-✅ **Personalized** with your preferences
-✅ **Protected** with backup strategy
+✅ **Personalized** with your preferences and customized activity types
+✅ **Protected** with encrypted backup strategy
 ✅ **Ready** for legendary tracking!
 
 ---
@@ -243,6 +251,8 @@ Now that you're set up, explore these advanced features:
 ### Advanced Features
 - **[Developer Mode](Developer-Mode)** - Unlock hidden tools and sample data
 - **[Data Testing](Data-Testing)** - Validate your data integrity
+- **[External Tools](External-Tools)** - Command-line utilities for backup management
+- **[Interaction Type Management](Interaction-Types)** - Customize your activity categories
 - **[Performance Optimization](Performance)** - Speed up the app
 
 ---
