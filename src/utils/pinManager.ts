@@ -5,7 +5,7 @@
 
 class SecurePinManager {
   private encryptedPin: string | null = null;
-  private sessionKey: string;
+  private sessionKey: Uint8Array;
   private lastAccess: number = 0;
   private readonly EXPIRY_TIME = 30 * 60 * 1000; // 30 minutes
   private readonly CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -21,10 +21,10 @@ class SecurePinManager {
     window.addEventListener('beforeunload', () => this.clearPin());
   }
 
-  private generateSessionKey(): string {
-    const array = new Uint8Array(32);
+  private generateSessionKey(): Uint8Array {
+    const array = new Uint8Array(32); // 256 bits
     crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    return array;
   }
 
   private async encryptText(text: string): Promise<string> {
@@ -34,7 +34,7 @@ class SecurePinManager {
     // Use WebCrypto API for encryption
     const key = await crypto.subtle.importKey(
       'raw',
-      encoder.encode(this.sessionKey),
+      this.sessionKey.slice(), // Create a copy to ensure correct type
       { name: 'AES-GCM' },
       false,
       ['encrypt']
@@ -56,7 +56,6 @@ class SecurePinManager {
   }
 
   private async decryptText(encryptedText: string): Promise<string> {
-    const encoder = new TextEncoder();
     const decoder = new TextDecoder();
     
     const combined = new Uint8Array(
@@ -68,7 +67,7 @@ class SecurePinManager {
     
     const key = await crypto.subtle.importKey(
       'raw',
-      encoder.encode(this.sessionKey),
+      this.sessionKey.slice(), // Create a copy to ensure correct type
       { name: 'AES-GCM' },
       false,
       ['decrypt']
