@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AzureStorageService, type AzureConfig, type MigrationProgress } from '../utils/azureStorage';
+import { shouldEncryptBackup } from '../utils/encryption';
 
 interface AzureBackupProps {
   isOpen: boolean;
@@ -120,13 +121,27 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
     setIsOperating(true);
     
     try {
+      // Check if encryption is required and get PIN
+      const needsEncryption = shouldEncryptBackup();
+      let pin: string | undefined = undefined;
+      
+      if (needsEncryption) {
+        const userPin = prompt('Enter your PIN to encrypt the backup:');
+        if (!userPin) {
+          throw new Error('PIN required for encrypted Azure backup. Please provide PIN.');
+        }
+        pin = userPin;
+      }
+      
       const backupId = await service.createBackup(
         (progress: MigrationProgress) => {
           setProgress(progress);
-        }
+        },
+        pin
       );
       
-      alert(`Backup created successfully! ID: ${backupId}`);
+      const displayInfo = needsEncryption ? ' (encrypted)' : '';
+      alert(`Backup created successfully!${displayInfo} ID: ${backupId}`);
       
       // Refresh backup list
       const updatedBackups = await service.listBackups();
@@ -148,16 +163,45 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
     }
 
     setIsOperating(true);
+    let pin: string | undefined = undefined;
     
     try {
+      // If backup filename suggests it's encrypted, prompt for PIN upfront
+      if (backupId.includes('encrypted')) {
+        const userPin = prompt('Enter your PIN to decrypt the backup:');
+        if (!userPin) {
+          throw new Error('PIN required to decrypt Azure backup');
+        }
+        pin = userPin;
+      }
+      
       await service.restoreFromBackup(backupId, (progress: MigrationProgress) => {
         setProgress(progress);
-      });
+      }, pin);
       
       alert('Restore completed successfully! Please refresh the page to see changes.');
       
     } catch (error) {
-      alert('Restore failed: ' + (error as Error).message);
+      // If it failed due to missing PIN, try again with PIN prompt
+      const errorMsg = (error as Error).message;
+      if (errorMsg.includes('PIN required') && !pin) {
+        try {
+          const userPin = prompt('This backup is encrypted. Enter your PIN to decrypt:');
+          if (!userPin) {
+            throw new Error('PIN required to decrypt backup');
+          }
+          
+          await service.restoreFromBackup(backupId, (progress: MigrationProgress) => {
+            setProgress(progress);
+          }, userPin);
+          
+          alert('Restore completed successfully! Please refresh the page to see changes.');
+        } catch (retryError) {
+          alert('Restore failed: ' + (retryError as Error).message);
+        }
+      } else {
+        alert('Restore failed: ' + errorMsg);
+      }
     } finally {
       setIsOperating(false);
       setProgress(null);
