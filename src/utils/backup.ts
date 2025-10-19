@@ -1,4 +1,5 @@
 import { db } from '../db/schema';
+import { prepareBackupForExport, extractBackupFromExport, shouldEncryptBackup } from './encryption';
 
 import type { Friend, Encounter, InteractionType, Settings } from '../db/schema';
 
@@ -64,20 +65,44 @@ export async function createBackup(includePhotos: boolean = true): Promise<Backu
   }
 }
 
-export async function downloadBackup(includePhotos: boolean = true): Promise<void> {
+export async function exportToFiles(includePhotos: boolean = true): Promise<void> {
   try {
     const backupData = await createBackup(includePhotos);
     
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], {
+    // Check if we need to encrypt
+    const needsEncryption = shouldEncryptBackup();
+    let pin: string | null = null;
+    
+    if (needsEncryption) {
+      pin = prompt('Enter your PIN to encrypt the backup:');
+      if (!pin) {
+        throw new Error('PIN required for encrypted backup');
+      }
+    }
+    
+    let finalData: any;
+    let filename: string;
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
+    const sizeIndicator = includePhotos ? 'full' : 'no-photos';
+    
+    if (needsEncryption && pin) {
+      // Create encrypted backup
+      finalData = await prepareBackupForExport(backupData, pin);
+      filename = `the-load-down-backup-${timestamp}-${sizeIndicator}-encrypted.json`;
+    } else {
+      // Create unencrypted backup - just the raw data
+      finalData = backupData;
+      filename = `the-load-down-backup-${timestamp}-${sizeIndicator}.json`;
+    }
+    
+    const blob = new Blob([JSON.stringify(finalData, null, 2)], {
       type: 'application/json'
     });
     
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
-    const sizeIndicator = includePhotos ? 'full' : 'no-photos';
     a.href = url;
-    a.download = `the-load-down-backup-${timestamp}-${sizeIndicator}.json`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -88,42 +113,55 @@ export async function downloadBackup(includePhotos: boolean = true): Promise<voi
   }
 }
 
-export async function restoreFromBackup(backupData: BackupData): Promise<void> {
+export async function restoreFromBackup(backupData: any, pin?: string): Promise<void> {
   try {
     // Clear existing data (ask for confirmation first)
     if (!confirm('This will replace ALL existing data. Are you sure?')) {
       return;
     }
 
-    await db.transaction('rw', [db.friends, db.encounters, db.interactionTypes, db.settings], async () => {
-      // Clear all tables
-      await db.friends.clear();
-      await db.encounters.clear();
-      await db.interactionTypes.clear();
-      await db.settings.clear();
+    let actualBackupData: BackupData;
+    
+    // Check if this is an encrypted backup
+    if (typeof backupData === 'object' && backupData.encrypted === true) {
+      if (!pin) {
+        throw new Error('PIN required to decrypt backup');
+      }
+      actualBackupData = await extractBackupFromExport(backupData, pin);
+    } else if (typeof backupData === 'object' && backupData.encrypted === false) {
+      actualBackupData = await extractBackupFromExport(backupData);
+    } else {
+      // Legacy unencrypted backup format
+      actualBackupData = backupData;
+    }
 
-      // Restore data
-      if (backupData.friends?.length > 0) {
-        await db.friends.bulkAdd(backupData.friends);
-      }
-      
-      if (backupData.encounters?.length > 0) {
-        await db.encounters.bulkAdd(backupData.encounters);
-      }
-      
-      if (backupData.interactionTypes?.length > 0) {
-        await db.interactionTypes.bulkAdd(backupData.interactionTypes);
-      }
-      
-      if (backupData.settings?.length > 0) {
-        await db.settings.bulkAdd(backupData.settings);
-      }
-    });
+    // Clear all tables
+    await db.friends.clear();
+    await db.encounters.clear();
+    await db.interactionTypes.clear();
+    await db.settings.clear();
+
+    // Restore data
+    if (actualBackupData.friends?.length > 0) {
+      await db.friends.bulkAdd(actualBackupData.friends);
+    }
+    
+    if (actualBackupData.encounters?.length > 0) {
+      await db.encounters.bulkAdd(actualBackupData.encounters);
+    }
+    
+    if (actualBackupData.interactionTypes?.length > 0) {
+      await db.interactionTypes.bulkAdd(actualBackupData.interactionTypes);
+    }
+    
+    if (actualBackupData.settings?.length > 0) {
+      await db.settings.bulkAdd(actualBackupData.settings);
+    }
 
     alert('Backup restored successfully!');
   } catch (error) {
     console.error('Error restoring backup:', error);
-    throw new Error('Failed to restore backup');
+    throw new Error('Failed to restore backup: ' + (error as Error).message);
   }
 }
 
@@ -279,9 +317,12 @@ export async function triggerAutoAzureBackup(): Promise<void> {
     // Create data-only backup
     const backupData = await createBackup(false); // false = no photos
     
+    // For automatic backups, we skip encryption since we can't prompt for PIN
+    // Manual Azure backups through the UI will handle encryption properly
+    const uploadData = JSON.stringify(backupData, null, 2);
+    
     // Upload to Azure (async, non-blocking)
-    const jsonString = JSON.stringify(backupData, null, 2);
-    await autoService.uploadBlob(backupId, jsonString);
+    await autoService.uploadBlob(backupId, uploadData);
 
     // Implement rolling retention: keep only configured number of newest backups
     console.log('🧹 Starting backup cleanup, retention count:', autoSettings.retentionCount);
@@ -323,10 +364,19 @@ export async function triggerAutoAzureBackup(): Promise<void> {
 
 export async function showBackupPrompt(): Promise<void> {
   const azureConfigured = isAzureConfigured();
+  const needsEncryption = shouldEncryptBackup();
   
   return new Promise((resolve) => {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+    
+    const encryptionNote = needsEncryption ? `
+      <div class="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+        <p class="text-sm text-amber-800 dark:text-amber-200">
+          🔒 PIN protection is enabled - backups will be encrypted
+        </p>
+      </div>
+    ` : '';
     
     const azureButtons = azureConfigured ? `
       <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -348,6 +398,8 @@ export async function showBackupPrompt(): Promise<void> {
         <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
           Would you like to save a backup of your data after this change?
         </p>
+        
+        ${encryptionNote}
         
         <div class="space-y-3">
           ${azureButtons}
@@ -378,6 +430,14 @@ export async function showBackupPrompt(): Promise<void> {
       resolve();
     };
 
+    // Helper function to get PIN if needed
+    const getPinIfNeeded = (): string | null => {
+      if (needsEncryption) {
+        return prompt('Enter your PIN to encrypt the backup:');
+      }
+      return null; // No PIN needed
+    };
+
     // Azure backup handler
     if (azureBtn) {
       azureBtn.addEventListener('click', async () => {
@@ -385,13 +445,19 @@ export async function showBackupPrompt(): Promise<void> {
           azureBtn.disabled = true;
           azureBtn.textContent = '☁️ Uploading...';
           
+          const pin = getPinIfNeeded();
+          if (needsEncryption && !pin) {
+            throw new Error('PIN required for encrypted backup');
+          }
+          
           const service = await getAzureService();
           if (!service) {
             throw new Error('Azure service not available');
           }
           
-          const backupId = await service.createBackup();
-          alert('✅ Azure backup saved successfully!\nBackup ID: ' + backupId.split('_backup_')[1].split('.json')[0]);
+          const backupId = await service.createBackup(undefined, pin || undefined);
+          const displayId = backupId.split('_backup_')[1].replace('.json', '').replace('_encrypted', '');
+          alert('✅ Azure backup saved successfully!\nBackup ID: ' + displayId + (needsEncryption ? ' (encrypted)' : ''));
         } catch (error) {
           alert('❌ Azure backup failed: ' + (error as Error).message);
         }
@@ -401,8 +467,13 @@ export async function showBackupPrompt(): Promise<void> {
 
     withPhotos?.addEventListener('click', async () => {
       try {
-        await downloadBackup(true);
-        alert('✅ Full backup downloaded successfully!');
+        const pin = getPinIfNeeded();
+        if (needsEncryption && !pin) {
+          throw new Error('PIN required for encrypted backup');
+        }
+        
+        await exportToFiles(true);
+        alert('✅ Full backup saved to Files!' + (needsEncryption ? ' (encrypted)' : ''));
       } catch (error) {
         alert('❌ Backup failed: ' + (error as Error).message);
       }
@@ -411,8 +482,8 @@ export async function showBackupPrompt(): Promise<void> {
 
     noPhotos?.addEventListener('click', async () => {
       try {
-        await downloadBackup(false);
-        alert('✅ Quick backup downloaded successfully!');
+        await exportToFiles(false);
+        alert('✅ Quick backup downloaded successfully!' + (needsEncryption ? ' (encrypted)' : ''));
       } catch (error) {
         alert('❌ Backup failed: ' + (error as Error).message);
       }

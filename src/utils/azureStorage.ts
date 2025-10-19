@@ -1,4 +1,5 @@
 import { db } from '../db/schema';
+import { prepareBackupForExport, extractBackupFromExport, shouldEncryptBackup } from './encryption';
 
 export interface AzureConfig {
   storageAccount: string;
@@ -23,6 +24,12 @@ export interface BackupMetadata {
   appVersion: string;
   deviceInfo?: string;
   size?: number; // File size in bytes
+}
+
+export interface BackupInfo {
+  name: string;
+  size: number;
+  lastModified: Date;
 }
 
 export interface AzureEntity {
@@ -130,9 +137,9 @@ export class AzureStorageService {
   }
 
   /**
-   * Create a backup of all user data
+   * Create a backup of all user data with optional encryption
    */
-  async createBackup(onProgress?: (progress: MigrationProgress) => void): Promise<string> {
+  async createBackup(onProgress?: (progress: MigrationProgress) => void, pin?: string): Promise<string> {
     try {
       onProgress?.({ phase: 'backup', current: 0, total: 100, message: 'Starting backup...' });
       
@@ -142,10 +149,13 @@ export class AzureStorageService {
       const interactionTypes = await db.interactionTypes.toArray();
       const settings = await db.settings.toArray();
 
-      onProgress?.({ phase: 'backup', current: 50, total: 100, message: 'Preparing backup data...' });
+      onProgress?.({ phase: 'backup', current: 30, total: 100, message: 'Preparing backup data...' });
 
       const timestamp = Date.now();
-      const backupId = `${this.userId}_backup_${timestamp}.json`;
+      const needsEncryption = shouldEncryptBackup();
+      const backupId = needsEncryption 
+        ? `${this.userId}_backup_${timestamp}_encrypted.json`
+        : `${this.userId}_backup_${timestamp}.json`;
       
       const metadata: BackupMetadata = {
         backupId,
@@ -158,7 +168,7 @@ export class AzureStorageService {
         deviceInfo: navigator.userAgent
       };
 
-      const backupData = {
+      const rawBackupData = {
         metadata,
         friends,
         encounters,
@@ -168,8 +178,22 @@ export class AzureStorageService {
         version: '1.0.0'
       };
 
-      // Upload to Azure Blob Storage
-      await this.uploadBlob(backupId, JSON.stringify(backupData, null, 2));
+      onProgress?.({ phase: 'backup', current: 60, total: 100, message: 'Encrypting backup...' });
+
+      // Prepare backup with encryption if needed
+      let finalBackupData: any;
+      if (needsEncryption && pin) {
+        finalBackupData = await prepareBackupForExport(rawBackupData, pin);
+      } else if (needsEncryption && !pin) {
+        throw new Error('PIN required for encrypted Azure backup. Please provide PIN.');
+      } else {
+        finalBackupData = await prepareBackupForExport(rawBackupData);
+      }
+
+      onProgress?.({ phase: 'backup', current: 80, total: 100, message: 'Uploading to Azure...' });
+
+      // Upload to Azure Blob Storage - finalBackupData is already properly formatted by prepareBackupForExport
+      await this.uploadBlob(backupId, JSON.stringify(finalBackupData, null, 2));
 
       onProgress?.({ phase: 'backup', current: 100, total: 100, message: 'Backup completed!' });
 
@@ -240,44 +264,103 @@ export class AzureStorageService {
     return this.listBlobs();
   }
 
+  async listBackupsWithInfo(prefix?: string): Promise<BackupInfo[]> {
+    try {
+      let url = `${this.blobBaseUrl}/${this.config.containerName}?restype=container&comp=list&${this.getSasTokenForUrl()}`;
+      if (prefix) {
+        url += `&prefix=${encodeURIComponent(prefix)}`;
+      }
+
+      const response = await fetch(url, {
+        method: 'GET'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to list blobs: ${response.statusText}`);
+      }
+
+      const xmlText = await response.text();
+
+      // Parse XML response to extract blob metadata
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      
+      const blobs = xmlDoc.querySelectorAll('Blob');
+      const backupInfos: BackupInfo[] = [];
+      
+      blobs.forEach((blob) => {
+        const nameElement = blob.querySelector('Name');
+        const sizeElement = blob.querySelector('Properties > Content-Length');
+        const lastModifiedElement = blob.querySelector('Properties > Last-Modified');
+        
+        if (nameElement?.textContent) {
+          const name = nameElement.textContent;
+          const size = sizeElement?.textContent ? parseInt(sizeElement.textContent) : 0;
+          const lastModified = lastModifiedElement?.textContent ? new Date(lastModifiedElement.textContent) : new Date();
+          
+          backupInfos.push({ name, size, lastModified });
+        }
+      });
+
+      // Sort by lastModified descending (newest first)
+      return backupInfos.sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
+    } catch (error) {
+      console.error('❌ Error listing backup info:', error);
+      throw error;
+    }
+  }
+
   async restoreFromBackup(
     backupId: string,
-    onProgress?: (progress: MigrationProgress) => void
+    onProgress?: (progress: MigrationProgress) => void,
+    pin?: string
   ): Promise<void> {
     try {
       onProgress?.({ phase: 'restore', current: 0, total: 100, message: 'Downloading backup...' });
       
       // Download backup data
       const backupJson = await this.downloadBlob(backupId);
-      const backupData = JSON.parse(backupJson);
+      const rawBackupData = JSON.parse(backupJson);
 
-      onProgress?.({ phase: 'restore', current: 25, total: 100, message: 'Clearing existing data...' });
+      onProgress?.({ phase: 'restore', current: 20, total: 100, message: 'Decrypting backup...' });
+
+      // Handle encrypted vs unencrypted backups
+      let actualBackupData: any;
+      if (typeof rawBackupData === 'object' && rawBackupData.encrypted === true) {
+        if (!pin) {
+          throw new Error('PIN required to decrypt Azure backup');
+        }
+        actualBackupData = await extractBackupFromExport(rawBackupData, pin);
+      } else if (typeof rawBackupData === 'object' && rawBackupData.encrypted === false) {
+        actualBackupData = await extractBackupFromExport(rawBackupData);
+      } else {
+        // Legacy unencrypted backup format
+        actualBackupData = rawBackupData;
+      }
+
+      onProgress?.({ phase: 'restore', current: 40, total: 100, message: 'Clearing existing data...' });
       
       // Clear existing data
-      await db.transaction('rw', [db.friends, db.encounters, db.interactionTypes, db.settings], async () => {
-        await db.friends.clear();
-        await db.encounters.clear();
-        await db.interactionTypes.clear();
-        await db.settings.clear();
-      });
+      await db.friends.clear();
+      await db.encounters.clear();
+      await db.interactionTypes.clear();
+      await db.settings.clear();
 
-      onProgress?.({ phase: 'restore', current: 50, total: 100, message: 'Restoring data...' });
+      onProgress?.({ phase: 'restore', current: 60, total: 100, message: 'Restoring data...' });
 
       // Restore data
-      await db.transaction('rw', [db.friends, db.encounters, db.interactionTypes, db.settings], async () => {
-        if (backupData.friends?.length) {
-          await db.friends.bulkAdd(backupData.friends);
-        }
-        if (backupData.encounters?.length) {
-          await db.encounters.bulkAdd(backupData.encounters);
-        }
-        if (backupData.interactionTypes?.length) {
-          await db.interactionTypes.bulkAdd(backupData.interactionTypes);
-        }
-        if (backupData.settings?.length) {
-          await db.settings.bulkAdd(backupData.settings);
-        }
-      });
+      if (actualBackupData.friends?.length) {
+        await db.friends.bulkAdd(actualBackupData.friends);
+      }
+      if (actualBackupData.encounters?.length) {
+        await db.encounters.bulkAdd(actualBackupData.encounters);
+      }
+      if (actualBackupData.interactionTypes?.length) {
+        await db.interactionTypes.bulkAdd(actualBackupData.interactionTypes);
+      }
+      if (actualBackupData.settings?.length) {
+        await db.settings.bulkAdd(actualBackupData.settings);
+      }
 
       onProgress?.({ phase: 'restore', current: 100, total: 100, message: 'Restore completed!' });
     } catch (error) {

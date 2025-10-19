@@ -150,7 +150,7 @@ export async function createiOSBackup(options: iOSBackupOptions): Promise<File> 
   
   let content: string;
   let mimeType: string;
-  let extension: string;
+  let extension: string = 'json'; // Default extension
 
   switch (options.format) {
     case 'csv':
@@ -168,9 +168,25 @@ export async function createiOSBackup(options: iOSBackupOptions): Promise<File> 
     case 'json':
     default:
       const backup = await createBackup(options.includePhotos);
-      content = JSON.stringify(backup, null, 2);
+      
+      // Check if backup should be encrypted
+      const { shouldEncryptBackup, prepareBackupForExport } = await import('./encryption');
+      const needsEncryption = shouldEncryptBackup();
+      
+      if (needsEncryption) {
+        const pin = prompt('Enter your PIN to encrypt the backup:');
+        if (!pin) {
+          throw new Error('PIN required for encrypted backup');
+        }
+        const encryptedBackup = await prepareBackupForExport(backup, pin);
+        content = JSON.stringify(encryptedBackup, null, 2);
+        extension = 'encrypted.json';
+      } else {
+        // For unencrypted backup, just use the raw data
+        content = JSON.stringify(backup, null, 2);
+      }
+      
       mimeType = 'application/json';
-      extension = 'json';
       break;
   }
 
