@@ -147,24 +147,47 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
               autoFocus
               disabled={loading}
             />
+            {!isSetupMode && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                🔒 This PIN encrypts all your backups automatically
+              </p>
+            )}
           </div>
 
           {isSetupMode && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Confirm PIN
-              </label>
-              <input
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={confirmPin}
-                onChange={(e) => handleConfirmPinChange(e.target.value)}
-                className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                placeholder="••••"
-                disabled={loading}
-              />
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Confirm PIN
+                </label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={confirmPin}
+                  onChange={(e) => handleConfirmPinChange(e.target.value)}
+                  className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  placeholder="••••"
+                  disabled={loading}
+                />
+              </div>
+              
+              {/* Encryption Notice */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="text-blue-500 dark:text-blue-400 text-xl">🔒</div>
+                  <div>
+                    <h4 className="font-semibold text-blue-800 dark:text-blue-200 text-sm mb-1">
+                      Backup Encryption Enabled
+                    </h4>
+                    <p className="text-blue-700 dark:text-blue-300 text-xs leading-relaxed">
+                      This PIN will automatically encrypt all your backups (manual & automatic). 
+                      Once set, all your data exports and Azure backups will be secured with this PIN.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
           {error && (
