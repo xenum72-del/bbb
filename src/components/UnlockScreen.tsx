@@ -7,6 +7,7 @@ import {
   isBiometricsSupported, 
   authenticateBiometrics 
 } from '../utils/security';
+import { storePinForAutoBackups } from '../utils/pinManager';
 
 interface UnlockScreenProps {
   onUnlocked: () => void;
@@ -45,12 +46,29 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
         }
 
         await setupPin(pin);
+        
+        // Store PIN for backups when successfully set up
+        try {
+          await storePinForAutoBackups(pin);
+          console.log('🔒 PIN stored for backup use');
+        } catch (error) {
+          console.warn('Failed to store PIN for backups:', error);
+        }
+        
         activateSession();
         onUnlocked();
       } else {
         // Verify existing PIN
         const isValid = await verifyPin(pin);
         if (isValid) {
+          // Store PIN for backups when successfully unlocked
+          try {
+            await storePinForAutoBackups(pin);
+            console.log('🔒 PIN stored for backup use');
+          } catch (error) {
+            console.warn('Failed to store PIN for backups:', error);
+          }
+          
           activateSession();
           onUnlocked();
         } else {

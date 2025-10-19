@@ -75,9 +75,11 @@ export async function exportToFiles(includePhotos: boolean = true): Promise<void
     let pin: string | null = null;
     
     if (needsEncryption) {
-      pin = prompt('Enter your PIN to encrypt the backup:');
+      // Get stored PIN (should be available since user unlocked the app)
+      pin = await getPinForAutoBackups();
+      
       if (!pin) {
-        throw new Error('PIN required for encrypted backup');
+        throw new Error('PIN not available. Please unlock the app first.');
       }
     }
     

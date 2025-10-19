@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AzureStorageService, type AzureConfig, type MigrationProgress } from '../utils/azureStorage';
 import { shouldEncryptBackup } from '../utils/encryption';
-import { storePinForAutoBackups, hasPinForAutoBackups, getPinExpiryTime, clearStoredPin } from '../utils/pinManager';
+import { hasPinForAutoBackups, getPinExpiryTime, clearStoredPin, getPinForAutoBackups } from '../utils/pinManager';
 
 interface AzureBackupProps {
   isOpen: boolean;
@@ -127,32 +127,14 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
       let pin: string | undefined = undefined;
       
       if (needsEncryption) {
-        const userPin = prompt('Enter your PIN to encrypt the backup:');
-        if (!userPin) {
-          throw new Error('PIN required for encrypted Azure backup. Please provide PIN.');
-        }
-        pin = userPin;
+        // Get stored PIN (should be available since user unlocked the app)
+        const storedPin = await getPinForAutoBackups();
         
-        // Ask if user wants to store PIN for auto-backups (if auto-backup is enabled)
-        if (config.autoBackupEnabled && !hasPinForAutoBackups()) {
-          const storeForAuto = confirm(
-            'Would you like to store your PIN securely in memory for automatic backups?\n\n' +
-            '• PIN will be encrypted and stored only in memory\n' +
-            '• Automatically expires after 30 minutes of inactivity\n' +
-            '• Cleared when you close the browser\n' +
-            '• Enables encrypted automatic backups\n\n' +
-            'Choose "OK" to store PIN, or "Cancel" to skip (auto-backups will be disabled)'
-          );
-          
-          if (storeForAuto) {
-            try {
-              await storePinForAutoBackups(pin);
-              console.log('🔒 PIN stored securely for auto-backups');
-            } catch (error) {
-              console.warn('Failed to store PIN for auto-backups:', error);
-            }
-          }
+        if (!storedPin) {
+          throw new Error('PIN not available. Please unlock the app first.');
         }
+        
+        pin = storedPin;
       }
       
       const backupId = await service.createBackup(
