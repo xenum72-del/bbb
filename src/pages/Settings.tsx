@@ -490,7 +490,10 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 <div>
                   <h4 className="font-medium">PIN Protection</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {securitySettings.hasPin ? 'PIN is enabled' : 'No PIN set'}
+                    {securitySettings.hasPin 
+                      ? 'PIN is enabled - encrypts all backups automatically' 
+                      : 'Secure app & encrypt backups with PIN'
+                    }
                   </p>
                 </div>
                 <div className="flex space-x-2">
@@ -534,6 +537,28 @@ export default function Settings({ onNavigate }: SettingsProps) {
                     onChange={(e) => setConfirmPin(e.target.value)}
                     className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-inner hover:shadow-lg focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
                   />
+                  
+                  {/* Encryption Warning */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-300 dark:border-blue-600 rounded-xl p-4 shadow-lg">
+                    <div className="flex items-start space-x-3">
+                      <div className="text-blue-600 dark:text-blue-400 text-2xl">🔐</div>
+                      <div>
+                        <h4 className="font-bold text-blue-900 dark:text-blue-100 text-base mb-2">
+                          🚨 Important: Backup Encryption
+                        </h4>
+                        <p className="text-blue-800 dark:text-blue-200 text-sm leading-relaxed">
+                          <strong>This PIN will automatically encrypt ALL your backups!</strong><br/>
+                          • Manual file downloads → Encrypted<br/>
+                          • Azure cloud backups → Encrypted<br/>
+                          • Automatic backups → Encrypted<br/><br/>
+                          <span className="text-blue-700 dark:text-blue-300">
+                            Choose a PIN you'll remember - you'll need it to restore any backup.
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div className="flex space-x-3">
                     <button
                       onClick={handlePinSetup}
