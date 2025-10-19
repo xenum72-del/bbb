@@ -76,7 +76,7 @@ export default function LocationInput({
           }
           
           const data = await response.json();
-          const suggestions = data.map((item: any) => ({
+          const suggestions = data.map((item: LocationSuggestion) => ({
             display_name: item.display_name,
             lat: item.lat,
             lon: item.lon

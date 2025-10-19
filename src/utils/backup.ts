@@ -1,5 +1,5 @@
 import { db } from '../db/schema';
-import { prepareBackupForExport, extractBackupFromExport, shouldEncryptBackup } from './encryption';
+import { prepareBackupForExport, extractBackupFromExport, shouldEncryptBackup, type EncryptedBackup } from './encryption';
 
 import type { Friend, Encounter, InteractionType, Settings } from '../db/schema';
 
@@ -80,7 +80,7 @@ export async function exportToFiles(includePhotos: boolean = true): Promise<void
       }
     }
     
-    let finalData: any;
+    let finalData: EncryptedBackup | BackupData;
     let filename: string;
     const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
     const sizeIndicator = includePhotos ? 'full' : 'no-photos';

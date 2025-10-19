@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { db, type InteractionType } from '../db/schema';
 import { useInteractionTypes } from '../hooks/useDatabase';
 import { updateSampleDataForTypeChanges, validateSampleDataIntegrity } from '../db/sampleData';
@@ -44,16 +44,27 @@ export default function InteractionTypeManager({ isOpen, onClose }: InteractionT
   });
 
   // Load usage counts for all types
-  const loadUsageCounts = async () => {
+  const loadUsageCounts = useCallback(async () => {
     const counts: Record<number, number> = {};
     for (const type of interactionTypes) {
       if (type.id) {
-        const usage = await getTypeUsage(type.id);
-        counts[type.id] = usage.totalUsage;
+        // Count encounters where this is the main type
+        const encounterCount = await db.encounters
+          .where('typeId')
+          .equals(type.id)
+          .count();
+
+        // Count encounters where this appears in activitiesPerformed
+        const allEncounters = await db.encounters.toArray();
+        const activityCount = allEncounters.filter(e => 
+          e.activitiesPerformed?.includes(type.id!)
+        ).length;
+
+        counts[type.id] = encounterCount + activityCount;
       }
     }
     setUsageCounts(counts);
-  };
+  }, [interactionTypes]);
 
   // Reset form and load usage counts when modal opens
   useEffect(() => {
@@ -68,7 +79,7 @@ export default function InteractionTypeManager({ isOpen, onClose }: InteractionT
         console.warn('Sample data validation failed (non-critical):', error)
       );
     }
-  }, [isOpen, interactionTypes]);
+  }, [isOpen, interactionTypes, loadUsageCounts]);
 
   const getTypeUsage = async (typeId: number): Promise<TypeUsageInfo> => {
     // Count encounters where this is the main type

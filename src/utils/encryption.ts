@@ -4,6 +4,7 @@
  */
 
 import { getSecuritySettings } from './security';
+import type { BackupData } from './backup';
 
 /**
  * Generate a cryptographic key from PIN + salt using PBKDF2
@@ -158,7 +159,7 @@ export interface EncryptedBackup {
  * Prepare backup data for export with optional encryption
  */
 export async function prepareBackupForExport(
-  backupData: any,
+  backupData: Record<string, any>,
   pin?: string
 ): Promise<EncryptedBackup> {
   const timestamp = new Date().toISOString();
@@ -167,7 +168,7 @@ export async function prepareBackupForExport(
   let dataJson: string;
   try {
     dataJson = JSON.stringify(backupData, null, 2);
-  } catch (error) {
+  } catch {
     // Handle circular references by using a replacer function
     const seen = new WeakSet();
     dataJson = JSON.stringify(backupData, (_key, value) => {
@@ -221,7 +222,7 @@ export async function prepareBackupForExport(
 export async function extractBackupFromExport(
   exportData: EncryptedBackup,
   pin?: string
-): Promise<any> {
+): Promise<BackupData> {
   if (exportData.encrypted) {
     if (!pin) {
       throw new Error('PIN required to decrypt backup');

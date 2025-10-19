@@ -220,11 +220,11 @@ export default function Friends({ onNavigate, showAddFormInitially = false }: Fr
           age: formData.age ? parseInt(formData.age) : undefined,
           height: formData.height.trim() || undefined,
           weight: formData.weight.trim() || undefined,
-          bodyType: formData.bodyType as any || undefined,
-          sexualRole: formData.sexualRole as any || undefined,
+          bodyType: (formData.bodyType as 'Slim' | 'Athletic' | 'Average' | 'Muscular' | 'Chubby' | 'Bear' | 'Daddy' | 'Twink' | 'Otter' | 'Other') || undefined,
+          sexualRole: (formData.sexualRole as 'Top' | 'Bottom' | 'Versatile' | 'Vers Top' | 'Vers Bottom' | 'Side' | 'Unknown') || undefined,
           dickSize: formData.dickSize.trim() || undefined,
           preferences: formData.sexualPreferences ? formData.sexualPreferences.split(',').map(p => p.trim()) : undefined,
-          relationshipStatus: formData.relationship as any || undefined,
+          relationshipStatus: (formData.relationship as 'Single' | 'Taken' | 'Open Relationship' | 'Married' | 'Complicated' | 'Unknown') || undefined,
           location: formData.livingDistance.trim() || undefined,
           socialProfiles: {
             grindr: formData.socialMedia.grindr.trim() || undefined,
@@ -235,7 +235,7 @@ export default function Friends({ onNavigate, showAddFormInitially = false }: Fr
             phone: formData.socialMedia.phone.trim() || undefined
           },
           photos: formData.pictures.length > 0 ? formData.pictures : undefined,
-          hivStatus: formData.healthStatus.hivStatus as any || undefined,
+          hivStatus: (formData.healthStatus.hivStatus as 'Negative' | 'Positive Undetectable' | 'Positive' | 'Unknown' | 'Prefer Not to Say') || undefined,
           lastTested: formData.healthStatus.lastTested ? new Date(formData.healthStatus.lastTested) : undefined,
           onPrep: formData.healthStatus.onPrep,
           limits: formData.boundaries ? formData.boundaries.split(',').map(b => b.trim()) : undefined,
@@ -252,11 +252,11 @@ export default function Friends({ onNavigate, showAddFormInitially = false }: Fr
           age: formData.age ? parseInt(formData.age) : undefined,
           height: formData.height.trim() || undefined,
           weight: formData.weight.trim() || undefined,
-          bodyType: formData.bodyType as any || undefined,
-          sexualRole: formData.sexualRole as any || undefined,
+          bodyType: (formData.bodyType as 'Slim' | 'Athletic' | 'Average' | 'Muscular' | 'Chubby' | 'Bear' | 'Daddy' | 'Twink' | 'Otter' | 'Other') || undefined,
+          sexualRole: (formData.sexualRole as 'Top' | 'Bottom' | 'Versatile' | 'Vers Top' | 'Vers Bottom' | 'Side' | 'Unknown') || undefined,
           dickSize: formData.dickSize.trim() || undefined,
           preferences: formData.sexualPreferences ? formData.sexualPreferences.split(',').map(p => p.trim()) : undefined,
-          relationshipStatus: formData.relationship as any || undefined,
+          relationshipStatus: (formData.relationship as 'Single' | 'Taken' | 'Open Relationship' | 'Married' | 'Complicated' | 'Unknown') || undefined,
           location: formData.livingDistance.trim() || undefined,
           socialProfiles: {
             grindr: formData.socialMedia.grindr.trim() || undefined,
@@ -267,7 +267,7 @@ export default function Friends({ onNavigate, showAddFormInitially = false }: Fr
             phone: formData.socialMedia.phone.trim() || undefined
           },
           photos: formData.pictures.length > 0 ? formData.pictures : undefined,
-          hivStatus: formData.healthStatus.hivStatus as any || undefined,
+          hivStatus: (formData.healthStatus.hivStatus as 'Negative' | 'Positive Undetectable' | 'Positive' | 'Unknown' | 'Prefer Not to Say') || undefined,
           lastTested: formData.healthStatus.lastTested ? new Date(formData.healthStatus.lastTested) : undefined,
           onPrep: formData.healthStatus.onPrep,
           limits: formData.boundaries ? formData.boundaries.split(',').map(b => b.trim()) : undefined

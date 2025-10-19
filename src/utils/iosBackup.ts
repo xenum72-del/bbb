@@ -9,12 +9,12 @@ export interface iOSBackupOptions {
 
 // Detect if we're on iOS
 export function isiOS(): boolean {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
 }
 
 // Detect if we're in a PWA on iOS
 export function isiOSPWA(): boolean {
-  return isiOS() && (window.navigator as any).standalone === true;
+  return isiOS() && 'standalone' in window.navigator && (window.navigator as any).standalone === true;
 }
 
 // iOS Web Share API support
@@ -166,7 +166,7 @@ export async function createiOSBackup(options: iOSBackupOptions): Promise<File> 
       break;
     
     case 'json':
-    default:
+    default: {
       const backup = await createBackup(options.includePhotos);
       
       // Check if backup should be encrypted
@@ -188,6 +188,7 @@ export async function createiOSBackup(options: iOSBackupOptions): Promise<File> 
       
       mimeType = 'application/json';
       break;
+    }
   }
 
   const fileName = `the-load-down-${timestamp}-${sizeIndicator}.${extension}`;
@@ -313,7 +314,7 @@ export async function showiOSBackupModal(): Promise<void> {
           await navigator.clipboard.writeText(summary);
           alert('📋 Summary copied to clipboard!');
         }
-      } catch (error) {
+      } catch {
         alert('❌ Failed to share summary');
       }
       cleanup();

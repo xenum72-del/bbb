@@ -58,7 +58,7 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
           setPin('');
         }
       }
-    } catch (error) {
+    } catch {
       setError('Authentication failed');
     } finally {
       setLoading(false);
@@ -77,7 +77,7 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
       } else {
         setError('Biometric authentication failed');
       }
-    } catch (error) {
+    } catch {
       setError('Biometric authentication not available');
     } finally {
       setLoading(false);

@@ -262,7 +262,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
 
         // Import data
         if (backupData.friends && backupData.friends.length > 0) {
-          await db.friends.bulkAdd(backupData.friends.map((f: any) => ({
+          await db.friends.bulkAdd(backupData.friends.map((f: Record<string, any>) => ({
             ...f,
             createdAt: new Date(f.createdAt),
             updatedAt: f.updatedAt ? new Date(f.updatedAt) : undefined,
@@ -271,7 +271,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
         }
 
         if (backupData.encounters && backupData.encounters.length > 0) {
-          await db.encounters.bulkAdd(backupData.encounters.map((e: any) => ({
+          await db.encounters.bulkAdd(backupData.encounters.map((e: Record<string, any>) => ({
             ...e,
             date: new Date(e.date),
             createdAt: new Date(e.createdAt),
@@ -284,7 +284,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
         }
 
         if (backupData.settings && backupData.settings.length > 0) {
-          await db.settings.bulkAdd(backupData.settings.map((s: any) => ({
+          await db.settings.bulkAdd(backupData.settings.map((s: Record<string, any>) => ({
             ...s,
             createdAt: new Date(s.createdAt),
             updatedAt: s.updatedAt ? new Date(s.updatedAt) : undefined

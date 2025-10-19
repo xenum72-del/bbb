@@ -283,7 +283,7 @@ export default function EncounterForm({
                   name="beneficiary"
                   value={option.value}
                   checked={formData.beneficiary === option.value}
-                  onChange={(e) => setFormData(f => ({...f, beneficiary: e.target.value as any}))}
+                  onChange={(e) => setFormData(f => ({...f, beneficiary: e.target.value as 'me' | 'friend' | 'both'}))}
                   className="text-blue-600"
                 />
                 <span className="text-sm">{option.icon} {option.label}</span>

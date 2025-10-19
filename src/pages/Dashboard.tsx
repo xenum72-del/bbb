@@ -10,7 +10,7 @@ interface DashboardProps {
   isGayMode: boolean;
 }
 
-export default function Dashboard({ onNavigate, isDarkMode: _, isGayMode }: DashboardProps) {
+export default function Dashboard({ onNavigate, isGayMode }: DashboardProps) {
   const encounters = useEncounters(10); // Last 10 encounters
   const friends = useActiveFriends();
   const settings = useSettings();

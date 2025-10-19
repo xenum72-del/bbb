@@ -1,5 +1,5 @@
 import { db } from '../db/schema';
-import { prepareBackupForExport, extractBackupFromExport, shouldEncryptBackup } from './encryption';
+import { prepareBackupForExport, extractBackupFromExport, shouldEncryptBackup, type EncryptedBackup } from './encryption';
 
 export interface AzureConfig {
   storageAccount: string;
@@ -181,7 +181,7 @@ export class AzureStorageService {
       onProgress?.({ phase: 'backup', current: 60, total: 100, message: 'Encrypting backup...' });
 
       // Prepare backup with encryption if needed
-      let finalBackupData: any;
+      let finalBackupData: EncryptedBackup;
       if (needsEncryption && pin) {
         finalBackupData = await prepareBackupForExport(rawBackupData, pin);
       } else if (needsEncryption && !pin) {
@@ -325,7 +325,7 @@ export class AzureStorageService {
       onProgress?.({ phase: 'restore', current: 20, total: 100, message: 'Decrypting backup...' });
 
       // Handle encrypted vs unencrypted backups
-      let actualBackupData: any;
+      let actualBackupData: Record<string, any>;
       if (typeof rawBackupData === 'object' && rawBackupData.encrypted === true) {
         if (!pin) {
           throw new Error('PIN required to decrypt Azure backup');

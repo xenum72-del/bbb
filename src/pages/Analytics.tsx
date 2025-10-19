@@ -10,7 +10,7 @@ interface AnalyticsProps {
   isGayMode: boolean;
 }
 
-export default function Analytics({ onNavigate, isDarkMode: _, isGayMode }: AnalyticsProps) {
+export default function Analytics({ onNavigate, isGayMode }: AnalyticsProps) {
   const encounters = useEncounters();
   const settings = useSettings();
   const friends = useActiveFriends();
