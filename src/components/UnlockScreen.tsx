@@ -152,6 +152,11 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
                 🔒 This PIN encrypts all your backups automatically
               </p>
             )}
+            {isSetupMode && (
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 text-center font-medium">
+                🔒 This PIN will encrypt all your backups automatically
+              </p>
+            )}
           </div>
 
           {isSetupMode && (
@@ -172,17 +177,22 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
                 />
               </div>
               
-              {/* Encryption Notice */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+              {/* Encryption Notice - Early and Prominent */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-2 border-blue-300 dark:border-blue-600 rounded-xl p-4 shadow-lg">
                 <div className="flex items-start space-x-3">
-                  <div className="text-blue-500 dark:text-blue-400 text-xl">🔒</div>
+                  <div className="text-blue-600 dark:text-blue-400 text-2xl">�</div>
                   <div>
-                    <h4 className="font-semibold text-blue-800 dark:text-blue-200 text-sm mb-1">
-                      Backup Encryption Enabled
+                    <h4 className="font-bold text-blue-900 dark:text-blue-100 text-base mb-2">
+                      🚨 Important: Backup Encryption
                     </h4>
-                    <p className="text-blue-700 dark:text-blue-300 text-xs leading-relaxed">
-                      This PIN will automatically encrypt all your backups (manual & automatic). 
-                      Once set, all your data exports and Azure backups will be secured with this PIN.
+                    <p className="text-blue-800 dark:text-blue-200 text-sm leading-relaxed">
+                      <strong>This PIN will automatically encrypt ALL your backups!</strong><br/>
+                      • Manual file downloads → Encrypted<br/>
+                      • Azure cloud backups → Encrypted<br/>
+                      • Automatic backups → Encrypted<br/><br/>
+                      <span className="text-blue-700 dark:text-blue-300">
+                        Choose a PIN you'll remember - you'll need it to restore any backup.
+                      </span>
                     </p>
                   </div>
                 </div>
