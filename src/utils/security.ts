@@ -12,6 +12,7 @@ export interface SecuritySettings {
   biometricsEnabled: boolean;
   autoLockMinutes: number;
   lastActivity: number;
+  encryptBackups: boolean;
 }
 
 /**
@@ -43,7 +44,8 @@ export function getSecuritySettings(): SecuritySettings {
     hasPin: false,
     biometricsEnabled: false,
     autoLockMinutes: 15,
-    lastActivity: Date.now()
+    lastActivity: Date.now(),
+    encryptBackups: true  // Default to true for security
   };
 }
 
@@ -234,4 +236,21 @@ export function requiresUnlock(): boolean {
   
   // Requires unlock
   return true;
+}
+
+/**
+ * Enable/disable backup encryption
+ */
+export function setBackupEncryption(enabled: boolean): void {
+  const settings = getSecuritySettings();
+  settings.encryptBackups = enabled;
+  saveSecuritySettings(settings);
+}
+
+/**
+ * Check if backup encryption is enabled
+ */
+export function isBackupEncryptionEnabled(): boolean {
+  const settings = getSecuritySettings();
+  return settings.encryptBackups;
 }
