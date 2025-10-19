@@ -5,7 +5,8 @@ import {
   setupPin, 
   getSecuritySettings, 
   isBiometricsSupported, 
-  authenticateBiometrics 
+  authenticateBiometrics,
+  setBackupEncryption
 } from '../utils/security';
 import { storePinForAutoBackups } from '../utils/pinManager';
 
@@ -46,6 +47,9 @@ export default function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
         }
 
         await setupPin(pin);
+        
+        // Automatically enable backup encryption when PIN is set
+        setBackupEncryption(true);
         
         // Store PIN for backups when successfully set up
         try {

@@ -130,11 +130,15 @@ export default function Settings({ onNavigate }: SettingsProps) {
     
     try {
       await setupPin(newPin);
+      
+      // Automatically enable backup encryption when PIN is set
+      setBackupEncryption(true);
+      
       setSecuritySettings(getSecuritySettings());
       setShowPinSetup(false);
       setNewPin('');
       setConfirmPin('');
-      alert('PIN set successfully!');
+      alert('PIN set successfully! Backup encryption has been automatically enabled.');
     } catch (error) {
       alert('Error setting PIN: ' + (error as Error).message);
     }
