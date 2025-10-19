@@ -13,6 +13,7 @@
 ## 📚 Wiki Navigation
 
 ### 🚀 Getting Started
+- **⚡ [TL;DR - Quick Start](TL-DR)** - Get running in 5 minutes (ESSENTIAL READ)
 - **[Installation Guide](Installation)** - Complete setup for iPhone, Android, and desktop
 - **[First Steps](Getting-Started)** - Your first encounter with The Load Down
 - **[Quick Start Tutorial](Quick-Start)** - 5-minute setup guide
@@ -62,6 +63,7 @@
 - **[Theme Customization](Themes)** - Dark mode and personalization
 
 ### 🆘 Support & Troubleshooting
+- **[Quick FAQ](Quick-FAQ)** - Fast answers to common questions
 - **[FAQ](FAQ)** - Frequently asked questions
 - **[Troubleshooting Guide](Troubleshooting)** - Common issues and solutions
 - **[Performance Issues](Performance-Issues)** - Speed optimization tips
@@ -131,6 +133,11 @@
 
 ## 🚀 Getting Started Right Now
 
+### ⚡ Super Quick Start (5 minutes)
+**[→ TL;DR Guide](TL-DR)** - Essential setup and usage in one page  
+**[→ Cheat Sheet](Cheat-Sheet)** - Commands and shortcuts only
+
+### 📚 Complete Setup (15 minutes)
 1. **[Install the App](Installation)** - Get The Load Down on your device
 2. **[Security Setup](Security)** - Configure PIN and biometric protection
 3. **[Add Your First Friend](Friends)** - Create your first contact profile
@@ -142,7 +149,10 @@
 
 ## 💬 Need Help?
 
-- 📖 **Start with**: [Getting Started Guide](Getting-Started)
+- ⚡ **Just want to start?**: [TL;DR Quick Start](TL-DR)
+- 📋 **Power user?**: [Cheat Sheet](Cheat-Sheet)
+- ❓ **Quick questions?**: [Quick FAQ](Quick-FAQ)
+- 📖 **Complete guide**: [Getting Started Guide](Getting-Started)
 - 🔧 **Technical Issues**: [Troubleshooting Guide](Troubleshooting)
 - 🆘 **General Questions**: [FAQ](FAQ)
 - 🐛 **Found a Bug**: [Create an Issue](https://github.com/xenum72-del/bbb/issues)

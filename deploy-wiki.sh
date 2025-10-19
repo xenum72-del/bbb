@@ -146,6 +146,11 @@ create_additional_pages() {
     cat > _Sidebar.md << 'EOF'
 ## 📚 Wiki Navigation
 
+### ⚡ Quick Start
+* [TL;DR - 5 Min Setup](TL-DR)
+* [Cheat Sheet](Cheat-Sheet)
+* [Quick FAQ](Quick-FAQ)
+
 ### 🚀 Getting Started
 * [Installation Guide](Installation)
 * [Getting Started](Getting-Started)
@@ -173,6 +178,7 @@ create_additional_pages() {
 * [Data Testing Suite](Data-Testing)
 
 ### 🆘 Support
+* [Quick FAQ](Quick-FAQ)
 * [FAQ](FAQ)
 * [Troubleshooting](Troubleshooting)
 * [Privacy Policy](Privacy-Policy)
