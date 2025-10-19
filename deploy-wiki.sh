@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_URL="https://github.com/xenum72-del/bbb"
 REPO_NAME="bbb"
 WIKI_DIR="wiki"
-TEMP_DIR="/tmp/loaddown-wiki-deploy"
+TEMP_DIR="../loaddown-wiki-deploy"
 
 # Colors for output
 RED='\033[0;31m'
