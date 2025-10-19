@@ -1,7 +1,7 @@
 import { useSettings, useInteractionTypes, settingsApi } from '../hooks/useDatabase';
 import { useState, useEffect } from 'react';
 import { db } from '../db/schema';
-import { showiOSBackupModal, isiOS, isiOSPWA } from '../utils/iosBackup';
+import { isiOS } from '../utils/iosBackup';
 import {
   getSecuritySettings,
   saveSecuritySettings,
@@ -10,10 +10,12 @@ import {
   verifyPin,
   setupBiometrics,
   disableBiometrics,
-  lockSession
+  lockSession,
+  setBackupEncryption
 } from '../utils/security';
 import { useAnalytics } from '../utils/analytics';
 import AzureBackup from '../components/AzureBackup';
+import InteractionTypeManager from '../components/InteractionTypeManager';
 import { generateRealisticSampleData } from '../db/sampleData';
 
 // Developer mode - activated by tapping Settings title 7 times within 3 seconds
@@ -55,6 +57,9 @@ export default function Settings({ onNavigate }: SettingsProps) {
   
   // Azure Backup state
   const [showAzureBackup, setShowAzureBackup] = useState(false);
+  
+  // Interaction Type Manager state
+  const [showTypeManager, setShowTypeManager] = useState(false);
 
   // Developer mode state
   const [tapCount, setTapCount] = useState(0);
@@ -177,6 +182,12 @@ export default function Settings({ onNavigate }: SettingsProps) {
     setSecuritySettings(updated);
   };
 
+  const handleBackupEncryptionToggle = () => {
+    const newValue = !securitySettings.encryptBackups;
+    setBackupEncryption(newValue);
+    setSecuritySettings(getSecuritySettings());
+  };
+
   // Analytics functions
   const handleAnalyticsToggle = () => {
     if (analyticsStatus.enabled) {
@@ -203,38 +214,13 @@ export default function Settings({ onNavigate }: SettingsProps) {
 
   const handleExportData = async () => {
     try {
-      const friends = await db.friends.toArray();
-      const encounters = await db.encounters.toArray();
-      const types = await db.interactionTypes.toArray();
-      const settings = await db.settings.toArray();
-
-      const exportData = {
-        version: '1.0',
-        exportDate: new Date().toISOString(),
-        data: {
-          friends,
-          encounters,
-          interactionTypes: types,
-          settings
-        }
-      };
-
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { 
-        type: 'application/json' 
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `the-load-down-backup-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
+      const { exportToFiles } = await import('../utils/backup');
+      await exportToFiles(true); // true = include photos
       setShowExport(false);
+      alert('✅ Data exported to Files app!');
     } catch (error) {
       console.error('Error exporting data:', error);
-      alert('Failed to export data');
+      alert('Failed to export data: ' + (error as Error).message);
     }
   };
 
@@ -458,6 +444,13 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 <p className="text-sm text-gray-600 dark:text-gray-400">Manage activity categories</p>
               </div>
             </div>
+            
+            <button
+              onClick={() => setShowTypeManager(true)}
+              className="px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-600 text-white rounded-xl hover:from-pink-600 hover:to-rose-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              Manage Types
+            </button>
           </div>
 
           <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
@@ -606,6 +599,33 @@ export default function Settings({ onNavigate }: SettingsProps) {
                 </select>
               </div>
             </div>
+
+            {/* Backup Encryption Section */}
+            {securitySettings.hasPin && (
+              <div className="p-6 bg-gradient-to-br from-gray-50/80 to-white/80 dark:from-gray-700/80 dark:to-gray-600/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-600/50 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium">Encrypt Backups</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {securitySettings.encryptBackups 
+                        ? 'Backups will be encrypted with your PIN' 
+                        : 'Backups will be saved as plain text (not recommended)'
+                      }
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleBackupEncryptionToggle}
+                    className={`px-6 py-3 text-sm font-medium rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-300 ${
+                      securitySettings.encryptBackups
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-green-500/30'
+                        : 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-red-500/30'
+                    }`}
+                  >
+                    {securitySettings.encryptBackups ? 'Enabled' : 'Disabled'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Lock Now Button */}
             {securitySettings.hasPin || securitySettings.biometricsEnabled ? (
@@ -813,13 +833,7 @@ export default function Settings({ onNavigate }: SettingsProps) {
             </button>
 
             <button
-              onClick={async () => {
-                if (isiOS() || isiOSPWA()) {
-                  await showiOSBackupModal();
-                } else {
-                  setShowExport(true);
-                }
-              }}
+              onClick={handleExportData}
               className="w-full p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-xl text-left hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group"
             >
               <div className="flex items-center space-x-3">
@@ -1002,6 +1016,12 @@ export default function Settings({ onNavigate }: SettingsProps) {
       <AzureBackup
         isOpen={showAzureBackup}
         onClose={() => setShowAzureBackup(false)}
+      />
+
+      {/* Interaction Type Manager Modal */}
+      <InteractionTypeManager
+        isOpen={showTypeManager}
+        onClose={() => setShowTypeManager(false)}
       />
     </div>
   );

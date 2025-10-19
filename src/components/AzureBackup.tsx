@@ -477,30 +477,50 @@ export default function AzureBackup({ isOpen, onClose }: AzureBackupProps) {
                       backups.map((backup) => {
                         // Parse backup filename for display info
                         const backupName = backup.replace('.json', '');
-                        const datePart = backupName.match(/\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/);
-                        const displayDate = datePart ? new Date(datePart[0].replace(/-/g, ':').replace('T', ' ')).toLocaleString() : backupName;
+                        
+                        // Look for Unix timestamp (13 digits)
+                        const timestampMatch = backupName.match(/\d{13}/);
+                        let displayDate = 'Unknown Date';
+                        if (timestampMatch) {
+                          const timestamp = parseInt(timestampMatch[0]);
+                          displayDate = new Date(timestamp).toLocaleString();
+                        } else {
+                          // Fallback: look for ISO date format
+                          const datePart = backupName.match(/\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/);
+                          if (datePart) {
+                            displayDate = new Date(datePart[0].replace(/-/g, ':').replace('T', ' ')).toLocaleString();
+                          }
+                        }
+                        
+                        // Extract a cleaner display name (remove user prefix and timestamp)
+                        const cleanName = backupName
+                          .replace(/^user_[^_]+_/, '') // Remove user prefix
+                          .replace(/\d{13}/, '') // Remove Unix timestamp
+                          .replace(/\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/, '') // Remove ISO timestamp
+                          .replace(/^_+|_+$/g, '') // Remove leading/trailing underscores
+                          .replace(/_/g, ' ') || 'Backup'; // Replace underscores with spaces, fallback to 'Backup'
                         
                         return (
                           <div key={backup} className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-700">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="font-medium text-sm">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-sm text-gray-800 dark:text-gray-200">
                                   {displayDate}
                                 </div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">
-                                  {backup}
+                                <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                  {cleanName}
                                 </div>
                               </div>
-                              <div className="flex space-x-2">
+                              <div className="flex space-x-2 flex-shrink-0">
                                 <button
                                   onClick={() => restoreBackup(backup)}
-                                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
                                 >
                                   Restore
                                 </button>
                                 <button
                                   onClick={() => deleteBackup(backup)}
-                                  className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                                  className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 whitespace-nowrap"
                                 >
                                   Delete
                                 </button>
