@@ -1,0 +1,59 @@
+name: Auto Docs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    env:
+      # point everything at your demo server
+      APP_BASE_URL: http://localhost:5274
+      CI: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install root deps
+        run: npm ci || npm i
+
+      - name: Install docs deps
+        working-directory: docs
+        run: npm ci || npm i
+
+      - name: Start DEMO app on :5274
+        run: |
+          nohup bash -c "npm run app:start:demo" >/dev/null 2>&1 &
+          npx wait-on http://localhost:5274
+
+      - name: Install Playwright (browsers & deps)
+        run: npx playwright install --with-deps
+
+      - name: Crawl & Take Screenshots
+        run: npm run crawl
+
+      - name: Generate Markdown Docs
+        run: npm run docs:gen
+
+      - name: Build Docusaurus
+        working-directory: docs
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/build

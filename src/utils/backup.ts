@@ -315,13 +315,18 @@ export async function triggerAutoAzureBackup(): Promise<void> {
 
     // Create backup without photos (faster/smaller)
     const timestamp = Date.now();
-    const backupId = `auto_${timestamp}.json`;
+    
+    // Check if encryption is needed and create appropriate filename
+    const needsEncryption = shouldEncryptBackup();
+    const userId = localStorage.getItem('azure-user-id') || 'user_' + Math.random().toString(36).substr(2, 16);
+    const backupId = needsEncryption 
+      ? `${userId}_auto_${timestamp}_encrypted.json`
+      : `${userId}_auto_${timestamp}.json`;
     
     // Create data-only backup
     const backupData = await createBackup(false); // false = no photos
     
-    // Check if encryption is needed and if we have a stored PIN
-    const needsEncryption = shouldEncryptBackup();
+    // Prepare upload data based on encryption requirements
     let uploadData: string;
     
     if (needsEncryption) {

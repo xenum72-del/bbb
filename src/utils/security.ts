@@ -1,3 +1,5 @@
+import { clearStoredPin } from './pinManager';
+
 /**
  * Simple client-side security utilities for app protection
  * This provides basic protection against casual access, not sophisticated attacks
@@ -34,7 +36,18 @@ export function getSecuritySettings(): SecuritySettings {
   const stored = localStorage.getItem(SECURITY_STORAGE_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const settings = JSON.parse(stored);
+      
+      // Normalize auto-lock time to valid values only: 1, 15, 30, 60 minutes
+      const validAutoLockTimes = [1, 15, 30, 60];
+      if (!validAutoLockTimes.includes(settings.autoLockMinutes)) {
+        // Default to 15 minutes if invalid value
+        settings.autoLockMinutes = 15;
+        // Save the corrected settings
+        localStorage.setItem(SECURITY_STORAGE_KEY, JSON.stringify(settings));
+      }
+      
+      return settings;
     } catch {
       // If parsing fails, return defaults
     }
@@ -105,10 +118,19 @@ export function activateSession(): void {
 }
 
 /**
- * Lock the session
+ * Lock the session and clear stored PIN
  */
 export function lockSession(): void {
   sessionStorage.removeItem(SESSION_KEY);
+  
+  // Clear stored PIN when app is locked
+  try {
+    clearStoredPin();
+    console.log('🔒 Cleared stored PIN on app lock');
+  } catch (error) {
+    // PIN manager might not be available, that's okay
+    console.warn('Could not clear stored PIN:', error);
+  }
 }
 
 /**
@@ -125,8 +147,8 @@ export function updateLastActivity(): void {
  */
 export function shouldAutoLock(): boolean {
   const settings = getSecuritySettings();
-  if (!settings.hasPin || settings.autoLockMinutes === 0) {
-    return false; // No PIN or auto-lock disabled
+  if (!settings.hasPin || settings.autoLockMinutes <= 0) {
+    return false; // No PIN or invalid auto-lock setting
   }
   
   const inactiveMinutes = (Date.now() - settings.lastActivity) / (1000 * 60);

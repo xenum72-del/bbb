@@ -160,14 +160,14 @@ export default function Dashboard({ onNavigate, isGayMode }: DashboardProps) {
         {/* Card glow effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         
-        <div className="flex justify-between items-center mb-8 relative z-10">
-          <div>
+        <div className="flex justify-between items-start gap-4 mb-8 relative z-10">
+          <div className="flex-1 min-w-0">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">Top Friends</h3>
             <p className="text-gray-600 dark:text-gray-400 mt-1">Your closest connections</p>
           </div>
           <button
             onClick={() => onNavigate('friends')}
-            className="px-6 py-3 bg-gradient-to-r from-blue-100/80 to-indigo-100/80 dark:from-blue-900/30 dark:to-indigo-900/30 hover:from-blue-200/80 hover:to-indigo-200/80 dark:hover:from-blue-800/40 dark:hover:to-indigo-800/40 text-blue-700 dark:text-blue-300 rounded-2xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-lg backdrop-blur-sm border border-blue-200/50 dark:border-blue-700/50"
+            className="flex-shrink-0 px-6 py-3 bg-gradient-to-r from-blue-100/80 to-indigo-100/80 dark:from-blue-900/30 dark:to-indigo-900/30 hover:from-blue-200/80 hover:to-indigo-200/80 dark:hover:from-blue-800/40 dark:hover:to-indigo-800/40 text-blue-700 dark:text-blue-300 rounded-2xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-lg backdrop-blur-sm border border-blue-200/50 dark:border-blue-700/50 whitespace-nowrap"
           >
             View All →
           </button>
@@ -255,14 +255,14 @@ export default function Dashboard({ onNavigate, isGayMode }: DashboardProps) {
         {/* Card glow effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-red-600/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         
-        <div className="flex justify-between items-center mb-8 relative z-10">
-          <div>
+        <div className="flex justify-between items-start gap-4 mb-8 relative z-10">
+          <div className="flex-1 min-w-0">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:via-gray-100 dark:to-gray-300 drop-shadow-sm">Recent Encounters</h3>
             <p className="text-gray-600 dark:text-gray-400 mt-1">Your latest activities</p>
           </div>
           <button
             onClick={() => onNavigate('timeline')}
-            className="px-6 py-3 bg-gradient-to-r from-red-100/80 to-orange-100/80 dark:from-red-900/30 dark:to-orange-900/30 hover:from-red-200/80 hover:to-orange-200/80 dark:hover:from-red-800/40 dark:hover:to-orange-800/40 text-red-700 dark:text-red-300 rounded-2xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-lg backdrop-blur-sm border border-red-200/50 dark:border-red-700/50 whitespace-nowrap"
+            className="flex-shrink-0 px-6 py-3 bg-gradient-to-r from-red-100/80 to-orange-100/80 dark:from-red-900/30 dark:to-orange-900/30 hover:from-red-200/80 hover:to-orange-200/80 dark:hover:from-red-800/40 dark:hover:to-orange-800/40 text-red-700 dark:text-red-300 rounded-2xl font-semibold text-sm transition-all duration-300 hover:scale-105 shadow-lg backdrop-blur-sm border border-red-200/50 dark:border-red-700/50 whitespace-nowrap"
           >
             View All →
           </button>

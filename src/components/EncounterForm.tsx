@@ -78,11 +78,16 @@ export default function EncounterForm({
     paymentNotes: ''
   });
 
-  // Load existing encounter data when editing
+  // Load existing encounter data when editing or cloning
   useEffect(() => {
-    if (mode === 'edit' && existingEncounter) {
+    if (existingEncounter) {
+      // For cloning (mode === 'add'), use current date/time; for editing, keep original date
+      const useCurrentDate = mode === 'add';
+      
       setFormData({
-        date: new Date(existingEncounter.date).toISOString().slice(0, 16),
+        date: useCurrentDate 
+          ? new Date().toISOString().slice(0, 16)
+          : new Date(existingEncounter.date).toISOString().slice(0, 16),
         rating: existingEncounter.rating,
         participants: existingEncounter.participants || [],
         isAnonymous: existingEncounter.isAnonymous || false,

@@ -674,6 +674,21 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                                 </svg>
                               </button>
                               <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Store encounter data for cloning in localStorage
+                                  localStorage.setItem('clone-encounter', JSON.stringify(encounter));
+                                  // Navigate to add encounter page
+                                  onNavigate('add');
+                                }}
+                                className="text-green-500 hover:text-green-700 p-1 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
+                                title="Clone encounter"
+                              >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                              </button>
+                              <button
                                 onClick={(e) => handleDeleteEncounter(encounter.id!, e)}
                                 className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
                                 title="Delete encounter"
@@ -703,9 +718,29 @@ export default function Timeline({ onNavigate }: TimelineProps) {
                             ) : encounter.participants.length === 0 ? (
                               <span className="italic">Solo</span>
                             ) : (
-                              encounter.participants
-                                .map(id => friendsMap.get(id)?.name || 'Unknown')
-                                .join(', ')
+                              encounter.participants.map((id, index) => {
+                                const friend = friendsMap.get(id);
+                                const friendName = friend?.name || 'Unknown';
+                                return (
+                                  <span key={id}>
+                                    {friend ? (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onNavigate(`friends/${id}`);
+                                        }}
+                                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
+                                        title={`View ${friendName}'s profile`}
+                                      >
+                                        {friendName}
+                                      </button>
+                                    ) : (
+                                      <span>{friendName}</span>
+                                    )}
+                                    {index < encounter.participants.length - 1 && ', '}
+                                  </span>
+                                );
+                              })
                             )}
                           </div>
                           <div>

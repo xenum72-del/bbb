@@ -1,4 +1,4 @@
-functionsDirectory = "/Users/stefan/AI/bbb/encounter-ledger/netlify/functions"
+functionsDirectory = "/Users/stefan/AI/bbb-xenum/bbb/netlify/functions"
 functionsDirectoryOrigin = "config"
 headersOrigin = "config"
 redirectsOrigin = "config"
@@ -16,11 +16,11 @@ directory = "netlify/edge-handlers"
 node_bundler = "esbuild"
 
 [build]
-publish = "/Users/stefan/AI/bbb/encounter-ledger/dist"
+publish = "/Users/stefan/AI/bbb-xenum/bbb/dist"
 publishOrigin = "config"
 commandOrigin = "config"
 command = "npm run build"
-functions = "/Users/stefan/AI/bbb/encounter-ledger/netlify/functions"
+functions = "/Users/stefan/AI/bbb-xenum/bbb/netlify/functions"
 
 [build.environment]
 NODE_VERSION = "22"

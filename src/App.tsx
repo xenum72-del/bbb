@@ -11,6 +11,7 @@ import TestRunner from './components/TestRunner'
 import UnlockScreen from './components/UnlockScreen'
 import { requiresUnlock, updateLastActivity, shouldAutoLock, lockSession } from './utils/security'
 import { useAnalytics } from './utils/analytics'
+import { generateRealisticSampleData } from './db/sampleData'
 
 type Page = 'dashboard' | 'timeline' | 'friends' | 'analytics' | 'settings' | 'help' | 'add' | 'tests' | string
 
@@ -107,8 +108,55 @@ function App() {
     }
   }, [isGayMode])
 
+  // Demo mode initialization
+  useEffect(() => {
+    const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+    const demoSessionId = sessionStorage.getItem('demo-session-id')
+    const currentSessionId = Date.now().toString()
+    
+    if (isDemoMode && !demoSessionId) {
+      // Auto-initialize demo data on first load of session
+      const initializeDemo = async () => {
+        try {
+          console.log('🎭 Demo mode detected - loading sample data...')
+          await generateRealisticSampleData()
+          sessionStorage.setItem('demo-session-id', currentSessionId)
+          
+          // Bypass security for demo
+          setIsUnlocked(true)
+          setNeedsUnlock(false)
+          
+          console.log('✅ Demo data loaded successfully!')
+          console.log('📊 Demo includes: 65 friends, 221 encounters with realistic data')
+        } catch (error) {
+          console.error('❌ Failed to load demo data:', error)
+        }
+      }
+      
+      initializeDemo()
+    } else if (isDemoMode) {
+      // Already initialized, just bypass security
+      setIsUnlocked(true)
+      setNeedsUnlock(false)
+    }
+  }, [])
+
   const navigate = (page: string) => {
     setCurrentPage(page as Page);
+    // Scroll to top when navigating
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLockApp = () => {
+    lockSession();
+    setIsUnlocked(false);
+    setNeedsUnlock(true);
+    trackInteraction('lock-app');
+  };
+
+  const handleTitleClick = () => {
+    navigate('dashboard');
+    trackInteraction('nav-title-home');
   };
 
   const renderPage = () => {
@@ -122,6 +170,18 @@ function App() {
       }
       
       return <EditEncounter onNavigate={navigate} encounterId={encounterId} />
+    }
+    
+    // Handle friends routes (friends/id)
+    if (currentPage.startsWith('friends/')) {
+      const friendIdStr = currentPage.split('/')[1];
+      const friendId = parseInt(friendIdStr);
+      
+      if (isNaN(friendId)) {
+        return <div className="p-4 text-red-500">Invalid friend ID</div>;
+      }
+      
+      return <Friends onNavigate={navigate} selectedFriendId={friendId} />
     }
     
     switch (currentPage) {
@@ -161,6 +221,7 @@ function App() {
           ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
           : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'
     }`}>
+
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5 dark:opacity-3">
         <div className="absolute inset-0" style={{
@@ -232,16 +293,33 @@ function App() {
               : 'bg-white/90 border-gray-200/50'
         }`}>
           <div className="flex justify-between items-center px-6 py-4">
-            <h1 className={`text-xl font-bold bg-gradient-to-r ${
+            <h1 
+              onClick={handleTitleClick}
+              className={`text-xl font-bold bg-gradient-to-r cursor-pointer transition-all duration-300 transform hover:scale-105 ${
               isGayMode 
-                ? 'from-pink-600 via-purple-600 to-cyan-600' 
+                ? 'from-pink-600 via-purple-600 to-cyan-600 hover:from-pink-700 hover:via-purple-700 hover:to-cyan-700' 
                 : isDarkMode 
-                  ? 'from-white via-gray-100 to-gray-300' 
-                  : 'from-gray-900 via-gray-800 to-gray-600'
-            } bg-clip-text text-transparent drop-shadow-sm`}>
+                  ? 'from-white via-gray-100 to-gray-300 hover:from-gray-100 hover:via-gray-200 hover:to-gray-400' 
+                  : 'from-gray-900 via-gray-800 to-gray-600 hover:from-gray-800 hover:via-gray-700 hover:to-gray-500'
+            } bg-clip-text text-transparent drop-shadow-sm`}
+              title="Go to Dashboard"
+            >
               The Load Down {isGayMode ? '🏳️‍🌈' : ''}
             </h1>
             <div className="flex items-center space-x-2">
+              <button
+                onClick={handleLockApp}
+                className={`p-3 rounded-2xl shadow-lg backdrop-blur-sm border transition-all duration-300 transform hover:scale-105 ${
+                  isDarkMode 
+                    ? 'hover:bg-red-700/80 text-red-400 bg-gray-800/60 border-red-600/50 hover:border-red-500/50' 
+                    : 'hover:bg-red-100/80 text-red-600 bg-white/60 border-red-200/50 hover:border-red-300/50'
+                }`}
+                title="Lock App"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </button>
               <button
                 onClick={() => {
                   // Don't allow dark mode while gay mode is active
@@ -289,12 +367,13 @@ function App() {
                 {isGayMode ? '🏳️‍🌈' : '💖'}
               </button>
               <button
-                onClick={() => setCurrentPage('settings')}
+                onClick={() => navigate('settings')}
                 className={`p-3 rounded-2xl shadow-lg backdrop-blur-sm border transition-all duration-300 transform hover:scale-105 ${
                   currentPage === 'settings'
                     ? isDarkMode ? 'bg-blue-600/80 text-white border-blue-500/50 shadow-blue-500/30' : 'bg-blue-600/80 text-white border-blue-500/50 shadow-blue-500/30'
                     : isDarkMode ? 'hover:bg-gray-700/80 text-gray-300 bg-gray-800/60 border-gray-600/50' : 'hover:bg-gray-100/80 text-gray-600 bg-white/60 border-gray-200/50'
                 }`}
+                title="Settings"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -322,7 +401,7 @@ function App() {
         <div className="flex justify-around items-center px-6 py-3 pt-4">
           <button
             onClick={() => {
-              setCurrentPage('dashboard')
+              navigate('dashboard')
               trackInteraction('nav-dashboard')
             }}
             className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 shadow-md backdrop-blur-sm ${
@@ -342,7 +421,7 @@ function App() {
           </button>
           
           <button
-            onClick={() => setCurrentPage('timeline')}
+            onClick={() => navigate('timeline')}
             className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 shadow-md backdrop-blur-sm ${
               currentPage === 'timeline' 
                 ? isGayMode
@@ -360,7 +439,7 @@ function App() {
           </button>
           
           <button
-            onClick={() => setCurrentPage('friends')}
+            onClick={() => navigate('friends')}
             className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 shadow-md backdrop-blur-sm ${
               currentPage === 'friends' 
                 ? isGayMode
@@ -378,7 +457,7 @@ function App() {
           </button>
           
           <button
-            onClick={() => setCurrentPage('analytics')}
+            onClick={() => navigate('analytics')}
             className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300 shadow-md backdrop-blur-sm ${
               currentPage === 'analytics' 
                 ? isGayMode

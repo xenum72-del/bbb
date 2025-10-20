@@ -620,11 +620,9 @@ export default function Settings({ onNavigate }: SettingsProps) {
                   className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-inner hover:shadow-lg focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
                 >
                   <option value={1}>1 minute</option>
-                  <option value={5}>5 minutes</option>
                   <option value={15}>15 minutes</option>
                   <option value={30}>30 minutes</option>
                   <option value={60}>1 hour</option>
-                  <option value={0}>Never</option>
                 </select>
               </div>
             </div>

@@ -542,7 +542,13 @@ export default function Analytics({ onNavigate, isGayMode }: AnalyticsProps) {
                         )}
                       </div>
                       <div>
-                        <div className="font-medium">{friendScore.friend.name}</div>
+                        <button
+                          onClick={() => onNavigate(`friends/${friendScore.friend.id}`)}
+                          className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors text-left"
+                          title={`View ${friendScore.friend.name}'s profile`}
+                        >
+                          {friendScore.friend.name}
+                        </button>
                         <div className="text-sm text-gray-500">
                           {friendScore.encounterCount} encounters
                         </div>

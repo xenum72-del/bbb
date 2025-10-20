@@ -1,5 +1,5 @@
-import { useActiveFriends, friendsApi, useEncountersByFriend } from '../hooks/useDatabase';
-import { useState, useMemo } from 'react';
+import { useActiveFriends, friendsApi, useEncountersByFriend, useInteractionTypes } from '../hooks/useDatabase';
+import { useState, useMemo, useEffect } from 'react';
 import type { Friend } from '../db/schema';
 import { GAY_ACTIVITIES } from '../db/schema';
 import StarRating from '../components/StarRating';
@@ -9,6 +9,7 @@ import { showBackupPrompt, triggerAutoAzureBackup, shouldShowBackupPrompt } from
 interface FriendsProps {
   onNavigate: (page: string) => void;
   showAddFormInitially?: boolean;
+  selectedFriendId?: number;
 }
 
 const getInitialFormData = () => ({
@@ -47,7 +48,7 @@ const getInitialFormData = () => ({
   isVerified: false
 });
 
-export default function Friends({ onNavigate, showAddFormInitially = false }: FriendsProps) {
+export default function Friends({ onNavigate, showAddFormInitially = false, selectedFriendId }: FriendsProps) {
   const friends = useActiveFriends();
   const [showAddForm, setShowAddForm] = useState(showAddFormInitially);
   const [editingFriend, setEditingFriend] = useState<Friend | null>(null);
@@ -72,6 +73,19 @@ export default function Friends({ onNavigate, showAddFormInitially = false }: Fr
   });
 
   const selectedFriendEncounters = useEncountersByFriend(selectedFriend?.id);
+  
+  // Get interaction types for activity name lookup
+  const interactionTypes = useInteractionTypes();
+
+  // Auto-select friend when selectedFriendId is provided
+  useEffect(() => {
+    if (selectedFriendId && friends.length > 0) {
+      const friendToSelect = friends.find(f => f.id === selectedFriendId);
+      if (friendToSelect) {
+        setSelectedFriend(friendToSelect);
+      }
+    }
+  }, [selectedFriendId, friends]);
 
   // Apply filters to friends
   const filteredFriends = useMemo(() => {
@@ -394,38 +408,81 @@ export default function Friends({ onNavigate, showAddFormInitially = false }: Fr
                 </button>
               </div>
             ) : (
-              selectedFriendEncounters.map(encounter => (
-                <div
-                  key={encounter.id}
-                  className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-medium">
-                        {new Date(encounter.date).toLocaleDateString()}
-                      </div>
-                      <div className="text-sm text-gray-500 capitalize">
-                        {encounter.beneficiary} benefited
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="mb-1">
-                        <StarRating rating={encounter.rating} size="md" />
-                      </div>
-                      {encounter.durationMinutes && (
-                        <div className="text-xs text-gray-500">
-                          {encounter.durationMinutes}m
+              selectedFriendEncounters.map(encounter => {
+                // Get activity names from activitiesPerformed
+                const activities = encounter.activitiesPerformed 
+                  ? encounter.activitiesPerformed.map(id => {
+                      return interactionTypes.find(type => type.id === id);
+                    }).filter(Boolean)
+                  : [];
+                const activityNames = activities.map(activity => activity!.name);
+
+                return (
+                  <div
+                    key={encounter.id}
+                    className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <div className="font-medium">
+                          {new Date(encounter.date).toLocaleDateString()}
                         </div>
-                      )}
+                        <div className="text-sm text-gray-500 capitalize">
+                          {encounter.beneficiary} benefited
+                        </div>
+                        
+                        {/* Activities */}
+                        {activityNames.length > 0 && (
+                          <div className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                            🎯 {activityNames.slice(0, 2).join(', ')}
+                            {activityNames.length > 2 && ` +${activityNames.length - 2} more`}
+                          </div>
+                        )}
+                        
+                        {/* Location */}
+                        {encounter.location?.place && (
+                          <div className="text-sm text-green-600 dark:text-green-400 mt-1">
+                            📍 {encounter.location.place}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="text-right flex flex-col items-end space-y-1">
+                        <div className="mb-1">
+                          <StarRating rating={encounter.rating} size="md" />
+                        </div>
+                        {encounter.durationMinutes && (
+                          <div className="text-xs text-gray-500">
+                            {encounter.durationMinutes}m
+                          </div>
+                        )}
+                        
+                        {/* Clone Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Store encounter data for cloning in localStorage
+                            localStorage.setItem('clone-encounter', JSON.stringify(encounter));
+                            // Navigate to add encounter page
+                            onNavigate('add');
+                          }}
+                          className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors flex items-center space-x-1"
+                          title="Clone this encounter"
+                        >
+                          <span>📋</span>
+                          <span>Clone</span>
+                        </button>
+                      </div>
                     </div>
+                    
+                    {encounter.notes && (
+                      <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        {encounter.notes}
+                      </div>
+                    )}
                   </div>
-                  {encounter.notes && (
-                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                      {encounter.notes}
-                    </div>
-                  )}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
