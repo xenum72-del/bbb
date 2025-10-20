@@ -1,8 +1,8 @@
-functionsDirectory = "/Users/stefan/AI/bbb-xenum/bbb/netlify/functions"
-functionsDirectoryOrigin = "config"
 headersOrigin = "config"
 redirectsOrigin = "config"
 plugins = []
+functionsDirectory = "/Users/stefan/AI/bbb-xenum/bbb/netlify/functions"
+functionsDirectoryOrigin = "config"
 
 [forms]
 settings = true

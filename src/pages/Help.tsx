@@ -204,7 +204,7 @@ export default function Help({ onNavigate }: HelpProps) {
               <div className="space-y-2 text-sm">
                 <p><strong>4+ Digit Protection:</strong> Because your tea deserves better than 1234 (we see you, basic gays)</p>
                 <p><strong>Face ID Integration:</strong> Let your iPhone recognize your post-nut glow for instant access</p>
-                <p><strong>Auto-Lock Timer:</strong> Locks automatically when you inevitably get distracted by other apps (1min - 1hour)</p>
+                <p><strong>Auto-Lock Timer:</strong> Locks automatically when you inevitably get distracted by other apps (1, 15, 30, or 60 minutes)</p>
                 <p><strong>Panic Lock Button:</strong> Hit this faster than you'd block your ex on everything</p>
               </div>
             </div>
@@ -261,7 +261,7 @@ export default function Help({ onNavigate }: HelpProps) {
               <div className="space-y-2 text-sm">
                 <p><strong>PIN Protection:</strong> 4+ digit PIN with secure hashing</p>
                 <p><strong>Biometric Auth:</strong> Face ID, Touch ID, or fingerprint support</p>
-                <p><strong>Auto-Lock Timer:</strong> Automatic locking (1 minute to 1 hour or never)</p>
+                <p><strong>Auto-Lock Timer:</strong> Automatic locking (1, 15, 30, or 60 minutes options)</p>
                 <p><strong>Instant Lock:</strong> Manual lock button for immediate privacy</p>
                 <p><strong>Session Management:</strong> Secure authentication state handling</p>
               </div>
@@ -326,7 +326,14 @@ export default function Help({ onNavigate }: HelpProps) {
                   <span className="text-xl">📊</span>
                   <div>
                     <div className="font-medium">Conquest Timeline</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Chronological list of your legendary sessions</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Chronological list of your legendary sessions with clickable friend names for quick navigation</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <span className="text-xl">🔗</span>
+                  <div>
+                    <div className="font-medium">Smart Navigation</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Click any friend's name in Timeline or Analytics to instantly view their profile and encounters</div>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -397,7 +404,14 @@ export default function Help({ onNavigate }: HelpProps) {
                 <span className="text-lg">👥</span>
                 <div>
                   <div className="font-medium">Browse Roster</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">See which boys you've been neglecting lately</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">See which boys you've been neglecting lately - click names to navigate instantly</div>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <span className="text-lg">🔄</span>
+                <div>
+                  <div className="font-medium">Clone Repeat Performances</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Found a session worth repeating? Hit clone and log today's encore!</div>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
@@ -456,6 +470,81 @@ export default function Help({ onNavigate }: HelpProps) {
         </div>
       </HelpSection>
 
+      {/* Enhanced Encounter Management */}
+      <HelpSection id="encounters" title="Enhanced Encounter Management" icon="✨">
+        <div className="space-y-4">
+          <div className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 p-4 rounded-xl border border-pink-200 dark:border-pink-800">
+            <h4 className="font-bold text-pink-800 dark:text-pink-200 mb-2">🔥 NEW: Clone & Enhanced Details</h4>
+            <p className="text-pink-700 dark:text-pink-300 text-sm">
+              Level up your encounter tracking with cloning, enhanced details, and smart navigation!
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-bold text-lg mb-3">🔄 Clone Encounters</h4>
+              <div className="space-y-2">
+                <div className="flex items-start space-x-3">
+                  <span className="text-lg">📋</span>
+                  <div>
+                    <div className="font-medium">Quick Clone from Timeline</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Hit the clone button on any encounter card to duplicate it with today's date</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <span className="text-lg">👥</span>
+                  <div>
+                    <div className="font-medium">Clone from Friend View</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">When viewing a friend's encounters, clone any session for a repeat performance</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <span className="text-lg">⚡</span>
+                  <div>
+                    <div className="font-medium">Smart Auto-Fill</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Cloned encounters pre-fill all details except date - just save and you're done!</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-lg mb-3">📝 Enhanced Encounter Details</h4>
+              <div className="space-y-2">
+                <div className="flex items-start space-x-3">
+                  <span className="text-lg">🎯</span>
+                  <div>
+                    <div className="font-medium">Activity Overview</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">See exactly what activities happened in each encounter at a glance</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <span className="text-lg">📍</span>
+                  <div>
+                    <div className="font-medium">Location Display</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Quick location info shows where the magic happened</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <span className="text-lg">💝</span>
+                  <div>
+                    <div className="font-medium">Beneficiary Tracking</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">See who received or gave benefits in each encounter</div>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <span className="text-lg">🔗</span>
+                  <div>
+                    <div className="font-medium">Friend Navigation</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Click any friend name to instantly jump to their profile and encounter history</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </HelpSection>
+
       {/* Backup & Export */}
       <HelpSection id="backup" title="Backup & Data Export" icon="💾">
         <div className="space-y-4">
@@ -475,6 +564,7 @@ export default function Help({ onNavigate }: HelpProps) {
                 <p><strong>Easy Restore:</strong> Select any backup to completely restore your data</p>
                 <p><strong>Cross-Device Sync:</strong> Access your backups from any device</p>
                 <p><strong>Automatic Encryption:</strong> All data encrypted in transit and at rest</p>
+                <p><strong>🔒 Visual Indicators:</strong> Encrypted backups show lock icons and "encrypted" in filenames</p>
               </div>
               
               <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800 mt-3">

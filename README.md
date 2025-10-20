@@ -3,6 +3,40 @@
 > **The gayest, most fabulous way to track your romantic adventures** ✨
 > Privacy-first analytics for your dating life, hookups, and social connections - because data is beautiful, darling! 💅
 
+---
+
+## ⚠️ 🤖 **CRITICAL: AI-DEVELOPED APPLICATION** 🤖 ⚠️
+
+### 🚨 **READ THIS BEFORE USING** 🚨
+
+**This entire application was developed using GitHub Copilot and other AI assistance.** While functional and extensively tested, **users should be aware of the inherent risks:**
+
+#### **Development Details:**
+- **🤖 100% AI-Written Code**: Every component, function, and feature generated with AI assistance
+- **🔄 Multiple Iterations**: 150+ development sessions with continuous refinement
+- **🧪 Extensive Testing**: Manual testing, security audits, and edge case validation
+- **📝 Code Reviews**: Human oversight and validation of AI-generated code
+- **🛠️ Real-World Usage**: Active development and feature testing over several months
+
+#### **⚠️ Expected Risks & Limitations:**
+- **🐛 Bugs Are Expected**: AI-generated code may contain subtle logic errors
+- **🔐 Security Concerns**: Encryption/security implementations need expert review
+- **💾 Data Integrity**: Backup your data frequently - corruption possible
+- **🌐 Browser Compatibility**: May not work perfectly across all browsers/devices
+- **📱 Mobile Issues**: PWA features may have platform-specific bugs
+- **🔄 Update Risks**: New AI-generated features may introduce regressions
+
+#### **🛡️ Safety Recommendations:**
+- **💾 Regular Backups**: Use both local export AND Azure cloud backup
+- **🔍 Verify Critical Functions**: Double-check important data operations
+- **🧪 Test New Features**: Try features in demo mode first when possible
+- **📱 Multiple Devices**: Don't rely on single-device storage
+- **🔒 Review Security**: Consider security audit if handling sensitive data
+
+**By using this app, you acknowledge these AI development risks and agree to backup your data regularly.**
+
+---
+
 ## 💖 About The Load Down
 
 Let's be real, bestie - we're living our best lives out here, meeting amazing people, having incredible experiences, and creating memories that deserve to be tracked with the same precision we use for our skincare routines! 🌟
