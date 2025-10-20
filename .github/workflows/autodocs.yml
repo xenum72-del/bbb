@@ -5,16 +5,23 @@ on:
     branches: [ main ]
   pull_request:
 
+# avoid overlapping runs on the same ref
+concurrency:
+  group: autodocs-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
-  contents: write
+  contents: write  # needed for gh-pages deploy
 
 jobs:
   build-docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
-      # point everything at your demo server
       APP_BASE_URL: http://localhost:5274
       CI: true
+      # tell Playwright where to keep browser binaries for cache hits
+      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
 
     steps:
       - name: Checkout
@@ -33,14 +40,29 @@ jobs:
         working-directory: docs
         run: npm ci || npm i
 
+      # ---- Playwright cache (Option C) ----
+      - name: Resolve Playwright version
+        id: pw
+        run: echo "version=$(node -p \"require('@playwright/test/package.json').version\")" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      # ---- Install Chromium only (Option B) ----
+      # Skips --with-deps to avoid apt work; GitHub's runner already has most deps.
+      - name: Install Playwright (Chromium only)
+        run: npx playwright install chromium
+
+      # ---- Start your app in DEMO mode on :5274 ----
       - name: Start DEMO app on :5274
         run: |
           nohup bash -c "npm run app:start:demo" >/dev/null 2>&1 &
           npx wait-on http://localhost:5274
 
-      - name: Install Playwright (browsers & deps)
-        run: npx playwright install --with-deps
-
+      # ---- Crawl, generate docs, build and publish ----
       - name: Crawl & Take Screenshots
         run: npm run crawl
 
@@ -50,6 +72,17 @@ jobs:
       - name: Build Docusaurus
         working-directory: docs
         run: npm run build
+
+      # Optional: keep artifacts for debugging/preview
+      - name: Upload screenshots & map
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autodocs-output
+          path: |
+            docs/static/img/autoshots/**
+            autoshots.map.json
+            docs/docs/product-tour.md
 
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
