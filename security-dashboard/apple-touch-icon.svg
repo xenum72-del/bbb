@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bgApple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="25%" stop-color="#a855f7"/>
+      <stop offset="50%" stop-color="#3b82f6"/>
+      <stop offset="75%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="heartApple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#fdf2f8"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <filter id="shadowApple" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
+    </filter>
+  </defs>
+  
+  <!-- iOS requires rounded rectangle, but we'll use a circle that fits well -->
+  <rect x="0" y="0" width="180" height="180" rx="38" ry="38" fill="url(#bgApple)"/>
+  
+  <!-- Inner area for contrast -->
+  <rect x="12" y="12" width="156" height="156" rx="32" ry="32" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+  
+  <!-- Main heart icon -->
+  <path d="M90 135 L68 113 C58 103 58 87 68 77 C74 71 82 71 87 77 L90 80 L93 77 C98 71 106 71 112 77 C122 87 122 103 112 113 Z" 
+        fill="url(#heartApple)" filter="url(#shadowApple)"/>
+  
+  <!-- Sparkle accents -->
+  <g fill="rgba(255,255,255,0.9)">
+    <path d="M50 45 L52 52 L59 54 L52 56 L50 63 L48 56 L41 54 L48 52 Z"/>
+    <path d="M125 40 L126 45 L131 46 L126 47 L125 52 L124 47 L119 46 L124 45 Z"/>
+    <path d="M135 80 L136 84 L140 85 L136 86 L135 90 L134 86 L130 85 L134 84 Z"/>
+    <path d="M40 115 L41 119 L45 120 L41 121 L40 125 L39 121 L35 120 L39 119 Z"/>
+  </g>
+  
+  <!-- App initials -->
+  <text x="90" y="155" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" 
+        font-size="14" font-weight="700" fill="rgba(255,255,255,0.9)">TLD</text>
+</svg>

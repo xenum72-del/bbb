@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-10-20T12:08:56.224Z",
+  "summary": {
+    "testsCompleted": 5,
+    "overallSafety": {
+      "score": 92
+    },
+    "keyFindings": [
+      "⚠️ No PWA manifest found",
+      "⚠️ Accessibility issues: 0 images without alt, 3 buttons without labels",
+      "🌈 Gay-friendly vibes: tea - YASSS!",
+      "🌈 Visual gay rights detected in styling - CSS said pride!"
+    ]
+  },
+  "security": {
+    "hasCSP": true,
+    "hasHSTS": true,
+    "hasXFrameOptions": true,
+    "hasXContentTypeOptions": true,
+    "headersCount": 18,
+    "securityHeadersPresent": 4,
+    "hasPWAManifest": false
+  },
+  "performance": {
+    "loadTime": 0,
+    "domContentLoaded": 0.09999999999126885,
+    "firstPaint": 344
+  },
+  "accessibility": {
+    "imagesWithoutAlt": 0,
+    "buttonsWithoutAriaLabel": 3,
+    "totalImages": 0,
+    "totalButtons": 14
+  },
+  "inclusivity": {
+    "foundGayPositiveWords": 1,
+    "basicWords": [],
+    "dragWords": [
+      "tea"
+    ],
+    "popCultureWords": [],
+    "funnyWords": [],
+    "hasRainbowStyling": true,
+    "fabulousnessLevel": 3
+  }
+}
