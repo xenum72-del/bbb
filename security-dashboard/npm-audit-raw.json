@@ -7,7 +7,7 @@
       "isDirect": false,
       "via": [
         {
-          "source": 1109809,
+          "source": 1109842,
           "name": "glob",
           "dependency": "glob",
           "title": "glob CLI: Command injection via -c/--cmd executes matches with shell:true",
@@ -20,21 +20,15 @@
             "score": 7.5,
             "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
           },
-          "range": ">=10.3.7 <=11.0.3"
+          "range": ">=10.2.0 <10.5.0"
         }
       ],
-      "effects": [
-        "sucrase"
-      ],
-      "range": "10.3.7 - 11.0.3",
+      "effects": [],
+      "range": "10.2.0 - 10.4.5",
       "nodes": [
         "node_modules/sucrase/node_modules/glob"
       ],
-      "fixAvailable": {
-        "name": "tailwindcss",
-        "version": "4.1.17",
-        "isSemVerMajor": true
-      }
+      "fixAvailable": true
     },
     "js-yaml": {
       "name": "js-yaml",
@@ -64,44 +58,6 @@
         "node_modules/js-yaml"
       ],
       "fixAvailable": true
-    },
-    "sucrase": {
-      "name": "sucrase",
-      "severity": "high",
-      "isDirect": false,
-      "via": [
-        "glob"
-      ],
-      "effects": [
-        "tailwindcss"
-      ],
-      "range": ">=3.35.0",
-      "nodes": [
-        "node_modules/sucrase"
-      ],
-      "fixAvailable": {
-        "name": "tailwindcss",
-        "version": "4.1.17",
-        "isSemVerMajor": true
-      }
-    },
-    "tailwindcss": {
-      "name": "tailwindcss",
-      "severity": "high",
-      "isDirect": true,
-      "via": [
-        "sucrase"
-      ],
-      "effects": [],
-      "range": "3.4.15 - 3.4.18",
-      "nodes": [
-        "node_modules/tailwindcss"
-      ],
-      "fixAvailable": {
-        "name": "tailwindcss",
-        "version": "4.1.17",
-        "isSemVerMajor": true
-      }
     }
   },
   "metadata": {
@@ -109,9 +65,9 @@
       "info": 0,
       "low": 0,
       "moderate": 1,
-      "high": 3,
+      "high": 1,
       "critical": 0,
-      "total": 4
+      "total": 2
     },
     "dependencies": {
       "prod": 497,
