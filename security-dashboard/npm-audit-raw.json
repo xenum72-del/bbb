@@ -7,7 +7,7 @@
       "isDirect": false,
       "via": [
         {
-          "source": 1112430,
+          "source": 1112489,
           "name": "diff",
           "dependency": "diff",
           "title": "jsdiff has a Denial of Service vulnerability in parsePatch and applyPatch",
@@ -115,6 +115,35 @@
       "range": "4.0.0 - 4.17.21",
       "nodes": [
         "node_modules/lodash"
+      ],
+      "fixAvailable": true
+    },
+    "lodash-es": {
+      "name": "lodash-es",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112453,
+          "name": "lodash-es",
+          "dependency": "lodash-es",
+          "title": "Lodash has Prototype Pollution Vulnerability in `_.unset` and `_.omit` functions",
+          "url": "https://github.com/advisories/GHSA-xxjr-mmjv-4gpg",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L"
+          },
+          "range": ">=4.0.0 <=4.17.22"
+        }
+      ],
+      "effects": [],
+      "range": "4.0.0 - 4.17.22",
+      "nodes": [
+        "node_modules/lodash-es"
       ],
       "fixAvailable": true
     },
@@ -246,18 +275,18 @@
     "vulnerabilities": {
       "info": 0,
       "low": 1,
-      "moderate": 3,
+      "moderate": 4,
       "high": 3,
       "critical": 0,
-      "total": 7
+      "total": 8
     },
     "dependencies": {
       "prod": 497,
       "dev": 345,
-      "optional": 32,
-      "peer": 0,
+      "optional": 33,
+      "peer": 1,
       "peerOptional": 0,
-      "total": 865
+      "total": 866
     }
   }
 }
