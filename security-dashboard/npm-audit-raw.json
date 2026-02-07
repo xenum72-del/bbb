@@ -7,7 +7,7 @@
       "isDirect": false,
       "via": [
         {
-          "source": 1112489,
+          "source": 1112704,
           "name": "diff",
           "dependency": "diff",
           "title": "jsdiff has a Denial of Service vulnerability in parsePatch and applyPatch",
@@ -21,11 +21,11 @@
             "score": 0,
             "vectorString": null
           },
-          "range": "<4.0.4"
+          "range": ">=4.0.0 <4.0.4"
         }
       ],
       "effects": [],
-      "range": "<4.0.4",
+      "range": "4.0.0 - 4.0.3",
       "nodes": [
         "node_modules/diff"
       ],
@@ -66,7 +66,7 @@
       "isDirect": false,
       "via": [
         {
-          "source": 1109802,
+          "source": 1112715,
           "name": "js-yaml",
           "dependency": "js-yaml",
           "title": "js-yaml has prototype pollution in merge (<<)",
