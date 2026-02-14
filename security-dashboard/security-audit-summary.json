@@ -1,8 +1,8 @@
 {
   "nodeVersion": "v22.22.0",
   "npmVersion": "unknown",
-  "vulnerabilities": 8,
+  "vulnerabilities": 9,
   "status": "has-issues",
   "auditReportVersion": 2,
-  "timestamp": "2026-02-07T17:08:16.941Z"
+  "timestamp": "2026-02-14T09:34:27.909Z"
 }
