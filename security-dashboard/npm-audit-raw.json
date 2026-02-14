@@ -176,51 +176,6 @@
       ],
       "fixAvailable": true
     },
-    "qs": {
-      "name": "qs",
-      "severity": "high",
-      "isDirect": false,
-      "via": [
-        {
-          "source": 1113132,
-          "name": "qs",
-          "dependency": "qs",
-          "title": "qs's arrayLimit bypass in its bracket notation allows DoS via memory exhaustion",
-          "url": "https://github.com/advisories/GHSA-6rw7-vpxm-498p",
-          "severity": "high",
-          "cwe": [
-            "CWE-20"
-          ],
-          "cvss": {
-            "score": 7.5,
-            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
-          },
-          "range": "<6.14.1"
-        },
-        {
-          "source": 1113161,
-          "name": "qs",
-          "dependency": "qs",
-          "title": "qs's arrayLimit bypass in comma parsing allows denial of service",
-          "url": "https://github.com/advisories/GHSA-w7fw-mjwx-w883",
-          "severity": "low",
-          "cwe": [
-            "CWE-20"
-          ],
-          "cvss": {
-            "score": 3.7,
-            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
-          },
-          "range": ">=6.7.0 <=6.14.1"
-        }
-      ],
-      "effects": [],
-      "range": "<=6.14.1",
-      "nodes": [
-        "node_modules/qs"
-      ],
-      "fixAvailable": true
-    },
     "react-router": {
       "name": "react-router",
       "severity": "high",
@@ -321,17 +276,17 @@
       "info": 0,
       "low": 1,
       "moderate": 4,
-      "high": 4,
+      "high": 3,
       "critical": 0,
-      "total": 9
+      "total": 8
     },
     "dependencies": {
       "prod": 497,
       "dev": 345,
-      "optional": 33,
-      "peer": 1,
+      "optional": 32,
+      "peer": 0,
       "peerOptional": 0,
-      "total": 866
+      "total": 865
     }
   }
 }

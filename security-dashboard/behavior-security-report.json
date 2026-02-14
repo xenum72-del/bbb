@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-02-14T09:34:20.509Z",
+  "timestamp": "2026-02-14T12:14:56.770Z",
   "summary": {
     "testsCompleted": 5,
     "overallSafety": {
@@ -23,8 +23,8 @@
   },
   "performance": {
     "loadTime": 0,
-    "domContentLoaded": 0,
-    "firstPaint": 296
+    "domContentLoaded": 0.10000000000582077,
+    "firstPaint": 284
   },
   "accessibility": {
     "imagesWithoutAlt": 0,
